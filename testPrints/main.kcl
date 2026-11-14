@@ -1,0 +1,6 @@
+// Test-print part exports
+// Shared interface for the clearance-fixture review.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+export import fixtureBase from "clearanceFixtureBase.kcl"
+export import fixtureLid from "clearanceFixtureLid.kcl"

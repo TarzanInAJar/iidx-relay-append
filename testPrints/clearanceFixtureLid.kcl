@@ -140,4 +140,4 @@ xmReliefTool = extrude(
 )
   |> translate(x = xmCenterX, y = xmCenterY, global = true)
 hide(xmReliefProfile)
-fixtureLid = subtract(lidWithXmCut, tools = [xmReliefTool])
+export fixtureLid = subtract(lidWithXmCut, tools = [xmReliefTool])

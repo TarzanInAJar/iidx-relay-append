@@ -85,4 +85,4 @@ pilots = patternLinear3d(
   distance = 2 * postOffset,
   axis = [1, 0, 0],
 )
-fixtureBase = subtract(baseWithRetainerHoles, tools = pilots)
+export fixtureBase = subtract(baseWithRetainerHoles, tools = pilots)

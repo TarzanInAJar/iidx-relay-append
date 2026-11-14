@@ -2,8 +2,7 @@
 // Uses the accepted retainer and approximate connector envelopes as visual references.
 @settings(defaultLengthUnit = mm, kclVersion = 3.0)
 
-import "clearanceFixtureBase.kcl" as fixtureBasePart
-import "clearanceFixtureLid.kcl" as fixtureLidPart
+import fixtureBase as fixtureBasePart, fixtureLid as fixtureLidPart from "testPrints/main.kcl"
 import "wagoTenRetainer.kcl" as tenRetainerPart
 import "wagoTenEnvelope.kcl" as tenPortPart
 import "xmrFiveEnvelope.kcl" as xmrFivePart
