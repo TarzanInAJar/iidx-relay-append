@@ -1,0 +1,280 @@
+// VL supply connector fit coupon
+// North and south wall openings with the same local wall thickness and reliefs.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+couponLength = 84mm
+couponWidth = 34mm
+wallThickness = 3mm
+vlRetainedThickness = 1.5mm
+portOffset = 20mm
+vlTopKeyWidth = 9.8mm
+vlTopKeyHeight = 3.2mm
+vlTwoBodyWidth = 13.8mm
+vlTwoOverallWidth = 20.6mm
+vlTwoBodyHeight = 8.5mm
+vlTwoWingHeight = 5.7mm
+vlTwoWingOffset = 1.4mm
+vlTwoBottomKeyWidth = 4.2mm
+vlTwoBottomKeyHeight = 0.5mm
+vlSixBodyWidth = 20mm
+vlSixOverallWidth = 26.8mm
+vlSixBodyHeight = 15.4mm
+vlSixWingHeight = 7mm
+vlSixWingOffset = 4.2mm
+vlSixTotalHeight = 18.6mm
+vlReliefWidth = vlSixOverallWidth + 4mm
+vlReliefHeight = vlSixTotalHeight + 4mm
+
+couponProfile = sketch(on = XY) {
+  bottom = line(start = [var -42mm, var -17mm], end = [var 42mm, var -17mm])
+  right = line(start = [var 42mm, var -17mm], end = [var 42mm, var 17mm])
+  top = line(start = [var 42mm, var 17mm], end = [var -42mm, var 17mm])
+  left = line(start = [var -42mm, var 17mm], end = [var -42mm, var -17mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == couponLength / 2
+  verticalDistance([bottom.start, ORIGIN]) == couponWidth / 2
+  horizontalDistance([bottom.start, bottom.end]) == couponLength
+  verticalDistance([right.start, right.end]) == couponWidth
+}
+couponBlank = extrude(
+  region(
+    segments = [
+      couponProfile.bottom,
+      couponProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = wallThickness,
+)
+hide(couponProfile)
+
+// VLR-02V single-row opening, equivalent to the north wall.
+vlTwoProfile = sketch(on = XY) {
+  keyBottom = line(start = [var -2.1mm, var -6.1mm], end = [var 2.1mm, var -6.1mm])
+  keyBottomRight = line(start = [var 2.1mm, var -6.1mm], end = [var 2.1mm, var -5.6mm])
+  bottomRight = line(start = [var 2.1mm, var -5.6mm], end = [var 6.9mm, var -5.6mm])
+  lowerRight = line(start = [var 6.9mm, var -5.6mm], end = [var 6.9mm, var -4.2mm])
+  lowerRightArm = line(start = [var 6.9mm, var -4.2mm], end = [var 10.3mm, var -4.2mm])
+  rightWall = line(start = [var 10.3mm, var -4.2mm], end = [var 10.3mm, var 1.5mm])
+  upperRightArm = line(start = [var 10.3mm, var 1.5mm], end = [var 6.9mm, var 1.5mm])
+  upperRight = line(start = [var 6.9mm, var 1.5mm], end = [var 6.9mm, var 2.9mm])
+  topRight = line(start = [var 6.9mm, var 2.9mm], end = [var 4.9mm, var 2.9mm])
+  keyRight = line(start = [var 4.9mm, var 2.9mm], end = [var 4.9mm, var 6.1mm])
+  keyTop = line(start = [var 4.9mm, var 6.1mm], end = [var -4.9mm, var 6.1mm])
+  keyLeft = line(start = [var -4.9mm, var 6.1mm], end = [var -4.9mm, var 2.9mm])
+  topLeft = line(start = [var -4.9mm, var 2.9mm], end = [var -6.9mm, var 2.9mm])
+  upperLeft = line(start = [var -6.9mm, var 2.9mm], end = [var -6.9mm, var 1.5mm])
+  upperLeftArm = line(start = [var -6.9mm, var 1.5mm], end = [var -10.3mm, var 1.5mm])
+  leftWall = line(start = [var -10.3mm, var 1.5mm], end = [var -10.3mm, var -4.2mm])
+  lowerLeftArm = line(start = [var -10.3mm, var -4.2mm], end = [var -6.9mm, var -4.2mm])
+  lowerLeft = line(start = [var -6.9mm, var -4.2mm], end = [var -6.9mm, var -5.6mm])
+  bottomLeft = line(start = [var -6.9mm, var -5.6mm], end = [var -2.1mm, var -5.6mm])
+  keyBottomLeft = line(start = [var -2.1mm, var -5.6mm], end = [var -2.1mm, var -6.1mm])
+  coincident([keyBottom.end, keyBottomRight.start])
+  coincident([keyBottomRight.end, bottomRight.start])
+  coincident([bottomRight.end, lowerRight.start])
+  coincident([lowerRight.end, lowerRightArm.start])
+  coincident([lowerRightArm.end, rightWall.start])
+  coincident([rightWall.end, upperRightArm.start])
+  coincident([upperRightArm.end, upperRight.start])
+  coincident([upperRight.end, topRight.start])
+  coincident([topRight.end, keyRight.start])
+  coincident([keyRight.end, keyTop.start])
+  coincident([keyTop.end, keyLeft.start])
+  coincident([keyLeft.end, topLeft.start])
+  coincident([topLeft.end, upperLeft.start])
+  coincident([upperLeft.end, upperLeftArm.start])
+  coincident([upperLeftArm.end, leftWall.start])
+  coincident([leftWall.end, lowerLeftArm.start])
+  coincident([lowerLeftArm.end, lowerLeft.start])
+  coincident([lowerLeft.end, bottomLeft.start])
+  coincident([bottomLeft.end, keyBottomLeft.start])
+  coincident([keyBottomLeft.end, keyBottom.start])
+  horizontal(keyBottom)
+  vertical(keyBottomRight)
+  horizontal(bottomRight)
+  vertical(lowerRight)
+  horizontal(lowerRightArm)
+  vertical(rightWall)
+  horizontal(upperRightArm)
+  vertical(upperRight)
+  horizontal(topRight)
+  vertical(keyRight)
+  horizontal(keyTop)
+  vertical(keyLeft)
+  horizontal(topLeft)
+  vertical(upperLeft)
+  horizontal(upperLeftArm)
+  vertical(leftWall)
+  horizontal(lowerLeftArm)
+  vertical(lowerLeft)
+  horizontal(bottomLeft)
+  vertical(keyBottomLeft)
+  horizontal([leftWall.end, rightWall.start])
+  horizontal([leftWall.start, rightWall.end])
+  horizontal([topLeft.end, topRight.start])
+  horizontal([bottomLeft.start, bottomRight.end])
+  vertical([lowerRight.end, upperRight.start])
+  vertical([lowerLeft.start, upperLeft.end])
+  horizontalDistance([keyBottom.start, keyBottom.end]) == vlTwoBottomKeyWidth
+  horizontalDistance([bottomLeft.start, bottomRight.end]) == vlTwoBodyWidth
+  horizontalDistance([leftWall.start, rightWall.end]) == vlTwoOverallWidth
+  horizontalDistance([keyTop.end, keyTop.start]) == vlTopKeyWidth
+  horizontalDistance([keyBottom.start, ORIGIN]) == vlTwoBottomKeyWidth / 2
+  horizontalDistance([bottomLeft.start, ORIGIN]) == vlTwoBodyWidth / 2
+  horizontalDistance([leftWall.start, ORIGIN]) == vlTwoOverallWidth / 2
+  horizontalDistance([keyTop.end, ORIGIN]) == vlTopKeyWidth / 2
+  verticalDistance([keyBottom.start, ORIGIN]) == 6.1mm
+  verticalDistance([
+    keyBottomRight.start,
+    keyBottomRight.end
+  ]) == vlTwoBottomKeyHeight
+  verticalDistance([lowerRight.start, lowerRight.end]) == vlTwoWingOffset
+  verticalDistance([rightWall.start, rightWall.end]) == vlTwoWingHeight
+  verticalDistance([lowerRight.start, topRight.start]) == vlTwoBodyHeight
+  verticalDistance([keyRight.start, keyRight.end]) == vlTopKeyHeight
+}
+vlTwoTool = extrude(
+  region(
+    segments = [
+      vlTwoProfile.keyBottom,
+      vlTwoProfile.keyBottomRight
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = wallThickness + 2mm,
+)
+  |> translate(x = -portOffset, z = -1mm, global = true)
+hide(vlTwoProfile)
+couponWithTwo = subtract(couponBlank, tools = [vlTwoTool])
+
+// VLR-06V dual-row opening, equivalent to the south wall.
+vlSixProfile = sketch(on = XY) {
+  bottom = line(start = [var -10mm, var -9.3mm], end = [var 10mm, var -9.3mm])
+  lowerRight = line(start = [var 10mm, var -9.3mm], end = [var 10mm, var -5.1mm])
+  lowerRightArm = line(start = [var 10mm, var -5.1mm], end = [var 13.4mm, var -5.1mm])
+  rightWall = line(start = [var 13.4mm, var -5.1mm], end = [var 13.4mm, var 1.9mm])
+  upperRightArm = line(start = [var 13.4mm, var 1.9mm], end = [var 10mm, var 1.9mm])
+  upperRight = line(start = [var 10mm, var 1.9mm], end = [var 10mm, var 6.1mm])
+  topRight = line(start = [var 10mm, var 6.1mm], end = [var 4.9mm, var 6.1mm])
+  keyRight = line(start = [var 4.9mm, var 6.1mm], end = [var 4.9mm, var 9.3mm])
+  keyTop = line(start = [var 4.9mm, var 9.3mm], end = [var -4.9mm, var 9.3mm])
+  keyLeft = line(start = [var -4.9mm, var 9.3mm], end = [var -4.9mm, var 6.1mm])
+  topLeft = line(start = [var -4.9mm, var 6.1mm], end = [var -10mm, var 6.1mm])
+  upperLeft = line(start = [var -10mm, var 6.1mm], end = [var -10mm, var 1.9mm])
+  upperLeftArm = line(start = [var -10mm, var 1.9mm], end = [var -13.4mm, var 1.9mm])
+  leftWall = line(start = [var -13.4mm, var 1.9mm], end = [var -13.4mm, var -5.1mm])
+  lowerLeftArm = line(start = [var -13.4mm, var -5.1mm], end = [var -10mm, var -5.1mm])
+  lowerLeft = line(start = [var -10mm, var -5.1mm], end = [var -10mm, var -9.3mm])
+  coincident([bottom.end, lowerRight.start])
+  coincident([lowerRight.end, lowerRightArm.start])
+  coincident([lowerRightArm.end, rightWall.start])
+  coincident([rightWall.end, upperRightArm.start])
+  coincident([upperRightArm.end, upperRight.start])
+  coincident([upperRight.end, topRight.start])
+  coincident([topRight.end, keyRight.start])
+  coincident([keyRight.end, keyTop.start])
+  coincident([keyTop.end, keyLeft.start])
+  coincident([keyLeft.end, topLeft.start])
+  coincident([topLeft.end, upperLeft.start])
+  coincident([upperLeft.end, upperLeftArm.start])
+  coincident([upperLeftArm.end, leftWall.start])
+  coincident([leftWall.end, lowerLeftArm.start])
+  coincident([lowerLeftArm.end, lowerLeft.start])
+  coincident([lowerLeft.end, bottom.start])
+  horizontal(bottom)
+  vertical(lowerRight)
+  horizontal(lowerRightArm)
+  vertical(rightWall)
+  horizontal(upperRightArm)
+  vertical(upperRight)
+  horizontal(topRight)
+  vertical(keyRight)
+  horizontal(keyTop)
+  vertical(keyLeft)
+  horizontal(topLeft)
+  vertical(upperLeft)
+  horizontal(upperLeftArm)
+  vertical(leftWall)
+  horizontal(lowerLeftArm)
+  vertical(lowerLeft)
+  horizontal([leftWall.end, rightWall.start])
+  horizontal([leftWall.start, rightWall.end])
+  horizontal([topLeft.end, topRight.start])
+  vertical([lowerRight.end, upperRight.start])
+  vertical([lowerLeft.start, upperLeft.end])
+  horizontalDistance([bottom.start, bottom.end]) == vlSixBodyWidth
+  horizontalDistance([leftWall.start, rightWall.end]) == vlSixOverallWidth
+  horizontalDistance([keyTop.end, keyTop.start]) == vlTopKeyWidth
+  horizontalDistance([bottom.start, ORIGIN]) == vlSixBodyWidth / 2
+  horizontalDistance([leftWall.start, ORIGIN]) == vlSixOverallWidth / 2
+  horizontalDistance([keyTop.end, ORIGIN]) == vlTopKeyWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == vlSixTotalHeight / 2
+  verticalDistance([lowerRight.start, lowerRight.end]) == vlSixWingOffset
+  verticalDistance([rightWall.start, rightWall.end]) == vlSixWingHeight
+  verticalDistance([bottom.start, topRight.start]) == vlSixBodyHeight
+  verticalDistance([keyRight.start, keyRight.end]) == vlTopKeyHeight
+}
+vlSixTool = extrude(
+  region(
+    segments = [
+      vlSixProfile.bottom,
+      vlSixProfile.lowerRight
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = wallThickness + 2mm,
+)
+  |> translate(x = portOffset, z = -1mm, global = true)
+hide(vlSixProfile)
+couponWithPorts = subtract(couponWithTwo, tools = [vlSixTool])
+
+// Both wall cutouts have 30.8 by 22.6 mm interior reliefs.
+vlReliefProfile = sketch(on = XY) {
+  bottom = line(start = [var -15.4mm, var -11.3mm], end = [var 15.4mm, var -11.3mm])
+  right = line(start = [var 15.4mm, var -11.3mm], end = [var 15.4mm, var 11.3mm])
+  top = line(start = [var 15.4mm, var 11.3mm], end = [var -15.4mm, var 11.3mm])
+  left = line(start = [var -15.4mm, var 11.3mm], end = [var -15.4mm, var -11.3mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, bottom.end]) == vlReliefWidth
+  verticalDistance([right.start, right.end]) == vlReliefHeight
+  horizontalDistance([bottom.start, ORIGIN]) == vlReliefWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == vlReliefHeight / 2
+}
+vlReliefFirst = extrude(
+  region(
+    segments = [
+      vlReliefProfile.bottom,
+      vlReliefProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = wallThickness - vlRetainedThickness,
+)
+  |> translate(x = -portOffset, z = vlRetainedThickness, global = true)
+hide(vlReliefProfile)
+vlReliefs = patternLinear3d(
+  vlReliefFirst,
+  instances = 2,
+  distance = 2 * portOffset,
+  axis = [1, 0, 0],
+)
+vlFitCoupon = subtract(couponWithPorts, tools = vlReliefs)

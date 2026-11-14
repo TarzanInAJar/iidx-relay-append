@@ -1,0 +1,368 @@
+// Ceiling connector fit coupon
+// First ceiling-row positions with the matching openings and underside reliefs.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+couponLength = 76mm
+couponWidth = 48mm
+lidThickness = 3mm
+portPitch = 24mm
+xmFourNarrowWidth = 12.8mm
+xmFourWideWidth = 16.1mm
+xmFiveNarrowWidth = 15.3mm
+xmFiveWideWidth = 18.6mm
+xmOpeningHeight = 8.2mm
+xmShoulderHeight = 5.5mm
+xmRetainedThickness = 1.5mm
+xmReliefWidth = xmFiveWideWidth + 4mm
+xmReliefHeight = xmOpeningHeight + 4mm
+smNarrowWidth = 10.7mm
+smWideWidth = 14.8mm
+smSideHeight = 4.15mm
+smMainHeight = 5.15mm
+smKeyWidth = 4mm
+smKeyHeight = 1.6mm
+smRetainedThickness = 1.4mm
+smReliefWidth = smWideWidth + 4mm
+smReliefHeight = smMainHeight + smKeyHeight + 4mm
+
+couponProfile = sketch(on = XY) {
+  bottom = line(start = [var -38mm, var -24mm], end = [var 38mm, var -24mm])
+  right = line(start = [var 38mm, var -24mm], end = [var 38mm, var 24mm])
+  top = line(start = [var 38mm, var 24mm], end = [var -38mm, var 24mm])
+  left = line(start = [var -38mm, var 24mm], end = [var -38mm, var -24mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == couponLength / 2
+  verticalDistance([bottom.start, ORIGIN]) == couponWidth / 2
+  horizontalDistance([bottom.start, bottom.end]) == couponLength
+  verticalDistance([right.start, right.end]) == couponWidth
+}
+couponBlank = extrude(
+  region(
+    segments = [
+      couponProfile.bottom,
+      couponProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = lidThickness,
+)
+hide(couponProfile)
+
+// First ceiling position: XMR-04V.
+xmFourProfile = sketch(on = XY) {
+  bottom = line(start = [var -8.05mm, var -4.1mm], end = [var 8.05mm, var -4.1mm])
+  outerRight = line(start = [var 8.05mm, var -4.1mm], end = [var 8.05mm, var 1.4mm])
+  shoulderRight = line(start = [var 8.05mm, var 1.4mm], end = [var 6.4mm, var 1.4mm])
+  upperRight = line(start = [var 6.4mm, var 1.4mm], end = [var 6.4mm, var 4.1mm])
+  top = line(start = [var 6.4mm, var 4.1mm], end = [var -6.4mm, var 4.1mm])
+  upperLeft = line(start = [var -6.4mm, var 4.1mm], end = [var -6.4mm, var 1.4mm])
+  shoulderLeft = line(start = [var -6.4mm, var 1.4mm], end = [var -8.05mm, var 1.4mm])
+  outerLeft = line(start = [var -8.05mm, var 1.4mm], end = [var -8.05mm, var -4.1mm])
+  coincident([bottom.end, outerRight.start])
+  coincident([outerRight.end, shoulderRight.start])
+  coincident([shoulderRight.end, upperRight.start])
+  coincident([upperRight.end, top.start])
+  coincident([top.end, upperLeft.start])
+  coincident([upperLeft.end, shoulderLeft.start])
+  coincident([shoulderLeft.end, outerLeft.start])
+  coincident([outerLeft.end, bottom.start])
+  horizontal(bottom)
+  vertical(outerRight)
+  horizontal(shoulderRight)
+  vertical(upperRight)
+  horizontal(top)
+  vertical(upperLeft)
+  horizontal(shoulderLeft)
+  vertical(outerLeft)
+  horizontal([shoulderLeft.end, shoulderRight.start])
+  horizontalDistance([bottom.start, bottom.end]) == xmFourWideWidth
+  horizontalDistance([shoulderRight.end, shoulderRight.start]) == (xmFourWideWidth - xmFourNarrowWidth) / 2
+  horizontalDistance([shoulderLeft.end, shoulderLeft.start]) == (xmFourWideWidth - xmFourNarrowWidth) / 2
+  verticalDistance([outerRight.start, outerRight.end]) == xmShoulderHeight
+  verticalDistance([bottom.start, upperRight.end]) == xmOpeningHeight
+  horizontalDistance([bottom.start, ORIGIN]) == xmFourWideWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == xmOpeningHeight / 2
+}
+xmFourTool = extrude(
+  region(
+    segments = [
+      xmFourProfile.bottom,
+      xmFourProfile.outerRight
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = lidThickness + 2mm,
+)
+  |> translate(
+       x = -24mm,
+       y = 12mm,
+       z = -1mm,
+       global = true,
+     )
+hide(xmFourProfile)
+couponWithFour = subtract(couponBlank, tools = [xmFourTool])
+
+// First two XMR-05V ports at the ceiling's 24 mm pair pitch.
+xmFiveProfile = sketch(on = XY) {
+  bottom = line(start = [var -9.3mm, var -4.1mm], end = [var 9.3mm, var -4.1mm])
+  outerRight = line(start = [var 9.3mm, var -4.1mm], end = [var 9.3mm, var 1.4mm])
+  shoulderRight = line(start = [var 9.3mm, var 1.4mm], end = [var 7.65mm, var 1.4mm])
+  upperRight = line(start = [var 7.65mm, var 1.4mm], end = [var 7.65mm, var 4.1mm])
+  top = line(start = [var 7.65mm, var 4.1mm], end = [var -7.65mm, var 4.1mm])
+  upperLeft = line(start = [var -7.65mm, var 4.1mm], end = [var -7.65mm, var 1.4mm])
+  shoulderLeft = line(start = [var -7.65mm, var 1.4mm], end = [var -9.3mm, var 1.4mm])
+  outerLeft = line(start = [var -9.3mm, var 1.4mm], end = [var -9.3mm, var -4.1mm])
+  coincident([bottom.end, outerRight.start])
+  coincident([outerRight.end, shoulderRight.start])
+  coincident([shoulderRight.end, upperRight.start])
+  coincident([upperRight.end, top.start])
+  coincident([top.end, upperLeft.start])
+  coincident([upperLeft.end, shoulderLeft.start])
+  coincident([shoulderLeft.end, outerLeft.start])
+  coincident([outerLeft.end, bottom.start])
+  horizontal(bottom)
+  vertical(outerRight)
+  horizontal(shoulderRight)
+  vertical(upperRight)
+  horizontal(top)
+  vertical(upperLeft)
+  horizontal(shoulderLeft)
+  vertical(outerLeft)
+  horizontal([shoulderLeft.end, shoulderRight.start])
+  horizontalDistance([bottom.start, bottom.end]) == xmFiveWideWidth
+  horizontalDistance([shoulderRight.end, shoulderRight.start]) == (xmFiveWideWidth - xmFiveNarrowWidth) / 2
+  horizontalDistance([shoulderLeft.end, shoulderLeft.start]) == (xmFiveWideWidth - xmFiveNarrowWidth) / 2
+  verticalDistance([outerRight.start, outerRight.end]) == xmShoulderHeight
+  verticalDistance([bottom.start, upperRight.end]) == xmOpeningHeight
+  horizontalDistance([bottom.start, ORIGIN]) == xmFiveWideWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == xmOpeningHeight / 2
+}
+xmFiveFirst = extrude(
+  region(
+    segments = [
+      xmFiveProfile.bottom,
+      xmFiveProfile.outerRight
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = lidThickness + 2mm,
+)
+  |> translate(
+       x = -12mm,
+       y = -12mm,
+       z = -1mm,
+       global = true,
+     )
+hide(xmFiveProfile)
+xmFiveTools = patternLinear3d(
+  xmFiveFirst,
+  instances = 2,
+  distance = portPitch,
+  axis = [1, 0, 0],
+)
+couponWithFive = subtract(couponWithFour, tools = xmFiveTools)
+
+// XM reliefs match the ceiling's 22.6 by 12.2 mm pockets.
+xmReliefProfile = sketch(on = XY) {
+  bottom = line(start = [var -11.3mm, var -6.1mm], end = [var 11.3mm, var -6.1mm])
+  right = line(start = [var 11.3mm, var -6.1mm], end = [var 11.3mm, var 6.1mm])
+  top = line(start = [var 11.3mm, var 6.1mm], end = [var -11.3mm, var 6.1mm])
+  left = line(start = [var -11.3mm, var 6.1mm], end = [var -11.3mm, var -6.1mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, bottom.end]) == xmReliefWidth
+  verticalDistance([right.start, right.end]) == xmReliefHeight
+  horizontalDistance([bottom.start, ORIGIN]) == xmReliefWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == xmReliefHeight / 2
+}
+xmReliefBlank = extrude(
+  region(
+    segments = [
+      xmReliefProfile.bottom,
+      xmReliefProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = lidThickness - xmRetainedThickness,
+)
+hide(xmReliefProfile)
+xmFourReliefBlank = clone(xmReliefBlank)
+xmFourRelief = translate(
+  xmFourReliefBlank,
+  x = -24mm,
+  y = 12mm,
+  global = true,
+)
+xmFiveReliefFirst = translate(
+  xmReliefBlank,
+  x = -12mm,
+  y = -12mm,
+  global = true,
+)
+xmFiveReliefs = patternLinear3d(
+  xmFiveReliefFirst,
+  instances = 2,
+  distance = portPitch,
+  axis = [1, 0, 0],
+)
+couponWithFiveReliefs = subtract(couponWithFive, tools = xmFiveReliefs)
+couponWithXmReliefs = subtract(couponWithFiveReliefs, tools = [xmFourRelief])
+
+// Two adjacent SMP-04V-BC positions from the ceiling row.
+smProfile = sketch(on = XY) {
+  bottom = line(start = [var -5.35mm, var -2.575mm], end = [var 5.35mm, var -2.575mm])
+  lowerRightStep = line(start = [var 5.35mm, var -2.575mm], end = [var 5.35mm, var -2.075mm])
+  lowerRightArm = line(start = [var 5.35mm, var -2.075mm], end = [var 7.4mm, var -2.075mm])
+  rightWall = line(start = [var 7.4mm, var -2.075mm], end = [var 7.4mm, var 2.075mm])
+  upperRightArm = line(start = [var 7.4mm, var 2.075mm], end = [var 5.35mm, var 2.075mm])
+  upperRightStep = line(start = [var 5.35mm, var 2.075mm], end = [var 5.35mm, var 2.575mm])
+  upperRightFlat = line(start = [var 5.35mm, var 2.575mm], end = [var 2mm, var 2.575mm])
+  keyRight = line(start = [var 2mm, var 2.575mm], end = [var 2mm, var 4.175mm])
+  keyTop = line(start = [var 2mm, var 4.175mm], end = [var -2mm, var 4.175mm])
+  keyLeft = line(start = [var -2mm, var 4.175mm], end = [var -2mm, var 2.575mm])
+  upperLeftFlat = line(start = [var -2mm, var 2.575mm], end = [var -5.35mm, var 2.575mm])
+  upperLeftStep = line(start = [var -5.35mm, var 2.575mm], end = [var -5.35mm, var 2.075mm])
+  upperLeftArm = line(start = [var -5.35mm, var 2.075mm], end = [var -7.4mm, var 2.075mm])
+  leftWall = line(start = [var -7.4mm, var 2.075mm], end = [var -7.4mm, var -2.075mm])
+  lowerLeftArm = line(start = [var -7.4mm, var -2.075mm], end = [var -5.35mm, var -2.075mm])
+  lowerLeftStep = line(start = [var -5.35mm, var -2.075mm], end = [var -5.35mm, var -2.575mm])
+  coincident([bottom.end, lowerRightStep.start])
+  coincident([
+    lowerRightStep.end,
+    lowerRightArm.start
+  ])
+  coincident([lowerRightArm.end, rightWall.start])
+  coincident([rightWall.end, upperRightArm.start])
+  coincident([
+    upperRightArm.end,
+    upperRightStep.start
+  ])
+  coincident([
+    upperRightStep.end,
+    upperRightFlat.start
+  ])
+  coincident([upperRightFlat.end, keyRight.start])
+  coincident([keyRight.end, keyTop.start])
+  coincident([keyTop.end, keyLeft.start])
+  coincident([keyLeft.end, upperLeftFlat.start])
+  coincident([upperLeftFlat.end, upperLeftStep.start])
+  coincident([upperLeftStep.end, upperLeftArm.start])
+  coincident([upperLeftArm.end, leftWall.start])
+  coincident([leftWall.end, lowerLeftArm.start])
+  coincident([lowerLeftArm.end, lowerLeftStep.start])
+  coincident([lowerLeftStep.end, bottom.start])
+  horizontal(bottom)
+  vertical(lowerRightStep)
+  horizontal(lowerRightArm)
+  vertical(rightWall)
+  horizontal(upperRightArm)
+  vertical(upperRightStep)
+  horizontal(upperRightFlat)
+  vertical(keyRight)
+  horizontal(keyTop)
+  vertical(keyLeft)
+  horizontal(upperLeftFlat)
+  vertical(upperLeftStep)
+  horizontal(upperLeftArm)
+  vertical(leftWall)
+  horizontal(lowerLeftArm)
+  vertical(lowerLeftStep)
+  horizontal([leftWall.end, rightWall.start])
+  horizontal([leftWall.start, rightWall.end])
+  horizontal([
+    upperLeftFlat.end,
+    upperRightFlat.start
+  ])
+  vertical([
+    lowerRightStep.end,
+    upperRightStep.start
+  ])
+  vertical([lowerLeftStep.start, upperLeftStep.end])
+  horizontalDistance([bottom.start, bottom.end]) == smNarrowWidth
+  horizontalDistance([leftWall.start, rightWall.end]) == smWideWidth
+  horizontalDistance([keyTop.end, keyTop.start]) == smKeyWidth
+  horizontalDistance([bottom.start, ORIGIN]) == smNarrowWidth / 2
+  horizontalDistance([leftWall.start, ORIGIN]) == smWideWidth / 2
+  horizontalDistance([keyTop.end, ORIGIN]) == smKeyWidth / 2
+  verticalDistance([bottom.start, upperRightFlat.start]) == smMainHeight
+  verticalDistance([rightWall.start, rightWall.end]) == smSideHeight
+  verticalDistance([bottom.start, ORIGIN]) == smMainHeight / 2
+  verticalDistance([rightWall.start, ORIGIN]) == smSideHeight / 2
+  verticalDistance([keyRight.start, keyRight.end]) == smKeyHeight
+}
+smFirst = extrude(
+  region(
+    segments = [
+      smProfile.bottom,
+      smProfile.lowerRightStep
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = lidThickness + 2mm,
+)
+  |> translate(y = 12mm, z = -1mm, global = true)
+hide(smProfile)
+smTools = patternLinear3d(
+  smFirst,
+  instances = 2,
+  distance = portPitch,
+  axis = [1, 0, 0],
+)
+couponWithSm = subtract(couponWithXmReliefs, tools = smTools)
+
+smReliefProfile = sketch(on = XY) {
+  bottom = line(start = [var -9.4mm, var -4.575mm], end = [var 9.4mm, var -4.575mm])
+  right = line(start = [var 9.4mm, var -4.575mm], end = [var 9.4mm, var 6.175mm])
+  top = line(start = [var 9.4mm, var 6.175mm], end = [var -9.4mm, var 6.175mm])
+  left = line(start = [var -9.4mm, var 6.175mm], end = [var -9.4mm, var -4.575mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, bottom.end]) == smReliefWidth
+  verticalDistance([right.start, right.end]) == smReliefHeight
+  horizontalDistance([bottom.start, ORIGIN]) == smReliefWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == (smReliefHeight - smKeyHeight) / 2
+}
+smReliefFirst = extrude(
+  region(
+    segments = [
+      smReliefProfile.bottom,
+      smReliefProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = lidThickness - smRetainedThickness,
+)
+  |> translate(y = 12mm, global = true)
+hide(smReliefProfile)
+smReliefs = patternLinear3d(
+  smReliefFirst,
+  instances = 2,
+  distance = portPitch,
+  axis = [1, 0, 0],
+)
+ceilingFitCoupon = subtract(couponWithSm, tools = smReliefs)
