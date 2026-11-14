@@ -9,6 +9,11 @@ accessRadius = 4mm
 stackClearanceRadius = 1.7mm
 wireTieSlotWidth = 4mm
 wireTieSlotHeight = 2mm
+tieTabWidth = 8mm
+tieTabDepth = 8.1mm
+tieTabCenterY = carrierWidth / 2 + tieTabDepth / 2 - 0.1mm
+tieSlotOuterY = carrierWidth / 2 + 5.5mm
+tieSlotPairPitch = 4mm
 
 carrierProfile = sketch(on = XY) {
   bottom = line(start = [var -90mm, var -20mm], end = [var 90mm, var -20mm])
@@ -39,6 +44,68 @@ carrierRegion = region(
 hide(carrierProfile)
 carrierBlank = extrude(carrierRegion, length = carrierThickness)
 
+// Side tabs keep tie slots outside the retainer footprints.
+tieTabProfile = sketch(on = XY) {
+  bottom = line(start = [var -4mm, var -4.05mm], end = [var 4mm, var -4.05mm])
+  right = line(start = [var 4mm, var -4.05mm], end = [var 4mm, var 4.05mm])
+  top = line(start = [var 4mm, var 4.05mm], end = [var -4mm, var 4.05mm])
+  left = line(start = [var -4mm, var 4.05mm], end = [var -4mm, var -4.05mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == tieTabWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == tieTabDepth / 2
+  horizontalDistance([bottom.start, bottom.end]) == tieTabWidth
+  verticalDistance([right.start, right.end]) == tieTabDepth
+}
+tieTab = extrude(
+  region(
+    segments = [
+      tieTabProfile.bottom,
+      tieTabProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = carrierThickness,
+)
+hide(tieTabProfile)
+southTabFirst = translate(
+  clone(tieTab),
+  x = -36mm,
+  y = -tieTabCenterY,
+  global = true,
+)
+northTabFirst = translate(
+  tieTab,
+  x = -36mm,
+  y = tieTabCenterY,
+  global = true,
+)
+southTabs = patternLinear3d(
+  southTabFirst,
+  instances = 3,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+northTabs = patternLinear3d(
+  northTabFirst,
+  instances = 3,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+carrierWithSouthTabOne = union([carrierBlank, southTabs[0]])
+carrierWithSouthTabTwo = union([carrierWithSouthTabOne, southTabs[1]])
+carrierWithSouthTabs = union([carrierWithSouthTabTwo, southTabs[2]])
+carrierWithNorthTabOne = union([carrierWithSouthTabs, northTabs[0]])
+carrierWithNorthTabTwo = union([carrierWithNorthTabOne, northTabs[1]])
+carrierWithTabs = union([carrierWithNorthTabTwo, northTabs[2]])
+
 accessProfile = sketch(on = XY) {
   access = circle(center = [var 0mm, var 0mm], start = [var 4mm, var 0mm])
   coincident([access.center, ORIGIN])
@@ -55,7 +122,7 @@ accessTools = patternLinear3d(
   distance = 2 * fastenerX,
   axis = [1, 0, 0],
 )
-carrierWithAccess = subtract(carrierBlank, tools = accessTools)
+carrierWithAccess = subtract(carrierWithTabs, tools = accessTools)
 
 stackProfile = sketch(on = XY) {
   stackHole = circle(center = [var 0mm, var 0mm], start = [var 1.7mm, var 0mm])
@@ -81,7 +148,7 @@ stackWest = translate(
 carrierWithFirstStackHole = subtract(carrierWithAccess, tools = [stackBlank])
 carrierWithStackHoles = subtract(carrierWithFirstStackHole, tools = [stackWest])
 
-// Paired slots accept small cable ties in the spaces between the connector envelopes.
+// Paired tie slots in side tabs clear the retainer bases.
 wireTieProfile = sketch(on = XY) {
   bottom = line(start = [var -2mm, var -1mm], end = [var 2mm, var -1mm])
   right = line(start = [var 2mm, var -1mm], end = [var 2mm, var 1mm])
@@ -112,25 +179,25 @@ hide(wireTieProfile)
 southTieBlank = extrude(wireTieRegion, length = carrierThickness + 2mm)
   |> translate(
        x = -36mm,
-       y = -17mm,
+       y = -tieSlotOuterY,
        z = -1mm,
        global = true,
      )
-northTieBlank = translate(clone(southTieBlank), y = 29mm, global = true)
+northTieBlank = translate(clone(southTieBlank), y = 2 * tieSlotOuterY - tieSlotPairPitch, global = true)
 southTieSlots = patternLinear3d(
   southTieBlank,
   instances = 3,
   distance = 36mm,
   axis = [1, 0, 0],
 )
-  |> patternLinear3d(instances = 2, distance = 5mm, axis = [0, 1, 0])
+  |> patternLinear3d(instances = 2, distance = tieSlotPairPitch, axis = [0, 1, 0])
 northTieSlots = patternLinear3d(
   northTieBlank,
   instances = 3,
   distance = 36mm,
   axis = [1, 0, 0],
 )
-  |> patternLinear3d(instances = 2, distance = 5mm, axis = [0, 1, 0])
+  |> patternLinear3d(instances = 2, distance = tieSlotPairPitch, axis = [0, 1, 0])
 carrierWithSouthTies = subtract(carrierWithStackHoles, tools = southTieSlots)
 carrierWithTies = subtract(carrierWithSouthTies, tools = northTieSlots)
 
