@@ -1,0 +1,28 @@
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+// Provisional through-bolted spacer between the two removable carriers.
+spacerOutsideRadius = 4mm
+spacerBoreRadius = 1.7mm
+spacerHeight = 19.5mm
+
+outsideProfile = sketch(on = XY) {
+  outside = circle(center = [var 0mm, var 0mm], start = [var 4mm, var 0mm])
+  coincident([outside.center, ORIGIN])
+  radius(outside) == spacerOutsideRadius
+  horizontal([outside.center, outside.start])
+}
+outsideRegion = region(segments = [outsideProfile.outside])
+hide(outsideProfile)
+outsideBlank = extrude(outsideRegion, length = spacerHeight)
+
+boreProfile = sketch(on = XY) {
+  bore = circle(center = [var 0mm, var 0mm], start = [var 1.7mm, var 0mm])
+  coincident([bore.center, ORIGIN])
+  radius(bore) == spacerBoreRadius
+  horizontal([bore.center, bore.start])
+}
+boreRegion = region(segments = [boreProfile.bore])
+hide(boreProfile)
+boreTool = extrude(boreRegion, length = spacerHeight + 2mm)
+boreToolPlaced = translate(boreTool, z = -1mm, global = true)
+carrierSpacer = subtract(outsideBlank, tools = [boreToolPlaced])

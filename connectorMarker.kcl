@@ -1,0 +1,19 @@
+// Connector location marker
+// Repeated visual marker, not a dimensioned connector or cutout.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+markerRadius = 5mm
+markerThickness = 1mm
+markerProfile = sketch(on = XY) {
+  markerCircle = circle(center = [var 0mm, var 0mm], start = [var 5mm, var 0mm])
+  coincident([markerCircle.center, ORIGIN])
+  radius(markerCircle) == markerRadius
+  horizontal([
+    markerCircle.center,
+    markerCircle.start
+  ])
+}
+markerRegion = region(segments = [markerProfile.markerCircle])
+hide(markerProfile)
+marker = extrude(markerRegion, length = markerThickness)
+  |> appearance(color = "#e58d2d", roughness = 70)

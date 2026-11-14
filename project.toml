@@ -1,0 +1,15 @@
+title = "LED Junction box experiment"
+default_file = "main.kcl"
+
+[settings.app]
+zookeeper_mode = "auto"
+
+[settings.meta]
+id = "74be1c9f-a9db-4b30-b35d-3d0fd5af33c6"
+
+[settings.modeling]
+[cloud."zoo.dev"]
+project_id = "3307f19f-b13c-4c3d-851a-378cd615a545"
+
+[zookeeper."zoo.dev"]
+conversation_ids = [ "bcc4f33c-d214-4804-a232-e7ef58234f72" ]

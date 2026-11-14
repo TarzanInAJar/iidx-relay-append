@@ -1,0 +1,265 @@
+// West connector panel
+// Removable bulkhead with XAD cutouts and two provisional screw clearance holes.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+panelWidth = 51.6mm
+panelHeight = 60.6mm
+panelThickness = 3mm
+mountingY = 22mm
+mountingOffsetZ = 0.5mm
+clearanceRadius = 1.7mm
+xadHeight = 10.4mm
+xadUpperHeight = 8.15mm
+xadTwelveNarrow = 17.9mm
+xadTwelveWide = 21.2mm
+xadTenNarrow = 15.4mm
+xadTenWide = 18.7mm
+xadEightNarrow = 12.9mm
+xadEightWide = 16.2mm
+xadBottomHeight = -15.5mm
+xadPitch = 16mm
+xadRetainedThickness = 1.5mm
+xadReliefWidth = xadTwelveWide + 4mm
+xadReliefHeight = xadHeight + 4mm
+
+panelProfile = sketch(on = YZ) {
+  bottom = line(start = [var -25.8mm, var -30.3mm], end = [var 25.8mm, var -30.3mm])
+  right = line(start = [var 25.8mm, var -30.3mm], end = [var 25.8mm, var 30.3mm])
+  top = line(start = [var 25.8mm, var 30.3mm], end = [var -25.8mm, var 30.3mm])
+  left = line(start = [var -25.8mm, var 30.3mm], end = [var -25.8mm, var -30.3mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == panelWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == panelHeight / 2
+  horizontalDistance([bottom.start, bottom.end]) == panelWidth
+  verticalDistance([right.start, right.end]) == panelHeight
+}
+panelRegion = region(
+  segments = [
+    panelProfile.bottom,
+    panelProfile.right
+  ],
+  intersectionIndex = -1,
+  direction = CCW,
+)
+hide(panelProfile)
+panelBlank = extrude(panelRegion, length = panelThickness)
+
+holeProfile = sketch(on = YZ) {
+  hole = circle(center = [var 0mm, var 0mm], start = [var 1.7mm, var 0mm])
+  coincident([hole.center, ORIGIN])
+  radius(hole) == clearanceRadius
+  horizontal([hole.center, hole.start])
+}
+holeRegion = region(segments = [holeProfile.hole])
+hide(holeProfile)
+holeBlank = extrude(holeRegion, length = panelThickness + 2mm)
+  |> translate(
+       x = -1mm,
+       y = -mountingY,
+       z = mountingOffsetZ,
+       global = true,
+     )
+holeTools = patternLinear3d(
+  holeBlank,
+  instances = 2,
+  distance = 2 * mountingY,
+  axis = [0, 1, 0],
+)
+panelWithMountHoles = subtract(panelBlank, tools = holeTools)
+
+// XADR-12V / CN18: upper opening, per nominal panel layout.
+xadTwelveProfile = sketch(on = YZ) {
+  bottom = line(start = [var -8.95mm, var -5.2mm], end = [var 8.95mm, var -5.2mm])
+  lowerRight = line(start = [var 8.95mm, var -5.2mm], end = [var 8.95mm, var -2.95mm])
+  shoulderRight = line(start = [var 8.95mm, var -2.95mm], end = [var 10.6mm, var -2.95mm])
+  right = line(start = [var 10.6mm, var -2.95mm], end = [var 10.6mm, var 5.2mm])
+  top = line(start = [var 10.6mm, var 5.2mm], end = [var -10.6mm, var 5.2mm])
+  left = line(start = [var -10.6mm, var 5.2mm], end = [var -10.6mm, var -2.95mm])
+  shoulderLeft = line(start = [var -10.6mm, var -2.95mm], end = [var -8.95mm, var -2.95mm])
+  lowerLeft = line(start = [var -8.95mm, var -2.95mm], end = [var -8.95mm, var -5.2mm])
+  coincident([bottom.end, lowerRight.start])
+  coincident([lowerRight.end, shoulderRight.start])
+  coincident([shoulderRight.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, shoulderLeft.start])
+  coincident([shoulderLeft.end, lowerLeft.start])
+  coincident([lowerLeft.end, bottom.start])
+  horizontal(bottom)
+  vertical(lowerRight)
+  horizontal(shoulderRight)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontal(shoulderLeft)
+  vertical(lowerLeft)
+  horizontal([shoulderLeft.start, shoulderRight.end])
+  horizontalDistance([bottom.start, bottom.end]) == xadTwelveNarrow
+  horizontalDistance([shoulderLeft.start, shoulderRight.end]) == xadTwelveWide
+  horizontalDistance([bottom.start, ORIGIN]) == xadTwelveNarrow / 2
+  horizontalDistance([shoulderLeft.start, ORIGIN]) == xadTwelveWide / 2
+  verticalDistance([bottom.start, ORIGIN]) == xadHeight / 2
+  verticalDistance([bottom.start, top.end]) == xadHeight
+  verticalDistance([shoulderRight.end, top.start]) == xadUpperHeight
+}
+xadTwelveTool = extrude(
+  region(
+    segments = [
+      xadTwelveProfile.bottom,
+      xadTwelveProfile.lowerRight
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = panelThickness + 2mm,
+)
+  |> translate(x = -1mm, z = xadBottomHeight + 2 * xadPitch, global = true)
+hide(xadTwelveProfile)
+panelWithTwelve = subtract(panelWithMountHoles, tools = [xadTwelveTool])
+
+// XADR-10V / CN10: middle opening.
+xadTenProfile = sketch(on = YZ) {
+  bottom = line(start = [var -7.7mm, var -5.2mm], end = [var 7.7mm, var -5.2mm])
+  lowerRight = line(start = [var 7.7mm, var -5.2mm], end = [var 7.7mm, var -2.95mm])
+  shoulderRight = line(start = [var 7.7mm, var -2.95mm], end = [var 9.35mm, var -2.95mm])
+  right = line(start = [var 9.35mm, var -2.95mm], end = [var 9.35mm, var 5.2mm])
+  top = line(start = [var 9.35mm, var 5.2mm], end = [var -9.35mm, var 5.2mm])
+  left = line(start = [var -9.35mm, var 5.2mm], end = [var -9.35mm, var -2.95mm])
+  shoulderLeft = line(start = [var -9.35mm, var -2.95mm], end = [var -7.7mm, var -2.95mm])
+  lowerLeft = line(start = [var -7.7mm, var -2.95mm], end = [var -7.7mm, var -5.2mm])
+  coincident([bottom.end, lowerRight.start])
+  coincident([lowerRight.end, shoulderRight.start])
+  coincident([shoulderRight.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, shoulderLeft.start])
+  coincident([shoulderLeft.end, lowerLeft.start])
+  coincident([lowerLeft.end, bottom.start])
+  horizontal(bottom)
+  vertical(lowerRight)
+  horizontal(shoulderRight)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontal(shoulderLeft)
+  vertical(lowerLeft)
+  horizontal([shoulderLeft.start, shoulderRight.end])
+  horizontalDistance([bottom.start, bottom.end]) == xadTenNarrow
+  horizontalDistance([shoulderLeft.start, shoulderRight.end]) == xadTenWide
+  horizontalDistance([bottom.start, ORIGIN]) == xadTenNarrow / 2
+  horizontalDistance([shoulderLeft.start, ORIGIN]) == xadTenWide / 2
+  verticalDistance([bottom.start, ORIGIN]) == xadHeight / 2
+  verticalDistance([bottom.start, top.end]) == xadHeight
+  verticalDistance([shoulderRight.end, top.start]) == xadUpperHeight
+}
+xadTenTool = extrude(
+  region(
+    segments = [
+      xadTenProfile.bottom,
+      xadTenProfile.lowerRight
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = panelThickness + 2mm,
+)
+  |> translate(x = -1mm, z = xadBottomHeight + xadPitch, global = true)
+hide(xadTenProfile)
+panelWithTen = subtract(panelWithTwelve, tools = [xadTenTool])
+
+// XADR-08V / CN19: lower opening.
+xadEightProfile = sketch(on = YZ) {
+  bottom = line(start = [var -6.45mm, var -5.2mm], end = [var 6.45mm, var -5.2mm])
+  lowerRight = line(start = [var 6.45mm, var -5.2mm], end = [var 6.45mm, var -2.95mm])
+  shoulderRight = line(start = [var 6.45mm, var -2.95mm], end = [var 8.1mm, var -2.95mm])
+  right = line(start = [var 8.1mm, var -2.95mm], end = [var 8.1mm, var 5.2mm])
+  top = line(start = [var 8.1mm, var 5.2mm], end = [var -8.1mm, var 5.2mm])
+  left = line(start = [var -8.1mm, var 5.2mm], end = [var -8.1mm, var -2.95mm])
+  shoulderLeft = line(start = [var -8.1mm, var -2.95mm], end = [var -6.45mm, var -2.95mm])
+  lowerLeft = line(start = [var -6.45mm, var -2.95mm], end = [var -6.45mm, var -5.2mm])
+  coincident([bottom.end, lowerRight.start])
+  coincident([lowerRight.end, shoulderRight.start])
+  coincident([shoulderRight.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, shoulderLeft.start])
+  coincident([shoulderLeft.end, lowerLeft.start])
+  coincident([lowerLeft.end, bottom.start])
+  horizontal(bottom)
+  vertical(lowerRight)
+  horizontal(shoulderRight)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontal(shoulderLeft)
+  vertical(lowerLeft)
+  horizontal([shoulderLeft.start, shoulderRight.end])
+  horizontalDistance([bottom.start, bottom.end]) == xadEightNarrow
+  horizontalDistance([shoulderLeft.start, shoulderRight.end]) == xadEightWide
+  horizontalDistance([bottom.start, ORIGIN]) == xadEightNarrow / 2
+  horizontalDistance([shoulderLeft.start, ORIGIN]) == xadEightWide / 2
+  verticalDistance([bottom.start, ORIGIN]) == xadHeight / 2
+  verticalDistance([bottom.start, top.end]) == xadHeight
+  verticalDistance([shoulderRight.end, top.start]) == xadUpperHeight
+}
+xadEightTool = extrude(
+  region(
+    segments = [
+      xadEightProfile.bottom,
+      xadEightProfile.lowerRight
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = panelThickness + 2mm,
+)
+  |> translate(x = -1mm, z = xadBottomHeight, global = true)
+hide(xadEightProfile)
+panelWithXadCuts = subtract(panelWithTen, tools = [xadEightTool])
+
+// Interior pockets leave 1.5 mm material for each panel-mount latch.
+xadReliefProfile = sketch(on = YZ) {
+  bottom = line(start = [var -12.6mm, var -7.2mm], end = [var 12.6mm, var -7.2mm])
+  right = line(start = [var 12.6mm, var -7.2mm], end = [var 12.6mm, var 7.2mm])
+  top = line(start = [var 12.6mm, var 7.2mm], end = [var -12.6mm, var 7.2mm])
+  left = line(start = [var -12.6mm, var 7.2mm], end = [var -12.6mm, var -7.2mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, bottom.end]) == xadReliefWidth
+  verticalDistance([right.start, right.end]) == xadReliefHeight
+  horizontalDistance([bottom.start, ORIGIN]) == xadReliefWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == xadReliefHeight / 2
+}
+xadReliefFirst = extrude(
+  region(
+    segments = [
+      xadReliefProfile.bottom,
+      xadReliefProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = panelThickness - xadRetainedThickness,
+)
+  |> translate(z = xadBottomHeight, global = true)
+hide(xadReliefProfile)
+xadReliefTools = patternLinear3d(
+  xadReliefFirst,
+  instances = 3,
+  distance = xadPitch,
+  axis = [0, 0, 1],
+)
+westPanel = subtract(panelWithXadCuts, tools = xadReliefTools)

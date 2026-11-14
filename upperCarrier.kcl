@@ -1,0 +1,135 @@
+// Upper carrier: two clearance holes for the stack and two tool-access openings.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+carrierLength = 180mm
+carrierWidth = 40mm
+carrierThickness = 2mm
+fastenerX = 78mm
+accessRadius = 4mm
+stackClearanceRadius = 1.7mm
+wireTieSlotWidth = 4mm
+wireTieSlotHeight = 2mm
+
+carrierProfile = sketch(on = XY) {
+  bottom = line(start = [var -90mm, var -20mm], end = [var 90mm, var -20mm])
+  right = line(start = [var 90mm, var -20mm], end = [var 90mm, var 20mm])
+  top = line(start = [var 90mm, var 20mm], end = [var -90mm, var 20mm])
+  left = line(start = [var -90mm, var 20mm], end = [var -90mm, var -20mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == carrierLength / 2
+  verticalDistance([bottom.start, ORIGIN]) == carrierWidth / 2
+  horizontalDistance([bottom.start, bottom.end]) == carrierLength
+  verticalDistance([right.start, right.end]) == carrierWidth
+}
+carrierRegion = region(
+  segments = [
+    carrierProfile.bottom,
+    carrierProfile.right
+  ],
+  intersectionIndex = -1,
+  direction = CCW,
+)
+hide(carrierProfile)
+carrierBlank = extrude(carrierRegion, length = carrierThickness)
+
+accessProfile = sketch(on = XY) {
+  access = circle(center = [var 0mm, var 0mm], start = [var 4mm, var 0mm])
+  coincident([access.center, ORIGIN])
+  radius(access) == accessRadius
+  horizontal([access.center, access.start])
+}
+accessRegion = region(segments = [accessProfile.access])
+hide(accessProfile)
+accessBlank = extrude(accessRegion, length = carrierThickness + 2mm)
+  |> translate(x = -fastenerX, z = -1mm, global = true)
+accessTools = patternLinear3d(
+  accessBlank,
+  instances = 2,
+  distance = 2 * fastenerX,
+  axis = [1, 0, 0],
+)
+carrierWithAccess = subtract(carrierBlank, tools = accessTools)
+
+stackProfile = sketch(on = XY) {
+  stackHole = circle(center = [var 0mm, var 0mm], start = [var 1.7mm, var 0mm])
+  coincident([stackHole.center, ORIGIN])
+  radius(stackHole) == stackClearanceRadius
+  horizontal([stackHole.center, stackHole.start])
+}
+stackRegion = region(segments = [stackProfile.stackHole])
+hide(stackProfile)
+stackBlank = extrude(stackRegion, length = carrierThickness + 2mm)
+  |> translate(
+       x = -84mm,
+       y = 13mm,
+       z = -1mm,
+       global = true,
+     )
+stackWest = translate(
+  clone(stackBlank),
+  x = 168mm,
+  y = -26mm,
+  global = true,
+)
+carrierWithFirstStackHole = subtract(carrierWithAccess, tools = [stackBlank])
+carrierWithStackHoles = subtract(carrierWithFirstStackHole, tools = [stackWest])
+
+// Paired slots accept small cable ties in the spaces between the connector envelopes.
+wireTieProfile = sketch(on = XY) {
+  bottom = line(start = [var -2mm, var -1mm], end = [var 2mm, var -1mm])
+  right = line(start = [var 2mm, var -1mm], end = [var 2mm, var 1mm])
+  top = line(start = [var 2mm, var 1mm], end = [var -2mm, var 1mm])
+  left = line(start = [var -2mm, var 1mm], end = [var -2mm, var -1mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == wireTieSlotWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == wireTieSlotHeight / 2
+  horizontalDistance([bottom.start, bottom.end]) == wireTieSlotWidth
+  verticalDistance([right.start, right.end]) == wireTieSlotHeight
+}
+wireTieRegion = region(
+  segments = [
+    wireTieProfile.bottom,
+    wireTieProfile.right
+  ],
+  intersectionIndex = -1,
+  direction = CCW,
+)
+hide(wireTieProfile)
+southTieBlank = extrude(wireTieRegion, length = carrierThickness + 2mm)
+  |> translate(
+       x = -36mm,
+       y = -17mm,
+       z = -1mm,
+       global = true,
+     )
+northTieBlank = translate(clone(southTieBlank), y = 29mm, global = true)
+southTieSlots = patternLinear3d(
+  southTieBlank,
+  instances = 3,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+  |> patternLinear3d(instances = 2, distance = 5mm, axis = [0, 1, 0])
+northTieSlots = patternLinear3d(
+  northTieBlank,
+  instances = 3,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+  |> patternLinear3d(instances = 2, distance = 5mm, axis = [0, 1, 0])
+carrierWithSouthTies = subtract(carrierWithStackHoles, tools = southTieSlots)
+upperCarrier = subtract(carrierWithSouthTies, tools = northTieSlots)

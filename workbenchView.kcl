@@ -1,0 +1,198 @@
+// Workbench review layout
+// Exploded reference view of the lid, west panel and two carrier tiers.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "tray.kcl" as trayPart
+import "ceiling.kcl" as ceilingPart
+import "westPanel.kcl" as westPanelPart
+import "carrier.kcl" as carrierPart
+import "upperCarrier.kcl" as upperCarrierPart
+import "carrierSpacer.kcl" as spacerPart
+import "wagoFiveEnvelope.kcl" as fivePortPart
+import "wagoTenEnvelope.kcl" as tenPortPart
+import "wagoFiveRetainer.kcl" as fiveRetainerPart
+import "wagoTenRetainer.kcl" as tenRetainerPart
+
+lidReviewHeight = 135mm
+westPanelReviewOffset = 28mm
+carrierReviewOffset = -95mm
+carrierReviewHeight = 8mm
+upperCarrierReviewOffset = -155mm
+carrierThickness = 2mm
+markerPitch = 24mm
+ceilingPairPitch = 24mm
+ceilingPairGroupPitch = 60mm
+
+// Separate upper/lower plates and freely removable spacer parts.
+secondSpacerBlank = clone(spacerPart)
+lowerGroundFiveBlank = clone(fivePortPart)
+upperPowerFiveBlank = clone(fivePortPart)
+upperGroundFiveBlank = clone(fivePortPart)
+groundTenBlank = clone(tenPortPart)
+fiveRetainerTestBlank = clone(fivePortPart)
+tenRetainerTestBlank = clone(tenPortPart)
+
+tray = appearance(trayPart, color = "#495c68", roughness = 75)
+westPanel = translate(
+  westPanelPart,
+  x = 112mm + westPanelReviewOffset,
+  z = 33.5mm,
+  global = true,
+)
+  |> appearance(color = "#74848a", roughness = 70)
+carrier = translate(
+  carrierPart,
+  y = carrierReviewOffset,
+  z = carrierReviewHeight,
+  global = true,
+)
+  |> appearance(color = "#b5c3b9", roughness = 70)
+upperCarrier = translate(
+  upperCarrierPart,
+  y = upperCarrierReviewOffset,
+  z = carrierReviewHeight,
+  global = true,
+)
+  |> appearance(color = "#b5c3b9", roughness = 70)
+ceiling = translate(ceilingPart, z = lidReviewHeight, global = true)
+  |> appearance(color = "#d6dadd", roughness = 65)
+
+// Spacers align with diagonal stack fastener holes on the lower plate.
+eastSpacer = translate(
+  spacerPart,
+  x = -84mm,
+  y = carrierReviewOffset + 13mm,
+  z = carrierReviewHeight + carrierThickness,
+  global = true,
+)
+  |> appearance(color = "#c6b58e", roughness = 65)
+westSpacer = translate(
+  secondSpacerBlank,
+  x = 84mm,
+  y = carrierReviewOffset - 13mm,
+  z = carrierReviewHeight + carrierThickness,
+  global = true,
+)
+  |> appearance(color = "#c6b58e", roughness = 65)
+
+// Envelope-only WAGO placeholders: warm color = supply; blue = return.
+// Each lower-tier pair serves one proposed +5 V branch group.
+lowerPowerFirst = translate(
+  fivePortPart,
+  x = -54mm,
+  y = carrierReviewOffset,
+  z = carrierReviewHeight + carrierThickness,
+  global = true,
+)
+  |> appearance(color = "#e88b54", roughness = 60)
+lowerPowerFive = patternLinear3d(
+  lowerPowerFirst,
+  instances = 2,
+  distance = 72mm,
+  axis = [1, 0, 0],
+)
+lowerGroundFirst = translate(
+  lowerGroundFiveBlank,
+  x = -18mm,
+  y = carrierReviewOffset,
+  z = carrierReviewHeight + carrierThickness,
+  global = true,
+)
+  |> appearance(color = "#456a97", roughness = 60)
+lowerGroundFive = patternLinear3d(
+  lowerGroundFirst,
+  instances = 2,
+  distance = 72mm,
+  axis = [1, 0, 0],
+)
+upperPowerFive = translate(
+  upperPowerFiveBlank,
+  x = -54mm,
+  y = upperCarrierReviewOffset,
+  z = carrierReviewHeight + carrierThickness,
+  global = true,
+)
+  |> appearance(color = "#e88b54", roughness = 60)
+upperGroundFive = translate(
+  upperGroundFiveBlank,
+  x = -18mm,
+  y = upperCarrierReviewOffset,
+  z = carrierReviewHeight + carrierThickness,
+  global = true,
+)
+  |> appearance(color = "#456a97", roughness = 60)
+// Edge orientation preserves space on both large faces of the double-deck bodies.
+upperPowerTen = rotate(
+  tenPortPart,
+  axis = X,
+  angle = 90deg,
+  global = true,
+)
+  |> translate(
+       x = 18mm,
+       y = upperCarrierReviewOffset + 7.9mm,
+       z = carrierReviewHeight + carrierThickness + 9.15mm,
+       global = true,
+     )
+  |> appearance(color = "#e6bd64", roughness = 60)
+upperGroundTen = rotate(
+  groundTenBlank,
+  axis = X,
+  angle = 90deg,
+  global = true,
+)
+  |> translate(
+       x = 54mm,
+       y = upperCarrierReviewOffset + 7.9mm,
+       z = carrierReviewHeight + carrierThickness + 9.15mm,
+       global = true,
+     )
+  |> appearance(color = "#456a97", roughness = 60)
+
+// Separate fit-test retainers; the WAGO bodies are envelope-only references.
+trialY = -225mm
+fiveTrialRetainer = translate(
+  fiveRetainerPart,
+  x = -25mm,
+  y = trialY,
+  global = true,
+)
+  |> appearance(color = "#7ea28d", roughness = 70)
+// Only the trial references use the measured connector envelopes.
+fiveTrialEnvelope = scale(
+  fiveRetainerTestBlank,
+  x = 29.6 / 30,
+  y = 18.1 / 18.8,
+  z = 8.05 / 8.4,
+  global = true,
+)
+  |> translate(
+       x = -25mm,
+       y = trialY,
+       z = 1.6mm,
+       global = true,
+     )
+  |> appearance(color = "#e88b54", roughness = 60)
+tenTrialRetainer = translate(
+  tenRetainerPart,
+  x = 25mm,
+  y = trialY,
+  global = true,
+)
+  |> appearance(color = "#7ea28d", roughness = 70)
+// Upright trial orientation; this plain envelope omits the levers and ports.
+tenTrialEnvelope = scale(
+  tenRetainerTestBlank,
+  x = 29.6 / 29.8,
+  y = 18.1 / 18.3,
+  z = 15.6 / 15.8,
+  global = true,
+)
+  |> rotate(axis = X, angle = -90deg, global = true)
+  |> translate(
+       x = 25mm,
+       y = trialY - 7.8mm,
+       z = 1.6mm + 9.05mm,
+       global = true,
+     )
+  |> appearance(color = "#e6bd64", roughness = 60)

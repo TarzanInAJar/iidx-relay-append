@@ -1,0 +1,109 @@
+// Assembled carrier-stack review without the enclosing tray or lid.
+// Placement is duplicated from main.kcl for inspection only; west-side signals route toward the lid.
+// Carrier tie slots are for organizing wire bundles; actual wires are not shown.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "carrier.kcl" as lowerPart
+import "upperCarrier.kcl" as upperPart
+import "carrierSpacer.kcl" as spacerPart
+import "wagoFiveEnvelope.kcl" as fivePortPart
+import "wagoTenEnvelope.kcl" as tenPortPart
+
+lowerZ = 8mm
+plateThickness = 2mm
+spacerHeight = 19.5mm
+upperZ = lowerZ + plateThickness + spacerHeight
+
+spacerWestBlank = clone(spacerPart)
+lowerGroundBlank = clone(fivePortPart)
+upperPowerBlank = clone(fivePortPart)
+upperGroundBlank = clone(fivePortPart)
+tenGroundBlank = clone(tenPortPart)
+
+lowerCarrier = translate(lowerPart, z = lowerZ, global = true)
+  |> appearance(color = "#b5c3b9", roughness = 70)
+upperCarrier = translate(upperPart, z = upperZ, global = true)
+  |> appearance(color = "#b5c3b9", roughness = 70)
+eastSpacer = translate(
+  spacerPart,
+  x = -84mm,
+  y = 13mm,
+  z = lowerZ + plateThickness,
+  global = true,
+)
+  |> appearance(color = "#c6b58e", roughness = 65)
+westSpacer = translate(
+  spacerWestBlank,
+  x = 84mm,
+  y = -13mm,
+  z = lowerZ + plateThickness,
+  global = true,
+)
+  |> appearance(color = "#c6b58e", roughness = 65)
+
+lowerPowerFirst = translate(
+  fivePortPart,
+  x = -54mm,
+  z = lowerZ + plateThickness,
+  global = true,
+)
+  |> appearance(color = "#e88b54", roughness = 60)
+lowerPower = patternLinear3d(
+  lowerPowerFirst,
+  instances = 2,
+  distance = 72mm,
+  axis = [1, 0, 0],
+)
+lowerGroundFirst = translate(
+  lowerGroundBlank,
+  x = -18mm,
+  z = lowerZ + plateThickness,
+  global = true,
+)
+  |> appearance(color = "#456a97", roughness = 60)
+lowerGround = patternLinear3d(
+  lowerGroundFirst,
+  instances = 2,
+  distance = 72mm,
+  axis = [1, 0, 0],
+)
+upperPower = translate(
+  upperPowerBlank,
+  x = -54mm,
+  z = upperZ + plateThickness,
+  global = true,
+)
+  |> appearance(color = "#e88b54", roughness = 60)
+upperGround = translate(
+  upperGroundBlank,
+  x = -18mm,
+  z = upperZ + plateThickness,
+  global = true,
+)
+  |> appearance(color = "#456a97", roughness = 60)
+tenPower = rotate(
+  tenPortPart,
+  axis = X,
+  angle = 90deg,
+  global = true,
+)
+  |> translate(
+       x = 18mm,
+       y = 7.9mm,
+       z = upperZ + plateThickness + 9.15mm,
+       global = true,
+     )
+  |> appearance(color = "#e6bd64", roughness = 60)
+tenGround = rotate(
+  tenGroundBlank,
+  axis = X,
+  angle = 90deg,
+  global = true,
+)
+  |> translate(
+       x = 54mm,
+       y = 7.9mm,
+       z = upperZ + plateThickness + 9.15mm,
+       global = true,
+     )
+  |> appearance(color = "#456a97", roughness = 60)

@@ -1,0 +1,28 @@
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+// Simplified overall body envelope of a WAGO 221-415; levers and ports omitted.
+wagoWidth = 30mm
+wagoDepth = 18.8mm
+wagoHeight = 8.4mm
+
+bodyProfile = sketch(on = XY) {
+  bottom = line(start = [var -15mm, var -9.4mm], end = [var 15mm, var -9.4mm])
+  right = line(start = [var 15mm, var -9.4mm], end = [var 15mm, var 9.4mm])
+  top = line(start = [var 15mm, var 9.4mm], end = [var -15mm, var 9.4mm])
+  left = line(start = [var -15mm, var 9.4mm], end = [var -15mm, var -9.4mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == wagoWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == wagoDepth / 2
+  horizontalDistance([bottom.start, bottom.end]) == wagoWidth
+  verticalDistance([right.start, right.end]) == wagoDepth
+}
+bodyRegion = region(segments = [bodyProfile.bottom, bodyProfile.right], intersectionIndex = -1, direction = CCW)
+hide(bodyProfile)
+fivePortEnvelope = extrude(bodyRegion, length = wagoHeight)

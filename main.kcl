@@ -1,0 +1,131 @@
+// LED wiring enclosure assembly
+// Removable lid, west panel and two-tier carrier with provisional connector envelopes.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "tray.kcl" as trayPart
+import "ceiling.kcl" as ceilingPart
+import "westPanel.kcl" as westPanelPart
+import "carrier.kcl" as carrierPart
+import "upperCarrier.kcl" as upperCarrierPart
+import "carrierSpacer.kcl" as spacerPart
+import "wagoFiveEnvelope.kcl" as fivePortPart
+import "wagoTenEnvelope.kcl" as tenPortPart
+
+trayHeight = 64mm
+lidThickness = 3mm
+carrierMountHeight = 8mm
+carrierThickness = 2mm
+spacerHeight = 19.5mm
+upperCarrierMountHeight = carrierMountHeight + carrierThickness + spacerHeight
+markerPitch = 24mm
+ceilingPairPitch = 24mm
+ceilingPairGroupPitch = 60mm
+
+secondSpacerBlank = clone(spacerPart)
+lowerGroundFiveBlank = clone(fivePortPart)
+upperPowerFiveBlank = clone(fivePortPart)
+upperGroundFiveBlank = clone(fivePortPart)
+groundTenBlank = clone(tenPortPart)
+
+tray = appearance(trayPart, color = "#495c68", roughness = 75)
+westPanel = translate(
+  westPanelPart,
+  x = 112mm,
+  z = 33.5mm,
+  global = true,
+)
+  |> appearance(color = "#74848a", roughness = 70)
+carrier = translate(carrierPart, z = carrierMountHeight, global = true)
+  |> appearance(color = "#b5c3b9", roughness = 70)
+upperCarrier = translate(upperCarrierPart, z = upperCarrierMountHeight, global = true)
+  |> appearance(color = "#b5c3b9", roughness = 70)
+eastSpacer = translate(
+  spacerPart,
+  x = -84mm,
+  y = 13mm,
+  z = carrierMountHeight + carrierThickness,
+  global = true,
+)
+  |> appearance(color = "#c6b58e", roughness = 65)
+westSpacer = translate(
+  secondSpacerBlank,
+  x = 84mm,
+  y = -13mm,
+  z = carrierMountHeight + carrierThickness,
+  global = true,
+)
+  |> appearance(color = "#c6b58e", roughness = 65)
+
+// WAGO body envelopes only; retention and wiring are not modeled.
+// Proposed +5 V pairs: upper = group A, lower first = B, lower second = C.
+// Ceiling A/B/C have 3/3/2 ports; C also supplies one west-port +5 V/GND.
+lowerPowerFirst = translate(
+  fivePortPart,
+  x = -54mm,
+  z = carrierMountHeight + carrierThickness,
+  global = true,
+)
+  |> appearance(color = "#e88b54", roughness = 60)
+lowerPowerFive = patternLinear3d(
+  lowerPowerFirst,
+  instances = 2,
+  distance = 72mm,
+  axis = [1, 0, 0],
+)
+lowerGroundFirst = translate(
+  lowerGroundFiveBlank,
+  x = -18mm,
+  z = carrierMountHeight + carrierThickness,
+  global = true,
+)
+  |> appearance(color = "#456a97", roughness = 60)
+lowerGroundFive = patternLinear3d(
+  lowerGroundFirst,
+  instances = 2,
+  distance = 72mm,
+  axis = [1, 0, 0],
+)
+upperPowerFive = translate(
+  upperPowerFiveBlank,
+  x = -54mm,
+  z = upperCarrierMountHeight + carrierThickness,
+  global = true,
+)
+  |> appearance(color = "#e88b54", roughness = 60)
+upperGroundFive = translate(
+  upperGroundFiveBlank,
+  x = -18mm,
+  z = upperCarrierMountHeight + carrierThickness,
+  global = true,
+)
+  |> appearance(color = "#456a97", roughness = 60)
+// Ten-port WAGO bodies sit on edge; their holder and lever travel remain unverified.
+upperPowerTen = rotate(
+  tenPortPart,
+  axis = X,
+  angle = 90deg,
+  global = true,
+)
+  |> translate(
+       x = 18mm,
+       y = 7.9mm,
+       z = upperCarrierMountHeight + carrierThickness + 9.15mm,
+       global = true,
+     )
+  |> appearance(color = "#e6bd64", roughness = 60)
+upperGroundTen = rotate(
+  groundTenBlank,
+  axis = X,
+  angle = 90deg,
+  global = true,
+)
+  |> translate(
+       x = 54mm,
+       y = 7.9mm,
+       z = upperCarrierMountHeight + carrierThickness + 9.15mm,
+       global = true,
+     )
+  |> appearance(color = "#456a97", roughness = 60)
+
+ceiling = translate(ceilingPart, z = trayHeight, global = true)
+  |> appearance(color = "#d6dadd", roughness = 65)

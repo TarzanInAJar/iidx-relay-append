@@ -1,0 +1,457 @@
+// Connector ceiling
+// Removable lid with four provisional fastener clearance holes.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+lidLength = 230mm
+lidWidth = 70mm
+lidThickness = 3mm
+fastenerX = 103mm
+fastenerY = 27mm
+clearanceRadius = 1.7mm
+xmFourNarrowWidth = 12.8mm
+xmFourWideWidth = 16.1mm
+xmFiveNarrowWidth = 15.3mm
+xmFiveWideWidth = 18.6mm
+xmOpeningHeight = 8.2mm
+xmShoulderHeight = 5.5mm
+xmRetainedThickness = 1.5mm
+xmReliefWidth = xmFiveWideWidth + 4mm
+xmReliefHeight = xmOpeningHeight + 4mm
+xmPortPitch = 24mm
+xmFourGroupPitch = 72mm
+xmFiveGroupPitch = 60mm
+xmFourSoloX = -84mm
+xmFourPairX = -12mm
+xmFiveFirstX = -72mm
+xmFourRowY = 12mm
+xmFiveRowY = -12mm
+smNarrowWidth = 10.7mm
+smWideWidth = 14.8mm
+smSideHeight = 4.15mm
+smMainHeight = 5.15mm
+smKeyWidth = 4mm
+smKeyHeight = 1.6mm
+smRetainedThickness = 1.4mm
+smReliefWidth = smWideWidth + 4mm
+smReliefHeight = smMainHeight + smKeyHeight + 4mm
+smPairFirstX = -60mm
+smSingleX = 36mm
+smRowY = 12mm
+
+lidProfile = sketch(on = XY) {
+  bottom = line(start = [var -115mm, var -35mm], end = [var 115mm, var -35mm])
+  right = line(start = [var 115mm, var -35mm], end = [var 115mm, var 35mm])
+  top = line(start = [var 115mm, var 35mm], end = [var -115mm, var 35mm])
+  left = line(start = [var -115mm, var 35mm], end = [var -115mm, var -35mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == lidLength / 2
+  verticalDistance([bottom.start, ORIGIN]) == lidWidth / 2
+  horizontalDistance([bottom.start, bottom.end]) == lidLength
+  verticalDistance([right.start, right.end]) == lidWidth
+}
+lidBlank = extrude(region(segments = [lidProfile.bottom, lidProfile.right], intersectionIndex = -1, direction = CCW), length = lidThickness)
+hide(lidProfile)
+
+holeProfile = sketch(on = XY) {
+  holeCircle = circle(center = [var 0mm, var 0mm], start = [var 1.7mm, var 0mm])
+  coincident([holeCircle.center, ORIGIN])
+  radius(holeCircle) == clearanceRadius
+  horizontal([holeCircle.center, holeCircle.start])
+}
+holeTool = extrude(region(segments = [holeProfile.holeCircle]), length = lidThickness + 2mm)
+  |> translate(
+       x = -fastenerX,
+       y = -fastenerY,
+       z = -1mm,
+       global = true,
+     )
+hide(holeProfile)
+holeTools = patternLinear3d(
+  holeTool,
+  instances = 2,
+  distance = 2 * fastenerX,
+  axis = [1, 0, 0],
+)
+  |> patternLinear3d(instances = 2, distance = 2 * fastenerY, axis = [0, 1, 0])
+lidWithMountHoles = subtract(lidBlank, tools = holeTools)
+
+// XMR-04V stepped opening, nominal drawing dimensions.
+xmFourProfile = sketch(on = XY) {
+  bottom = line(start = [var -8.05mm, var -4.1mm], end = [var 8.05mm, var -4.1mm])
+  outerRight = line(start = [var 8.05mm, var -4.1mm], end = [var 8.05mm, var 1.4mm])
+  shoulderRight = line(start = [var 8.05mm, var 1.4mm], end = [var 6.4mm, var 1.4mm])
+  upperRight = line(start = [var 6.4mm, var 1.4mm], end = [var 6.4mm, var 4.1mm])
+  top = line(start = [var 6.4mm, var 4.1mm], end = [var -6.4mm, var 4.1mm])
+  upperLeft = line(start = [var -6.4mm, var 4.1mm], end = [var -6.4mm, var 1.4mm])
+  shoulderLeft = line(start = [var -6.4mm, var 1.4mm], end = [var -8.05mm, var 1.4mm])
+  outerLeft = line(start = [var -8.05mm, var 1.4mm], end = [var -8.05mm, var -4.1mm])
+  coincident([bottom.end, outerRight.start])
+  coincident([outerRight.end, shoulderRight.start])
+  coincident([shoulderRight.end, upperRight.start])
+  coincident([upperRight.end, top.start])
+  coincident([top.end, upperLeft.start])
+  coincident([upperLeft.end, shoulderLeft.start])
+  coincident([shoulderLeft.end, outerLeft.start])
+  coincident([outerLeft.end, bottom.start])
+  horizontal(bottom)
+  vertical(outerRight)
+  horizontal(shoulderRight)
+  vertical(upperRight)
+  horizontal(top)
+  vertical(upperLeft)
+  horizontal(shoulderLeft)
+  vertical(outerLeft)
+  horizontal([shoulderLeft.end, shoulderRight.start])
+  horizontalDistance([bottom.start, bottom.end]) == xmFourWideWidth
+  horizontalDistance([shoulderRight.end, shoulderRight.start]) == (xmFourWideWidth - xmFourNarrowWidth) / 2
+  horizontalDistance([shoulderLeft.end, shoulderLeft.start]) == (xmFourWideWidth - xmFourNarrowWidth) / 2
+  verticalDistance([outerRight.start, outerRight.end]) == xmShoulderHeight
+  verticalDistance([bottom.start, upperRight.end]) == xmOpeningHeight
+  horizontalDistance([bottom.start, ORIGIN]) == xmFourWideWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == xmOpeningHeight / 2
+}
+xmFourTool = extrude(
+  region(
+    segments = [
+      xmFourProfile.bottom,
+      xmFourProfile.outerRight
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = lidThickness + 2mm,
+)
+hide(xmFourProfile)
+xmFourSoloBlank = clone(xmFourTool)
+xmFourSolo = translate(
+  xmFourSoloBlank,
+  x = xmFourSoloX,
+  y = xmFourRowY,
+  z = -1mm,
+  global = true,
+)
+xmFourPairFirst = translate(
+  xmFourTool,
+  x = xmFourPairX,
+  y = xmFourRowY,
+  z = -1mm,
+  global = true,
+)
+xmFourPairs = patternLinear3d(
+  xmFourPairFirst,
+  instances = 2,
+  distance = xmPortPitch,
+  axis = [1, 0, 0],
+)
+  |> patternLinear3d(instances = 2, distance = xmFourGroupPitch, axis = [1, 0, 0])
+
+// XMR-05V stepped opening, nominal drawing dimensions.
+xmFiveProfile = sketch(on = XY) {
+  bottom = line(start = [var -9.3mm, var -4.1mm], end = [var 9.3mm, var -4.1mm])
+  outerRight = line(start = [var 9.3mm, var -4.1mm], end = [var 9.3mm, var 1.4mm])
+  shoulderRight = line(start = [var 9.3mm, var 1.4mm], end = [var 7.65mm, var 1.4mm])
+  upperRight = line(start = [var 7.65mm, var 1.4mm], end = [var 7.65mm, var 4.1mm])
+  top = line(start = [var 7.65mm, var 4.1mm], end = [var -7.65mm, var 4.1mm])
+  upperLeft = line(start = [var -7.65mm, var 4.1mm], end = [var -7.65mm, var 1.4mm])
+  shoulderLeft = line(start = [var -7.65mm, var 1.4mm], end = [var -9.3mm, var 1.4mm])
+  outerLeft = line(start = [var -9.3mm, var 1.4mm], end = [var -9.3mm, var -4.1mm])
+  coincident([bottom.end, outerRight.start])
+  coincident([outerRight.end, shoulderRight.start])
+  coincident([shoulderRight.end, upperRight.start])
+  coincident([upperRight.end, top.start])
+  coincident([top.end, upperLeft.start])
+  coincident([upperLeft.end, shoulderLeft.start])
+  coincident([shoulderLeft.end, outerLeft.start])
+  coincident([outerLeft.end, bottom.start])
+  horizontal(bottom)
+  vertical(outerRight)
+  horizontal(shoulderRight)
+  vertical(upperRight)
+  horizontal(top)
+  vertical(upperLeft)
+  horizontal(shoulderLeft)
+  vertical(outerLeft)
+  horizontal([shoulderLeft.end, shoulderRight.start])
+  horizontalDistance([bottom.start, bottom.end]) == xmFiveWideWidth
+  horizontalDistance([shoulderRight.end, shoulderRight.start]) == (xmFiveWideWidth - xmFiveNarrowWidth) / 2
+  horizontalDistance([shoulderLeft.end, shoulderLeft.start]) == (xmFiveWideWidth - xmFiveNarrowWidth) / 2
+  verticalDistance([outerRight.start, outerRight.end]) == xmShoulderHeight
+  verticalDistance([bottom.start, upperRight.end]) == xmOpeningHeight
+  horizontalDistance([bottom.start, ORIGIN]) == xmFiveWideWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == xmOpeningHeight / 2
+}
+xmFiveTool = extrude(
+  region(
+    segments = [
+      xmFiveProfile.bottom,
+      xmFiveProfile.outerRight
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = lidThickness + 2mm,
+)
+  |> translate(
+       x = xmFiveFirstX,
+       y = xmFiveRowY,
+       z = -1mm,
+       global = true,
+     )
+hide(xmFiveProfile)
+xmFiveTools = patternLinear3d(
+  xmFiveTool,
+  instances = 2,
+  distance = xmPortPitch,
+  axis = [1, 0, 0],
+)
+  |> patternLinear3d(instances = 3, distance = xmFiveGroupPitch, axis = [1, 0, 0])
+lidWithFiveCuts = subtract(lidWithMountHoles, tools = xmFiveTools)
+lidWithFourPairs = subtract(lidWithFiveCuts, tools = xmFourPairs)
+lidWithXmCuts = subtract(lidWithFourPairs, tools = [xmFourSolo])
+
+// Recess from the underside leaves a 1.5 mm mounting membrane.
+xmReliefProfile = sketch(on = XY) {
+  bottom = line(start = [var -11.3mm, var -6.1mm], end = [var 11.3mm, var -6.1mm])
+  right = line(start = [var 11.3mm, var -6.1mm], end = [var 11.3mm, var 6.1mm])
+  top = line(start = [var 11.3mm, var 6.1mm], end = [var -11.3mm, var 6.1mm])
+  left = line(start = [var -11.3mm, var 6.1mm], end = [var -11.3mm, var -6.1mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, bottom.end]) == xmReliefWidth
+  verticalDistance([right.start, right.end]) == xmReliefHeight
+  horizontalDistance([bottom.start, ORIGIN]) == xmReliefWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == xmReliefHeight / 2
+}
+xmReliefTool = extrude(
+  region(
+    segments = [
+      xmReliefProfile.bottom,
+      xmReliefProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = lidThickness - xmRetainedThickness,
+)
+hide(xmReliefProfile)
+xmReliefFourSoloBlank = clone(xmReliefTool)
+xmReliefFourPairBlank = clone(xmReliefTool)
+xmReliefFourSolo = translate(
+  xmReliefFourSoloBlank,
+  x = xmFourSoloX,
+  y = xmFourRowY,
+  global = true,
+)
+xmReliefFourFirst = translate(
+  xmReliefFourPairBlank,
+  x = xmFourPairX,
+  y = xmFourRowY,
+  global = true,
+)
+xmReliefFourPairs = patternLinear3d(
+  xmReliefFourFirst,
+  instances = 2,
+  distance = xmPortPitch,
+  axis = [1, 0, 0],
+)
+  |> patternLinear3d(instances = 2, distance = xmFourGroupPitch, axis = [1, 0, 0])
+xmReliefFiveFirst = translate(
+  xmReliefTool,
+  x = xmFiveFirstX,
+  y = xmFiveRowY,
+  global = true,
+)
+xmReliefFiveTools = patternLinear3d(
+  xmReliefFiveFirst,
+  instances = 2,
+  distance = xmPortPitch,
+  axis = [1, 0, 0],
+)
+  |> patternLinear3d(instances = 3, distance = xmFiveGroupPitch, axis = [1, 0, 0])
+lidWithFiveReliefs = subtract(lidWithXmCuts, tools = xmReliefFiveTools)
+lidWithFourPairReliefs = subtract(lidWithFiveReliefs, tools = xmReliefFourPairs)
+lidWithXmReliefs = subtract(lidWithFourPairReliefs, tools = [xmReliefFourSolo])
+
+// SMP-04V-BC keyed opening for a nominal 1.4 mm panel.
+smProfile = sketch(on = XY) {
+  bottom = line(start = [var -5.35mm, var -2.575mm], end = [var 5.35mm, var -2.575mm])
+  lowerRightStep = line(start = [var 5.35mm, var -2.575mm], end = [var 5.35mm, var -2.075mm])
+  lowerRightArm = line(start = [var 5.35mm, var -2.075mm], end = [var 7.4mm, var -2.075mm])
+  rightWall = line(start = [var 7.4mm, var -2.075mm], end = [var 7.4mm, var 2.075mm])
+  upperRightArm = line(start = [var 7.4mm, var 2.075mm], end = [var 5.35mm, var 2.075mm])
+  upperRightStep = line(start = [var 5.35mm, var 2.075mm], end = [var 5.35mm, var 2.575mm])
+  upperRightFlat = line(start = [var 5.35mm, var 2.575mm], end = [var 2mm, var 2.575mm])
+  keyRight = line(start = [var 2mm, var 2.575mm], end = [var 2mm, var 4.175mm])
+  keyTop = line(start = [var 2mm, var 4.175mm], end = [var -2mm, var 4.175mm])
+  keyLeft = line(start = [var -2mm, var 4.175mm], end = [var -2mm, var 2.575mm])
+  upperLeftFlat = line(start = [var -2mm, var 2.575mm], end = [var -5.35mm, var 2.575mm])
+  upperLeftStep = line(start = [var -5.35mm, var 2.575mm], end = [var -5.35mm, var 2.075mm])
+  upperLeftArm = line(start = [var -5.35mm, var 2.075mm], end = [var -7.4mm, var 2.075mm])
+  leftWall = line(start = [var -7.4mm, var 2.075mm], end = [var -7.4mm, var -2.075mm])
+  lowerLeftArm = line(start = [var -7.4mm, var -2.075mm], end = [var -5.35mm, var -2.075mm])
+  lowerLeftStep = line(start = [var -5.35mm, var -2.075mm], end = [var -5.35mm, var -2.575mm])
+  coincident([bottom.end, lowerRightStep.start])
+  coincident([
+    lowerRightStep.end,
+    lowerRightArm.start
+  ])
+  coincident([lowerRightArm.end, rightWall.start])
+  coincident([rightWall.end, upperRightArm.start])
+  coincident([
+    upperRightArm.end,
+    upperRightStep.start
+  ])
+  coincident([
+    upperRightStep.end,
+    upperRightFlat.start
+  ])
+  coincident([upperRightFlat.end, keyRight.start])
+  coincident([keyRight.end, keyTop.start])
+  coincident([keyTop.end, keyLeft.start])
+  coincident([keyLeft.end, upperLeftFlat.start])
+  coincident([upperLeftFlat.end, upperLeftStep.start])
+  coincident([upperLeftStep.end, upperLeftArm.start])
+  coincident([upperLeftArm.end, leftWall.start])
+  coincident([leftWall.end, lowerLeftArm.start])
+  coincident([lowerLeftArm.end, lowerLeftStep.start])
+  coincident([lowerLeftStep.end, bottom.start])
+  horizontal(bottom)
+  vertical(lowerRightStep)
+  horizontal(lowerRightArm)
+  vertical(rightWall)
+  horizontal(upperRightArm)
+  vertical(upperRightStep)
+  horizontal(upperRightFlat)
+  vertical(keyRight)
+  horizontal(keyTop)
+  vertical(keyLeft)
+  horizontal(upperLeftFlat)
+  vertical(upperLeftStep)
+  horizontal(upperLeftArm)
+  vertical(leftWall)
+  horizontal(lowerLeftArm)
+  vertical(lowerLeftStep)
+  horizontal([leftWall.end, rightWall.start])
+  horizontal([leftWall.start, rightWall.end])
+  horizontal([
+    upperLeftFlat.end,
+    upperRightFlat.start
+  ])
+  vertical([
+    lowerRightStep.end,
+    upperRightStep.start
+  ])
+  vertical([lowerLeftStep.start, upperLeftStep.end])
+  horizontalDistance([bottom.start, bottom.end]) == smNarrowWidth
+  horizontalDistance([leftWall.start, rightWall.end]) == smWideWidth
+  horizontalDistance([keyTop.end, keyTop.start]) == smKeyWidth
+  horizontalDistance([bottom.start, ORIGIN]) == smNarrowWidth / 2
+  horizontalDistance([leftWall.start, ORIGIN]) == smWideWidth / 2
+  horizontalDistance([keyTop.end, ORIGIN]) == smKeyWidth / 2
+  verticalDistance([bottom.start, upperRightFlat.start]) == smMainHeight
+  verticalDistance([rightWall.start, rightWall.end]) == smSideHeight
+  verticalDistance([bottom.start, ORIGIN]) == smMainHeight / 2
+  verticalDistance([rightWall.start, ORIGIN]) == smSideHeight / 2
+  verticalDistance([keyRight.start, keyRight.end]) == smKeyHeight
+}
+smTool = extrude(
+  region(
+    segments = [
+      smProfile.bottom,
+      smProfile.lowerRightStep
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = lidThickness + 2mm,
+)
+hide(smProfile)
+smSingleBlank = clone(smTool)
+smPairFirst = translate(
+  smTool,
+  x = smPairFirstX,
+  y = smRowY,
+  z = -1mm,
+  global = true,
+)
+smPairTools = patternLinear3d(
+  smPairFirst,
+  instances = 2,
+  distance = xmPortPitch,
+  axis = [1, 0, 0],
+)
+smSingleTool = translate(
+  smSingleBlank,
+  x = smSingleX,
+  y = smRowY,
+  z = -1mm,
+  global = true,
+)
+lidWithSmPair = subtract(lidWithXmReliefs, tools = smPairTools)
+lidWithSmCuts = subtract(lidWithSmPair, tools = [smSingleTool])
+
+// Underside relief leaves 1.4 mm locally for the SM latch.
+smReliefProfile = sketch(on = XY) {
+  bottom = line(start = [var -9.4mm, var -4.575mm], end = [var 9.4mm, var -4.575mm])
+  right = line(start = [var 9.4mm, var -4.575mm], end = [var 9.4mm, var 6.175mm])
+  top = line(start = [var 9.4mm, var 6.175mm], end = [var -9.4mm, var 6.175mm])
+  left = line(start = [var -9.4mm, var 6.175mm], end = [var -9.4mm, var -4.575mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, bottom.end]) == smReliefWidth
+  verticalDistance([right.start, right.end]) == smReliefHeight
+  horizontalDistance([bottom.start, ORIGIN]) == smReliefWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == (smReliefHeight - smKeyHeight) / 2
+}
+smReliefTool = extrude(
+  region(
+    segments = [
+      smReliefProfile.bottom,
+      smReliefProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = lidThickness - smRetainedThickness,
+)
+hide(smReliefProfile)
+smReliefSingleBlank = clone(smReliefTool)
+smReliefFirst = translate(
+  smReliefTool,
+  x = smPairFirstX,
+  y = smRowY,
+  global = true,
+)
+smReliefPair = patternLinear3d(
+  smReliefFirst,
+  instances = 2,
+  distance = xmPortPitch,
+  axis = [1, 0, 0],
+)
+smReliefSingle = translate(
+  smReliefSingleBlank,
+  x = smSingleX,
+  y = smRowY,
+  global = true,
+)
+lidWithSmPairRelief = subtract(lidWithSmCuts, tools = smReliefPair)
+ceiling = subtract(lidWithSmPairRelief, tools = [smReliefSingle])

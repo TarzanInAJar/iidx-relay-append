@@ -1,0 +1,139 @@
+// Five-port WAGO trial retainer
+// Bench fit prototype; retention and lever clearance require physical testing.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+bodyWidth = 29.6mm
+bodyHeight = 8.05mm
+fitClearance = 0.2mm
+wallThickness = 1.6mm
+baseThickness = 1.6mm
+baseLength = bodyWidth + fitClearance + 2 * wallThickness
+baseWidth = 36mm
+railWidth = 12mm
+hookInset = 0.7mm
+hookThickness = 1mm
+fastenerOffset = 14.5mm
+fastenerRadius = 1.6mm
+bodyDepth = 18.1mm
+stopClearance = 0.3mm
+stopThickness = 1.6mm
+stopWidth = 2.4mm
+stopInset = 0.9mm
+stopHeight = 3mm
+stopX = (bodyWidth + fitClearance) / 2 - stopInset + stopWidth / 2
+stopY = (bodyDepth + stopClearance + stopThickness) / 2
+
+baseProfile = sketch(on = XY) {
+  bottom = line(start = [var -16.8mm, var -18mm], end = [var 16.8mm, var -18mm])
+  right = line(start = [var 16.8mm, var -18mm], end = [var 16.8mm, var 18mm])
+  top = line(start = [var 16.8mm, var 18mm], end = [var -16.8mm, var 18mm])
+  left = line(start = [var -16.8mm, var 18mm], end = [var -16.8mm, var -18mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == baseLength / 2
+  verticalDistance([bottom.start, ORIGIN]) == baseWidth / 2
+  horizontalDistance([bottom.start, bottom.end]) == baseLength
+  verticalDistance([right.start, right.end]) == baseWidth
+}
+base = extrude(region(segments = [baseProfile.bottom, baseProfile.right], intersectionIndex = -1, direction = CCW), length = baseThickness)
+hide(baseProfile)
+
+railProfile = sketch(on = XZ) {
+  bottom = line(start = [var 15.2mm, var 1.4mm], end = [var 16.8mm, var 1.4mm])
+  outer = line(start = [var 16.8mm, var 1.4mm], end = [var 16.8mm, var 11mm])
+  top = line(start = [var 16.8mm, var 11mm], end = [var 14.7mm, var 11mm])
+  hookFace = line(start = [var 14.7mm, var 11mm], end = [var 14.7mm, var 10mm])
+  hookBottom = line(start = [var 14.7mm, var 10mm], end = [var 15.2mm, var 10mm])
+  inner = line(start = [var 15.2mm, var 10mm], end = [var 15.2mm, var 1.4mm])
+  coincident([bottom.end, outer.start])
+  coincident([outer.end, top.start])
+  coincident([top.end, hookFace.start])
+  coincident([hookFace.end, hookBottom.start])
+  coincident([hookBottom.end, inner.start])
+  coincident([inner.end, bottom.start])
+  horizontal(bottom)
+  vertical(outer)
+  horizontal(top)
+  vertical(hookFace)
+  horizontal(hookBottom)
+  vertical(inner)
+  horizontalDistance([ORIGIN, bottom.start]) == (bodyWidth + fitClearance) / 2
+  verticalDistance([ORIGIN, bottom.start]) == baseThickness - 0.2mm
+  horizontalDistance([bottom.start, bottom.end]) == wallThickness
+  verticalDistance([bottom.start, outer.end]) == bodyHeight + hookThickness + 0.2mm
+  horizontalDistance([hookBottom.start, hookBottom.end]) == hookInset
+  verticalDistance([hookFace.end, hookFace.start]) == hookThickness
+}
+rail = extrude(region(segments = [railProfile.bottom, railProfile.outer], intersectionIndex = -1, direction = CCW), length = railWidth, direction = [0, 1, 0])
+  |> translate(y = -railWidth / 2, global = true)
+hide(railProfile)
+otherRail = rotate(
+  clone(rail),
+  axis = Z,
+  angle = 180deg,
+  global = true,
+)
+baseWithRail = union([base, rail])
+retainerBody = union([baseWithRail, otherRail])
+
+// Short corner stops limit sliding while keeping the center of each face open.
+stopProfile = sketch(on = XY) {
+  bottom = line(start = [var -1.2mm, var -0.8mm], end = [var 1.2mm, var -0.8mm])
+  right = line(start = [var 1.2mm, var -0.8mm], end = [var 1.2mm, var 0.8mm])
+  top = line(start = [var 1.2mm, var 0.8mm], end = [var -1.2mm, var 0.8mm])
+  left = line(start = [var -1.2mm, var 0.8mm], end = [var -1.2mm, var -0.8mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == stopWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == stopThickness / 2
+  horizontalDistance([bottom.start, bottom.end]) == stopWidth
+  verticalDistance([right.start, right.end]) == stopThickness
+}
+stopBlank = extrude(region(segments = [stopProfile.bottom, stopProfile.right], intersectionIndex = -1, direction = CCW), length = stopHeight + 0.1mm)
+  |> translate(
+       x = stopX,
+       y = stopY,
+       z = baseThickness - 0.1mm,
+       global = true,
+     )
+hide(stopProfile)
+stopTools = patternLinear3d(
+  stopBlank,
+  instances = 2,
+  distance = 2 * stopX,
+  axis = [-1, 0, 0],
+)
+  |> patternLinear3d(instances = 2, distance = 2 * stopY, axis = [0, -1, 0])
+retainerWithStopOne = union([retainerBody, stopTools[0]])
+retainerWithStopTwo = union([retainerWithStopOne, stopTools[1]])
+retainerWithStopThree = union([retainerWithStopTwo, stopTools[2]])
+retainerWithStops = union([retainerWithStopThree, stopTools[3]])
+
+holeProfile = sketch(on = XY) {
+  hole = circle(center = [var 0mm, var 0mm], start = [var 1.6mm, var 0mm])
+  coincident([hole.center, ORIGIN])
+  radius(hole) == fastenerRadius
+  horizontal([hole.center, hole.start])
+}
+hole = extrude(region(segments = [holeProfile.hole]), length = baseThickness + 2mm)
+  |> translate(y = -fastenerOffset, z = -1mm, global = true)
+hide(holeProfile)
+holes = patternLinear3d(
+  hole,
+  instances = 2,
+  distance = 2 * fastenerOffset,
+  axis = [0, 1, 0],
+)
+fiveRetainer = subtract(retainerWithStops, tools = holes)
