@@ -97,4 +97,4 @@ CN10-7 and CN10-8 each feed the two WOO connectors. The user proposes daisy-chai
 
 CN19-1 feeds WOO pin 4 on both connectors; the user proposes daisy-chaining these pins. Confirm the chosen XMR contact and crimp are approved for two wires before putting two wires in one contact. If a two-wire crimp does not work out, the user will use an appropriately rated inline splice with a single wire per connector contact. Allow space for all three inline splices if needed.
 
-Do not infer physical pin locations from numbers; connector views/orientations remain to be confirmed. The assignment of the three +5 V input pairs to specific WAGO groups and the supply-return topology remain to be confirmed.
+Do not infer physical pin locations from numbers; connector views/orientations and the supply-return topology remain to be confirmed.

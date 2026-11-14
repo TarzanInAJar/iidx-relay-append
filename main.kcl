@@ -10,6 +10,9 @@ import "upperCarrier.kcl" as upperCarrierPart
 import "carrierSpacer.kcl" as spacerPart
 import "wagoFiveEnvelope.kcl" as fivePortPart
 import "wagoTenEnvelope.kcl" as tenPortPart
+import "wagoFiveRetainer.kcl" as fiveRetainerPart
+import "wagoTenRetainer.kcl" as tenRetainerPart
+import "xmrFiveEnvelope.kcl" as xmrFivePart
 
 trayHeight = 64mm
 lidThickness = 3mm
@@ -26,6 +29,7 @@ lowerGroundFiveBlank = clone(fivePortPart)
 upperPowerFiveBlank = clone(fivePortPart)
 upperGroundFiveBlank = clone(fivePortPart)
 groundTenBlank = clone(tenPortPart)
+upperFiveRetainerBlank = clone(fiveRetainerPart)
 
 tray = appearance(trayPart, color = "#495c68", roughness = 75)
 westPanel = translate(
@@ -56,15 +60,58 @@ westSpacer = translate(
 )
   |> appearance(color = "#c6b58e", roughness = 65)
 
-// WAGO body envelopes only; retention and wiring are not modeled.
-// Proposed +5 V pairs: upper = group A, lower first = B, lower second = C.
-// Ceiling A/B/C have 3/3/2 ports; C also supplies one west-port +5 V/GND.
-lowerPowerFirst = translate(
-  fivePortPart,
+// Eight accepted retainer coupons remain separate fastened parts.
+lowerFiveRetainerFirst = translate(
+  fiveRetainerPart,
   x = -54mm,
   z = carrierMountHeight + carrierThickness,
   global = true,
 )
+  |> appearance(color = "#7ea28d", roughness = 70)
+lowerFiveRetainers = patternLinear3d(
+  lowerFiveRetainerFirst,
+  instances = 4,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+upperFiveRetainerFirst = translate(
+  upperFiveRetainerBlank,
+  x = -54mm,
+  z = upperCarrierMountHeight + carrierThickness,
+  global = true,
+)
+  |> appearance(color = "#7ea28d", roughness = 70)
+upperFiveRetainers = patternLinear3d(
+  upperFiveRetainerFirst,
+  instances = 2,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+upperTenRetainerFirst = translate(
+  tenRetainerPart,
+  x = 18mm,
+  z = upperCarrierMountHeight + carrierThickness,
+  global = true,
+)
+  |> appearance(color = "#7ea28d", roughness = 70)
+upperTenRetainers = patternLinear3d(
+  upperTenRetainerFirst,
+  instances = 2,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+
+// WAGO envelopes approximate measured bodies; levers, ports and wires are omitted.
+// Proposed +5 V pairs: upper = group A, lower first = B, lower second = C.
+// Ceiling A/B/C have 3/3/2 ports; C also supplies one west-port +5 V/GND.
+lowerPowerFirst = scale(
+  fivePortPart,
+  x = 29.6 / 30,
+  y = 18.1 / 18.8,
+  z = 8.05 / 8.4,
+  global = true,
+)
+  |> translate(x = -54mm, z = carrierMountHeight + carrierThickness + 1.6mm, global = true)
   |> appearance(color = "#e88b54", roughness = 60)
 lowerPowerFive = patternLinear3d(
   lowerPowerFirst,
@@ -72,12 +119,14 @@ lowerPowerFive = patternLinear3d(
   distance = 72mm,
   axis = [1, 0, 0],
 )
-lowerGroundFirst = translate(
+lowerGroundFirst = scale(
   lowerGroundFiveBlank,
-  x = -18mm,
-  z = carrierMountHeight + carrierThickness,
+  x = 29.6 / 30,
+  y = 18.1 / 18.8,
+  z = 8.05 / 8.4,
   global = true,
 )
+  |> translate(x = -18mm, z = carrierMountHeight + carrierThickness + 1.6mm, global = true)
   |> appearance(color = "#456a97", roughness = 60)
 lowerGroundFive = patternLinear3d(
   lowerGroundFirst,
@@ -85,47 +134,72 @@ lowerGroundFive = patternLinear3d(
   distance = 72mm,
   axis = [1, 0, 0],
 )
-upperPowerFive = translate(
+upperPowerFive = scale(
   upperPowerFiveBlank,
-  x = -54mm,
-  z = upperCarrierMountHeight + carrierThickness,
+  x = 29.6 / 30,
+  y = 18.1 / 18.8,
+  z = 8.05 / 8.4,
   global = true,
 )
+  |> translate(x = -54mm, z = upperCarrierMountHeight + carrierThickness + 1.6mm, global = true)
   |> appearance(color = "#e88b54", roughness = 60)
-upperGroundFive = translate(
+upperGroundFive = scale(
   upperGroundFiveBlank,
-  x = -18mm,
-  z = upperCarrierMountHeight + carrierThickness,
+  x = 29.6 / 30,
+  y = 18.1 / 18.8,
+  z = 8.05 / 8.4,
   global = true,
 )
+  |> translate(x = -18mm, z = upperCarrierMountHeight + carrierThickness + 1.6mm, global = true)
   |> appearance(color = "#456a97", roughness = 60)
-// Ten-port WAGO bodies sit on edge; their holder and lever travel remain unverified.
-upperPowerTen = rotate(
+// Upright ten-port measured envelopes: wire-entry face up; lever movement omitted.
+upperPowerTen = scale(
   tenPortPart,
-  axis = X,
-  angle = 90deg,
+  x = 29.6 / 29.8,
+  y = 18.1 / 18.3,
+  z = 15.6 / 15.8,
   global = true,
 )
+  |> rotate(axis = X, angle = -90deg, global = true)
   |> translate(
        x = 18mm,
-       y = 7.9mm,
-       z = upperCarrierMountHeight + carrierThickness + 9.15mm,
+       y = -7.8mm,
+       z = upperCarrierMountHeight + carrierThickness + 1.6mm + 9.05mm,
        global = true,
      )
   |> appearance(color = "#e6bd64", roughness = 60)
-upperGroundTen = rotate(
+upperGroundTen = scale(
   groundTenBlank,
-  axis = X,
-  angle = 90deg,
+  x = 29.6 / 29.8,
+  y = 18.1 / 18.3,
+  z = 15.6 / 15.8,
   global = true,
 )
+  |> rotate(axis = X, angle = -90deg, global = true)
   |> translate(
        x = 54mm,
-       y = 7.9mm,
-       z = upperCarrierMountHeight + carrierThickness + 9.15mm,
+       y = -7.8mm,
+       z = upperCarrierMountHeight + carrierThickness + 1.6mm + 9.05mm,
        global = true,
      )
   |> appearance(color = "#456a97", roughness = 60)
 
 ceiling = translate(ceilingPart, z = trayHeight, global = true)
   |> appearance(color = "#d6dadd", roughness = 65)
+
+// Approximate XMR rear clearance boxes, not complete connector housings.
+xmrFiveFirst = translate(
+  xmrFivePart,
+  x = -72mm,
+  y = -12mm,
+  z = trayHeight,
+  global = true,
+)
+  |> appearance(color = "#b58fc4", roughness = 65)
+xmrFivePairs = patternLinear3d(
+  xmrFiveFirst,
+  instances = 2,
+  distance = ceilingPairPitch,
+  axis = [1, 0, 0],
+)
+  |> patternLinear3d(instances = 3, distance = ceilingPairGroupPitch, axis = [1, 0, 0])

@@ -126,4 +126,30 @@ northTieSlots = patternLinear3d(
 )
   |> patternLinear3d(instances = 2, distance = 5mm, axis = [0, 1, 0])
 carrierWithSouthTies = subtract(carrierWithStackHoles, tools = southTieSlots)
-carrier = subtract(carrierWithSouthTies, tools = northTieSlots)
+carrierWithTies = subtract(carrierWithSouthTies, tools = northTieSlots)
+
+// Through-holes match the two M3 clearance holes in each accepted retainer.
+retainerPitch = 36mm
+retainerHoleOffset = 14.5mm
+retainerHoleProfile = sketch(on = XY) {
+  hole = circle(center = [var 0mm, var 0mm], start = [var 1.7mm, var 0mm])
+  coincident([hole.center, ORIGIN])
+  radius(hole) == clearanceRadius
+  horizontal([hole.center, hole.start])
+}
+retainerHoleBlank = extrude(region(segments = [retainerHoleProfile.hole]), length = carrierThickness + 2mm)
+  |> translate(
+       x = -1.5 * retainerPitch,
+       y = -retainerHoleOffset,
+       z = -1mm,
+       global = true,
+     )
+hide(retainerHoleProfile)
+retainerHoleTools = patternLinear3d(
+  retainerHoleBlank,
+  instances = 4,
+  distance = retainerPitch,
+  axis = [1, 0, 0],
+)
+  |> patternLinear3d(instances = 2, distance = 2 * retainerHoleOffset, axis = [0, 1, 0])
+carrier = subtract(carrierWithTies, tools = retainerHoleTools)

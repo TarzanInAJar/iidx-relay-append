@@ -1,0 +1,39 @@
+// Clearance fixture assembly review
+// Uses the accepted retainer and approximate connector envelopes as visual references.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "clearanceFixtureBase.kcl" as fixtureBasePart
+import "clearanceFixtureLid.kcl" as fixtureLidPart
+import "wagoTenRetainer.kcl" as tenRetainerPart
+import "wagoTenEnvelope.kcl" as tenPortPart
+import "xmrFiveEnvelope.kcl" as xmrFivePart
+
+baseThickness = 2.4mm
+lidGap = 32.5mm
+lidUnderside = baseThickness + lidGap
+retainerThickness = 1.6mm
+
+fixtureBase = appearance(fixtureBasePart, color = "#728a9b", roughness = 70)
+fixtureLid = translate(fixtureLidPart, z = lidUnderside, global = true)
+  |> appearance(color = "#d6dadd", roughness = 65)
+tenRetainer = translate(tenRetainerPart, z = baseThickness, global = true)
+  |> appearance(color = "#7ea28d", roughness = 70)
+tenPortReference = scale(
+  tenPortPart,
+  x = 29.6 / 29.8,
+  y = 18.1 / 18.3,
+  z = 15.6 / 15.8,
+  global = true,
+)
+  |> rotate(axis = X, angle = -90deg, global = true)
+  |> translate(y = -7.8mm, z = baseThickness + retainerThickness + 9.05mm, global = true)
+  |> appearance(color = "#e6bd64", roughness = 60)
+// Reference extends 9.6 mm from the bare underside; actual latch datum is unverified.
+xmrFiveReference = translate(
+  xmrFivePart,
+  x = -6mm,
+  y = -12mm,
+  z = lidUnderside,
+  global = true,
+)
+  |> appearance(color = "#b58fc4", roughness = 65)

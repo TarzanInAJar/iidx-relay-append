@@ -1,0 +1,143 @@
+// Clearance fixture lid
+// XMR-05V opening and underside relief matching the enclosure lid.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+lidLength = 60mm
+lidWidth = 44mm
+lidThickness = 3mm
+postOffset = 25mm
+mountHoleRadius = 1.7mm
+xmCenterX = -6mm
+xmCenterY = -12mm
+xmFiveNarrowWidth = 15.3mm
+xmFiveWideWidth = 18.6mm
+xmOpeningHeight = 8.2mm
+xmShoulderHeight = 5.5mm
+xmRetainedThickness = 1.5mm
+xmReliefWidth = xmFiveWideWidth + 4mm
+xmReliefHeight = xmOpeningHeight + 4mm
+
+lidProfile = sketch(on = XY) {
+  bottom = line(start = [var -30mm, var -22mm], end = [var 30mm, var -22mm])
+  right = line(start = [var 30mm, var -22mm], end = [var 30mm, var 22mm])
+  top = line(start = [var 30mm, var 22mm], end = [var -30mm, var 22mm])
+  left = line(start = [var -30mm, var 22mm], end = [var -30mm, var -22mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == lidLength / 2
+  verticalDistance([bottom.start, ORIGIN]) == lidWidth / 2
+  horizontalDistance([bottom.start, bottom.end]) == lidLength
+  verticalDistance([right.start, right.end]) == lidWidth
+}
+lidBlank = extrude(region(segments = [lidProfile.bottom, lidProfile.right], intersectionIndex = -1, direction = CCW), length = lidThickness)
+hide(lidProfile)
+
+mountHoleProfile = sketch(on = XY) {
+  holeCircle = circle(center = [var 0mm, var 0mm], start = [var 1.7mm, var 0mm])
+  coincident([holeCircle.center, ORIGIN])
+  radius(holeCircle) == mountHoleRadius
+  horizontal([holeCircle.center, holeCircle.start])
+}
+mountHoleFirst = extrude(region(segments = [mountHoleProfile.holeCircle]), length = lidThickness + 2mm)
+  |> translate(x = -postOffset, z = -1mm, global = true)
+hide(mountHoleProfile)
+mountHoles = patternLinear3d(
+  mountHoleFirst,
+  instances = 2,
+  distance = 2 * postOffset,
+  axis = [1, 0, 0],
+)
+lidWithMountHoles = subtract(lidBlank, tools = mountHoles)
+
+xmFiveProfile = sketch(on = XY) {
+  bottom = line(start = [var -9.3mm, var -4.1mm], end = [var 9.3mm, var -4.1mm])
+  outerRight = line(start = [var 9.3mm, var -4.1mm], end = [var 9.3mm, var 1.4mm])
+  shoulderRight = line(start = [var 9.3mm, var 1.4mm], end = [var 7.65mm, var 1.4mm])
+  upperRight = line(start = [var 7.65mm, var 1.4mm], end = [var 7.65mm, var 4.1mm])
+  top = line(start = [var 7.65mm, var 4.1mm], end = [var -7.65mm, var 4.1mm])
+  upperLeft = line(start = [var -7.65mm, var 4.1mm], end = [var -7.65mm, var 1.4mm])
+  shoulderLeft = line(start = [var -7.65mm, var 1.4mm], end = [var -9.3mm, var 1.4mm])
+  outerLeft = line(start = [var -9.3mm, var 1.4mm], end = [var -9.3mm, var -4.1mm])
+  coincident([bottom.end, outerRight.start])
+  coincident([outerRight.end, shoulderRight.start])
+  coincident([shoulderRight.end, upperRight.start])
+  coincident([upperRight.end, top.start])
+  coincident([top.end, upperLeft.start])
+  coincident([upperLeft.end, shoulderLeft.start])
+  coincident([shoulderLeft.end, outerLeft.start])
+  coincident([outerLeft.end, bottom.start])
+  horizontal(bottom)
+  vertical(outerRight)
+  horizontal(shoulderRight)
+  vertical(upperRight)
+  horizontal(top)
+  vertical(upperLeft)
+  horizontal(shoulderLeft)
+  vertical(outerLeft)
+  horizontal([shoulderLeft.end, shoulderRight.start])
+  horizontalDistance([bottom.start, bottom.end]) == xmFiveWideWidth
+  horizontalDistance([shoulderRight.end, shoulderRight.start]) == (xmFiveWideWidth - xmFiveNarrowWidth) / 2
+  horizontalDistance([shoulderLeft.end, shoulderLeft.start]) == (xmFiveWideWidth - xmFiveNarrowWidth) / 2
+  verticalDistance([outerRight.start, outerRight.end]) == xmShoulderHeight
+  verticalDistance([bottom.start, upperRight.end]) == xmOpeningHeight
+  horizontalDistance([bottom.start, ORIGIN]) == xmFiveWideWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == xmOpeningHeight / 2
+}
+xmFiveTool = extrude(
+  region(
+    segments = [
+      xmFiveProfile.bottom,
+      xmFiveProfile.outerRight
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = lidThickness + 2mm,
+)
+  |> translate(
+       x = xmCenterX,
+       y = xmCenterY,
+       z = -1mm,
+       global = true,
+     )
+hide(xmFiveProfile)
+lidWithXmCut = subtract(lidWithMountHoles, tools = [xmFiveTool])
+
+xmReliefProfile = sketch(on = XY) {
+  bottom = line(start = [var -11.3mm, var -6.1mm], end = [var 11.3mm, var -6.1mm])
+  right = line(start = [var 11.3mm, var -6.1mm], end = [var 11.3mm, var 6.1mm])
+  top = line(start = [var 11.3mm, var 6.1mm], end = [var -11.3mm, var 6.1mm])
+  left = line(start = [var -11.3mm, var 6.1mm], end = [var -11.3mm, var -6.1mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, bottom.end]) == xmReliefWidth
+  verticalDistance([right.start, right.end]) == xmReliefHeight
+  horizontalDistance([bottom.start, ORIGIN]) == xmReliefWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == xmReliefHeight / 2
+}
+xmReliefTool = extrude(
+  region(
+    segments = [
+      xmReliefProfile.bottom,
+      xmReliefProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = lidThickness - xmRetainedThickness,
+)
+  |> translate(x = xmCenterX, y = xmCenterY, global = true)
+hide(xmReliefProfile)
+fixtureLid = subtract(lidWithXmCut, tools = [xmReliefTool])

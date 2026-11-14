@@ -1,0 +1,36 @@
+// XMR-05V rear housing clearance reference
+// Approximate rectangular rear body only; not a printable or fit-accurate connector.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+housingWidth = 14.9mm
+housingThickness = 7.9mm
+rearProjection = 9.6mm
+
+housingProfile = sketch(on = XY) {
+  bottom = line(start = [var -7.45mm, var -3.95mm], end = [var 7.45mm, var -3.95mm])
+  right = line(start = [var 7.45mm, var -3.95mm], end = [var 7.45mm, var 3.95mm])
+  top = line(start = [var 7.45mm, var 3.95mm], end = [var -7.45mm, var 3.95mm])
+  left = line(start = [var -7.45mm, var 3.95mm], end = [var -7.45mm, var -3.95mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == housingWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == housingThickness / 2
+  horizontalDistance([bottom.start, bottom.end]) == housingWidth
+  verticalDistance([right.start, right.end]) == housingThickness
+}
+housingRegion = region(
+  segments = [
+    housingProfile.bottom,
+    housingProfile.right
+  ],
+  intersectionIndex = -1,
+  direction = CCW,
+)
+hide(housingProfile)
+housingEnvelope = extrude(housingRegion, length = -rearProjection)

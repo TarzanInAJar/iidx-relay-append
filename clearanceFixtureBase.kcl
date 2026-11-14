@@ -1,0 +1,88 @@
+// Clearance fixture base
+// Holds the accepted 221-420 retainer at the proposed lid spacing.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+baseLength = 60mm
+baseWidth = 44mm
+baseThickness = 2.4mm
+lidGap = 32.5mm
+postOffset = 25mm
+postRadius = 4mm
+postOverlap = 0.2mm
+pilotRadius = 1.2mm
+pilotDepth = 8mm
+retainerHoleOffset = 14.5mm
+retainerHoleRadius = 1.7mm
+
+baseProfile = sketch(on = XY) {
+  bottom = line(start = [var -30mm, var -22mm], end = [var 30mm, var -22mm])
+  right = line(start = [var 30mm, var -22mm], end = [var 30mm, var 22mm])
+  top = line(start = [var 30mm, var 22mm], end = [var -30mm, var 22mm])
+  left = line(start = [var -30mm, var 22mm], end = [var -30mm, var -22mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == baseLength / 2
+  verticalDistance([bottom.start, ORIGIN]) == baseWidth / 2
+  horizontalDistance([bottom.start, bottom.end]) == baseLength
+  verticalDistance([right.start, right.end]) == baseWidth
+}
+baseBlank = extrude(region(segments = [baseProfile.bottom, baseProfile.right], intersectionIndex = -1, direction = CCW), length = baseThickness)
+hide(baseProfile)
+
+postProfile = sketch(on = XY) {
+  postCircle = circle(center = [var 0mm, var 0mm], start = [var 4mm, var 0mm])
+  coincident([postCircle.center, ORIGIN])
+  radius(postCircle) == postRadius
+  horizontal([postCircle.center, postCircle.start])
+}
+postFirst = extrude(region(segments = [postProfile.postCircle]), length = lidGap + postOverlap)
+  |> translate(x = -postOffset, z = baseThickness - postOverlap, global = true)
+hide(postProfile)
+posts = patternLinear3d(
+  postFirst,
+  instances = 2,
+  distance = 2 * postOffset,
+  axis = [1, 0, 0],
+)
+baseWithFirstPost = union([baseBlank, posts[0]])
+baseWithPosts = union([baseWithFirstPost, posts[1]])
+
+retainerHoleProfile = sketch(on = XY) {
+  holeCircle = circle(center = [var 0mm, var 0mm], start = [var 1.7mm, var 0mm])
+  coincident([holeCircle.center, ORIGIN])
+  radius(holeCircle) == retainerHoleRadius
+  horizontal([holeCircle.center, holeCircle.start])
+}
+retainerHoleFirst = extrude(region(segments = [retainerHoleProfile.holeCircle]), length = baseThickness + 2mm)
+  |> translate(y = -retainerHoleOffset, z = -1mm, global = true)
+hide(retainerHoleProfile)
+retainerHoles = patternLinear3d(
+  retainerHoleFirst,
+  instances = 2,
+  distance = 2 * retainerHoleOffset,
+  axis = [0, 1, 0],
+)
+baseWithRetainerHoles = subtract(baseWithPosts, tools = retainerHoles)
+
+pilotProfile = sketch(on = XY) {
+  pilotCircle = circle(center = [var 0mm, var 0mm], start = [var 1.2mm, var 0mm])
+  coincident([pilotCircle.center, ORIGIN])
+  radius(pilotCircle) == pilotRadius
+  horizontal([pilotCircle.center, pilotCircle.start])
+}
+pilotFirst = extrude(region(segments = [pilotProfile.pilotCircle]), length = pilotDepth + 1mm)
+  |> translate(x = -postOffset, z = baseThickness + lidGap - pilotDepth, global = true)
+hide(pilotProfile)
+pilots = patternLinear3d(
+  pilotFirst,
+  instances = 2,
+  distance = 2 * postOffset,
+  axis = [1, 0, 0],
+)
+fixtureBase = subtract(baseWithRetainerHoles, tools = pilots)

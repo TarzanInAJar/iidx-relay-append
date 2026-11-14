@@ -1,6 +1,5 @@
-// Assembled carrier-stack review without the enclosing tray or lid.
-// Placement is duplicated from main.kcl for inspection only; west-side signals route toward the lid.
-// Carrier tie slots are for organizing wire bundles; actual wires are not shown.
+// Carrier-stack clearance review without the enclosing tray or lid.
+// Rear XMR envelopes show provisional lid-relative positions; wires and levers are omitted.
 @settings(defaultLengthUnit = mm, kclVersion = 3.0)
 
 import "carrier.kcl" as lowerPart
@@ -8,6 +7,9 @@ import "upperCarrier.kcl" as upperPart
 import "carrierSpacer.kcl" as spacerPart
 import "wagoFiveEnvelope.kcl" as fivePortPart
 import "wagoTenEnvelope.kcl" as tenPortPart
+import "wagoFiveRetainer.kcl" as fiveRetainerPart
+import "wagoTenRetainer.kcl" as tenRetainerPart
+import "xmrFiveEnvelope.kcl" as xmrFivePart
 
 lowerZ = 8mm
 plateThickness = 2mm
@@ -19,6 +21,7 @@ lowerGroundBlank = clone(fivePortPart)
 upperPowerBlank = clone(fivePortPart)
 upperGroundBlank = clone(fivePortPart)
 tenGroundBlank = clone(tenPortPart)
+upperFiveRetainerBlank = clone(fiveRetainerPart)
 
 lowerCarrier = translate(lowerPart, z = lowerZ, global = true)
   |> appearance(color = "#b5c3b9", roughness = 70)
@@ -41,12 +44,55 @@ westSpacer = translate(
 )
   |> appearance(color = "#c6b58e", roughness = 65)
 
-lowerPowerFirst = translate(
-  fivePortPart,
+lowerFiveRetainerFirst = translate(
+  fiveRetainerPart,
   x = -54mm,
   z = lowerZ + plateThickness,
   global = true,
 )
+  |> appearance(color = "#7ea28d", roughness = 70)
+lowerFiveRetainers = patternLinear3d(
+  lowerFiveRetainerFirst,
+  instances = 4,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+upperFiveRetainerFirst = translate(
+  upperFiveRetainerBlank,
+  x = -54mm,
+  z = upperZ + plateThickness,
+  global = true,
+)
+  |> appearance(color = "#7ea28d", roughness = 70)
+upperFiveRetainers = patternLinear3d(
+  upperFiveRetainerFirst,
+  instances = 2,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+upperTenRetainerFirst = translate(
+  tenRetainerPart,
+  x = 18mm,
+  z = upperZ + plateThickness,
+  global = true,
+)
+  |> appearance(color = "#7ea28d", roughness = 70)
+upperTenRetainers = patternLinear3d(
+  upperTenRetainerFirst,
+  instances = 2,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+
+// Measured body envelopes omit levers, ports, and the rounded housing contours.
+lowerPowerFirst = scale(
+  fivePortPart,
+  x = 29.6 / 30,
+  y = 18.1 / 18.8,
+  z = 8.05 / 8.4,
+  global = true,
+)
+  |> translate(x = -54mm, z = lowerZ + plateThickness + 1.6mm, global = true)
   |> appearance(color = "#e88b54", roughness = 60)
 lowerPower = patternLinear3d(
   lowerPowerFirst,
@@ -54,12 +100,14 @@ lowerPower = patternLinear3d(
   distance = 72mm,
   axis = [1, 0, 0],
 )
-lowerGroundFirst = translate(
+lowerGroundFirst = scale(
   lowerGroundBlank,
-  x = -18mm,
-  z = lowerZ + plateThickness,
+  x = 29.6 / 30,
+  y = 18.1 / 18.8,
+  z = 8.05 / 8.4,
   global = true,
 )
+  |> translate(x = -18mm, z = lowerZ + plateThickness + 1.6mm, global = true)
   |> appearance(color = "#456a97", roughness = 60)
 lowerGround = patternLinear3d(
   lowerGroundFirst,
@@ -67,43 +115,69 @@ lowerGround = patternLinear3d(
   distance = 72mm,
   axis = [1, 0, 0],
 )
-upperPower = translate(
+upperPower = scale(
   upperPowerBlank,
-  x = -54mm,
-  z = upperZ + plateThickness,
+  x = 29.6 / 30,
+  y = 18.1 / 18.8,
+  z = 8.05 / 8.4,
   global = true,
 )
+  |> translate(x = -54mm, z = upperZ + plateThickness + 1.6mm, global = true)
   |> appearance(color = "#e88b54", roughness = 60)
-upperGround = translate(
+upperGround = scale(
   upperGroundBlank,
-  x = -18mm,
-  z = upperZ + plateThickness,
+  x = 29.6 / 30,
+  y = 18.1 / 18.8,
+  z = 8.05 / 8.4,
   global = true,
 )
+  |> translate(x = -18mm, z = upperZ + plateThickness + 1.6mm, global = true)
   |> appearance(color = "#456a97", roughness = 60)
-tenPower = rotate(
+tenPower = scale(
   tenPortPart,
-  axis = X,
-  angle = 90deg,
+  x = 29.6 / 29.8,
+  y = 18.1 / 18.3,
+  z = 15.6 / 15.8,
   global = true,
 )
+  |> rotate(axis = X, angle = -90deg, global = true)
   |> translate(
        x = 18mm,
-       y = 7.9mm,
-       z = upperZ + plateThickness + 9.15mm,
+       y = -7.8mm,
+       z = upperZ + plateThickness + 1.6mm + 9.05mm,
        global = true,
      )
   |> appearance(color = "#e6bd64", roughness = 60)
-tenGround = rotate(
+tenGround = scale(
   tenGroundBlank,
-  axis = X,
-  angle = 90deg,
+  x = 29.6 / 29.8,
+  y = 18.1 / 18.3,
+  z = 15.6 / 15.8,
   global = true,
 )
+  |> rotate(axis = X, angle = -90deg, global = true)
   |> translate(
        x = 54mm,
-       y = 7.9mm,
-       z = upperZ + plateThickness + 9.15mm,
+       y = -7.8mm,
+       z = upperZ + plateThickness + 1.6mm + 9.05mm,
        global = true,
      )
   |> appearance(color = "#456a97", roughness = 60)
+
+// Reference assumes 9.6 mm rear projection below the lid's z = 64 mm underside.
+lidUnderside = 64mm
+xmrFiveFirst = translate(
+  xmrFivePart,
+  x = -72mm,
+  y = -12mm,
+  z = lidUnderside,
+  global = true,
+)
+  |> appearance(color = "#b58fc4", roughness = 65)
+xmrFivePairs = patternLinear3d(
+  xmrFiveFirst,
+  instances = 2,
+  distance = 24mm,
+  axis = [1, 0, 0],
+)
+  |> patternLinear3d(instances = 3, distance = 60mm, axis = [1, 0, 0])
