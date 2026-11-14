@@ -5,13 +5,14 @@
 bodyWidth = 29.6mm
 bodyHeight = 18.1mm
 fitClearance = 0.2mm
-wallThickness = 1.6mm
+wallThickness = 2mm
 baseThickness = 1.6mm
 baseLength = bodyWidth + fitClearance + 2 * wallThickness
 baseWidth = 36mm
 railWidth = 8mm
 hookInset = 1.3mm
 hookThickness = 1mm
+hookTipHeight = 0.4mm
 fastenerOffset = 14.5mm
 fastenerRadius = 1.6mm
 bodyDepth = 15.6mm
@@ -47,13 +48,15 @@ hide(baseProfile)
 railProfile = sketch(on = XZ) {
   bottom = line(start = [var 15.1mm, var 1.4mm], end = [var 16.7mm, var 1.4mm])
   outer = line(start = [var 16.7mm, var 1.4mm], end = [var 16.7mm, var 20.9mm])
-  top = line(start = [var 16.7mm, var 20.9mm], end = [var 14.6mm, var 20.9mm])
-  hookFace = line(start = [var 14.6mm, var 20.9mm], end = [var 14.6mm, var 19.9mm])
-  hookBottom = line(start = [var 14.6mm, var 19.9mm], end = [var 15.1mm, var 19.9mm])
+  top = line(start = [var 16.9mm, var 20.7mm], end = [var 14.9mm, var 20.7mm])
+  leadIn = line(start = [var 14.9mm, var 20.7mm], end = [var 13.6mm, var 20.1mm])
+  hookFace = line(start = [var 13.6mm, var 20.1mm], end = [var 13.6mm, var 19.7mm])
+  hookBottom = line(start = [var 13.6mm, var 19.7mm], end = [var 14.9mm, var 19.7mm])
   inner = line(start = [var 15.1mm, var 19.9mm], end = [var 15.1mm, var 1.4mm])
   coincident([bottom.end, outer.start])
   coincident([outer.end, top.start])
-  coincident([top.end, hookFace.start])
+  coincident([top.end, leadIn.start])
+  coincident([leadIn.end, hookFace.start])
   coincident([hookFace.end, hookBottom.start])
   coincident([hookBottom.end, inner.start])
   coincident([inner.end, bottom.start])
@@ -67,8 +70,10 @@ railProfile = sketch(on = XZ) {
   verticalDistance([ORIGIN, bottom.start]) == baseThickness - 0.2mm
   distance([bottom.start, bottom.end]) == wallThickness
   distance([outer.start, outer.end]) == bodyHeight + hookThickness + 0.2mm
+  distance([top.start, top.end]) == wallThickness
   distance([hookBottom.start, hookBottom.end]) == hookInset
-  distance([hookFace.end, hookFace.start]) == hookThickness
+  verticalDistance([hookBottom.end, outer.end]) == hookThickness
+  distance([hookFace.end, hookFace.start]) == hookTipHeight
 }
 rail = extrude(region(segments = [railProfile.bottom, railProfile.outer], intersectionIndex = -1, direction = CCW), length = railWidth, direction = [0, 1, 0])
   |> translate(y = -railWidth / 2, global = true)
