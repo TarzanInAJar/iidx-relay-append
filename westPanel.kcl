@@ -3,10 +3,10 @@
 @settings(defaultLengthUnit = mm, kclVersion = 3.0)
 
 panelWidth = 51.6mm
-panelHeight = 60.6mm
+panelHeight = 65.6mm
 panelThickness = 3mm
 mountingY = 22mm
-mountingOffsetZ = 0.5mm
+mountingOffsetZ = -2mm
 clearanceRadius = 1.7mm
 xadHeight = 10.4mm
 xadUpperHeight = 8.15mm
@@ -16,7 +16,7 @@ xadTenNarrow = 15.4mm
 xadTenWide = 18.7mm
 xadEightNarrow = 12.9mm
 xadEightWide = 16.2mm
-xadBottomHeight = -15.5mm
+xadBottomHeight = -18mm
 xadPitch = 16mm
 xadRetainedThickness = 1.5mm
 xadReliefWidth = xadTwelveWide + 4mm

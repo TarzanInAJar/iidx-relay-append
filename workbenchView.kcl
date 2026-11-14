@@ -40,7 +40,7 @@ tray = appearance(trayPart, color = "#495c68", roughness = 75)
 westPanel = translate(
   westPanelPart,
   x = 112mm + westPanelReviewOffset,
-  z = 33.5mm,
+  z = 36mm,
   global = true,
 )
   |> appearance(color = "#74848a", roughness = 70)

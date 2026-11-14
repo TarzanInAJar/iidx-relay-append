@@ -4,7 +4,7 @@
 
 trayLength = 230mm
 trayWidth = 70mm
-trayHeight = 64mm
+trayHeight = 69mm
 wallThickness = 3mm
 
 outerProfile = sketch(on = XY) {

@@ -164,8 +164,8 @@ tenGround = scale(
      )
   |> appearance(color = "#456a97", roughness = 60)
 
-// Reference assumes 9.6 mm rear projection below the lid's z = 64 mm underside.
-lidUnderside = 64mm
+// Reference assumes 9.6 mm rear projection below the lid's z = 69 mm underside.
+lidUnderside = 69mm
 xmrFiveFirst = translate(
   xmrFivePart,
   x = -72mm,

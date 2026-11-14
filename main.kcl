@@ -14,7 +14,7 @@ import "wagoFiveRetainer.kcl" as fiveRetainerPart
 import "wagoTenRetainer.kcl" as tenRetainerPart
 import "xmrFiveEnvelope.kcl" as xmrFivePart
 
-trayHeight = 64mm
+trayHeight = 69mm
 lidThickness = 3mm
 carrierMountHeight = 8mm
 carrierThickness = 2mm
@@ -35,7 +35,7 @@ tray = appearance(trayPart, color = "#495c68", roughness = 75)
 westPanel = translate(
   westPanelPart,
   x = 112mm,
-  z = 33.5mm,
+  z = 36mm,
   global = true,
 )
   |> appearance(color = "#74848a", roughness = 70)
