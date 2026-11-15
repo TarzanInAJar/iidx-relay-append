@@ -1,0 +1,141 @@
+// Modular supply tray concept
+// Existing tray with two proposed slide-in supply-panel channels.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "tray.kcl" as originalTray
+
+panelCenterX = -53.8mm
+channelWidth = 84.4mm
+outerOpeningWidth = 80.4mm
+channelDepth = 3.2mm
+channelBottom = 8mm
+railWidth = 8mm
+railDepth = 4.2mm
+railBottom = 7.9mm
+railHeight = 60.9mm
+
+railProfile = sketch(on = XY) {
+  bottom = line(start = [var -4mm, var -2.1mm], end = [var 4mm, var -2.1mm])
+  right = line(start = [var 4mm, var -2.1mm], end = [var 4mm, var 2.1mm])
+  top = line(start = [var 4mm, var 2.1mm], end = [var -4mm, var 2.1mm])
+  left = line(start = [var -4mm, var 2.1mm], end = [var -4mm, var -2.1mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == railWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == railDepth / 2
+  horizontalDistance([bottom.start, bottom.end]) == railWidth
+  verticalDistance([right.start, right.end]) == railDepth
+}
+rail = extrude(region(segments = [railProfile.bottom, railProfile.right], intersectionIndex = -1, direction = CCW), length = railHeight)
+  |> translate(
+       x = panelCenterX - (channelWidth / 2),
+       y = -31.1mm,
+       z = railBottom,
+       global = true,
+     )
+hide(railProfile)
+rails = patternLinear3d(
+  rail,
+  instances = 2,
+  distance = channelWidth,
+  axis = [1, 0, 0],
+)
+  |> patternLinear3d(instances = 2, distance = 62.2mm, axis = [0, 1, 0])
+trayWithRailOne = union([originalTray, rails[0]])
+trayWithRailTwo = union([trayWithRailOne, rails[1]])
+trayWithRailThree = union([trayWithRailTwo, rails[2]])
+trayWithSupplyRails = union([trayWithRailThree, rails[3]])
+
+openingProfile = sketch(on = XY) {
+  bottom = line(start = [var -40.2mm, var -4mm], end = [var 40.2mm, var -4mm])
+  right = line(start = [var 40.2mm, var -4mm], end = [var 40.2mm, var 4mm])
+  top = line(start = [var 40.2mm, var 4mm], end = [var -40.2mm, var 4mm])
+  left = line(start = [var -40.2mm, var 4mm], end = [var -40.2mm, var -4mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == outerOpeningWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == 4mm
+  horizontalDistance([bottom.start, bottom.end]) == outerOpeningWidth
+  verticalDistance([right.start, right.end]) == 8mm
+}
+opening = extrude(
+  region(
+    segments = [
+      openingProfile.bottom,
+      openingProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = 62mm,
+)
+  |> translate(
+       x = panelCenterX,
+       y = -32mm,
+       z = channelBottom,
+       global = true,
+     )
+hide(openingProfile)
+openings = patternLinear3d(
+  opening,
+  instances = 2,
+  distance = 64mm,
+  axis = [0, 1, 0],
+)
+trayWithSupplyOpenings = subtract(trayWithSupplyRails, tools = openings)
+
+channelProfile = sketch(on = XY) {
+  bottom = line(start = [var -42.2mm, var -1.6mm], end = [var 42.2mm, var -1.6mm])
+  right = line(start = [var 42.2mm, var -1.6mm], end = [var 42.2mm, var 1.6mm])
+  top = line(start = [var 42.2mm, var 1.6mm], end = [var -42.2mm, var 1.6mm])
+  left = line(start = [var -42.2mm, var 1.6mm], end = [var -42.2mm, var -1.6mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == channelWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == channelDepth / 2
+  horizontalDistance([bottom.start, bottom.end]) == channelWidth
+  verticalDistance([right.start, right.end]) == channelDepth
+}
+channel = extrude(
+  region(
+    segments = [
+      channelProfile.bottom,
+      channelProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = 62mm,
+)
+  |> translate(
+       x = panelCenterX,
+       y = -32.4mm,
+       z = channelBottom,
+       global = true,
+     )
+hide(channelProfile)
+channels = patternLinear3d(
+  channel,
+  instances = 2,
+  distance = 64.8mm,
+  axis = [0, 1, 0],
+)
+modularSupplyTray = subtract(trayWithSupplyOpenings, tools = channels)

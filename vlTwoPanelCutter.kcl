@@ -1,0 +1,148 @@
+// VLR-02V panel cutter
+// Reusable tested opening and 1.5 mm rear relief for a 3 mm panel.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+panelThickness = 3mm
+retainedThickness = 1.5mm
+topKeyWidth = 9.8mm
+topKeyHeight = 3.2mm
+bodyWidth = 13.8mm
+overallWidth = 20.6mm
+bodyHeight = 8.5mm
+wingHeight = 5.7mm
+wingOffset = 1.4mm
+bottomKeyWidth = 4.2mm
+bottomKeyHeight = 0.5mm
+reliefWidth = 30.8mm
+reliefHeight = 22.6mm
+
+portProfile = sketch(on = XY) {
+  keyBottom = line(start = [var -2.1mm, var -6.1mm], end = [var 2.1mm, var -6.1mm])
+  keyBottomRight = line(start = [var 2.1mm, var -6.1mm], end = [var 2.1mm, var -5.6mm])
+  bottomRight = line(start = [var 2.1mm, var -5.6mm], end = [var 6.9mm, var -5.6mm])
+  lowerRight = line(start = [var 6.9mm, var -5.6mm], end = [var 6.9mm, var -4.2mm])
+  lowerRightArm = line(start = [var 6.9mm, var -4.2mm], end = [var 10.3mm, var -4.2mm])
+  rightWall = line(start = [var 10.3mm, var -4.2mm], end = [var 10.3mm, var 1.5mm])
+  upperRightArm = line(start = [var 10.3mm, var 1.5mm], end = [var 6.9mm, var 1.5mm])
+  upperRight = line(start = [var 6.9mm, var 1.5mm], end = [var 6.9mm, var 2.9mm])
+  topRight = line(start = [var 6.9mm, var 2.9mm], end = [var 4.9mm, var 2.9mm])
+  keyRight = line(start = [var 4.9mm, var 2.9mm], end = [var 4.9mm, var 6.1mm])
+  keyTop = line(start = [var 4.9mm, var 6.1mm], end = [var -4.9mm, var 6.1mm])
+  keyLeft = line(start = [var -4.9mm, var 6.1mm], end = [var -4.9mm, var 2.9mm])
+  topLeft = line(start = [var -4.9mm, var 2.9mm], end = [var -6.9mm, var 2.9mm])
+  upperLeft = line(start = [var -6.9mm, var 2.9mm], end = [var -6.9mm, var 1.5mm])
+  upperLeftArm = line(start = [var -6.9mm, var 1.5mm], end = [var -10.3mm, var 1.5mm])
+  leftWall = line(start = [var -10.3mm, var 1.5mm], end = [var -10.3mm, var -4.2mm])
+  lowerLeftArm = line(start = [var -10.3mm, var -4.2mm], end = [var -6.9mm, var -4.2mm])
+  lowerLeft = line(start = [var -6.9mm, var -4.2mm], end = [var -6.9mm, var -5.6mm])
+  bottomLeft = line(start = [var -6.9mm, var -5.6mm], end = [var -2.1mm, var -5.6mm])
+  keyBottomLeft = line(start = [var -2.1mm, var -5.6mm], end = [var -2.1mm, var -6.1mm])
+  coincident([keyBottom.end, keyBottomRight.start])
+  coincident([keyBottomRight.end, bottomRight.start])
+  coincident([bottomRight.end, lowerRight.start])
+  coincident([lowerRight.end, lowerRightArm.start])
+  coincident([lowerRightArm.end, rightWall.start])
+  coincident([rightWall.end, upperRightArm.start])
+  coincident([upperRightArm.end, upperRight.start])
+  coincident([upperRight.end, topRight.start])
+  coincident([topRight.end, keyRight.start])
+  coincident([keyRight.end, keyTop.start])
+  coincident([keyTop.end, keyLeft.start])
+  coincident([keyLeft.end, topLeft.start])
+  coincident([topLeft.end, upperLeft.start])
+  coincident([upperLeft.end, upperLeftArm.start])
+  coincident([upperLeftArm.end, leftWall.start])
+  coincident([leftWall.end, lowerLeftArm.start])
+  coincident([lowerLeftArm.end, lowerLeft.start])
+  coincident([lowerLeft.end, bottomLeft.start])
+  coincident([bottomLeft.end, keyBottomLeft.start])
+  coincident([keyBottomLeft.end, keyBottom.start])
+  horizontal(keyBottom)
+  vertical(keyBottomRight)
+  horizontal(bottomRight)
+  vertical(lowerRight)
+  horizontal(lowerRightArm)
+  vertical(rightWall)
+  horizontal(upperRightArm)
+  vertical(upperRight)
+  horizontal(topRight)
+  vertical(keyRight)
+  horizontal(keyTop)
+  vertical(keyLeft)
+  horizontal(topLeft)
+  vertical(upperLeft)
+  horizontal(upperLeftArm)
+  vertical(leftWall)
+  horizontal(lowerLeftArm)
+  vertical(lowerLeft)
+  horizontal(bottomLeft)
+  vertical(keyBottomLeft)
+  horizontal([leftWall.end, rightWall.start])
+  horizontal([leftWall.start, rightWall.end])
+  horizontal([topLeft.end, topRight.start])
+  horizontal([bottomLeft.start, bottomRight.end])
+  vertical([lowerRight.end, upperRight.start])
+  vertical([lowerLeft.start, upperLeft.end])
+  horizontalDistance([keyBottom.start, keyBottom.end]) == bottomKeyWidth
+  horizontalDistance([bottomLeft.start, bottomRight.end]) == bodyWidth
+  horizontalDistance([leftWall.start, rightWall.end]) == overallWidth
+  horizontalDistance([keyTop.end, keyTop.start]) == topKeyWidth
+  horizontalDistance([keyBottom.start, ORIGIN]) == bottomKeyWidth / 2
+  horizontalDistance([bottomLeft.start, ORIGIN]) == bodyWidth / 2
+  horizontalDistance([leftWall.start, ORIGIN]) == overallWidth / 2
+  horizontalDistance([keyTop.end, ORIGIN]) == topKeyWidth / 2
+  verticalDistance([keyBottom.start, ORIGIN]) == 6.1mm
+  verticalDistance([
+    keyBottomRight.start,
+    keyBottomRight.end
+  ]) == bottomKeyHeight
+  verticalDistance([lowerRight.start, lowerRight.end]) == wingOffset
+  verticalDistance([rightWall.start, rightWall.end]) == wingHeight
+  verticalDistance([lowerRight.start, topRight.start]) == bodyHeight
+  verticalDistance([keyRight.start, keyRight.end]) == topKeyHeight
+}
+throughTool = extrude(
+  region(
+    segments = [
+      portProfile.keyBottom,
+      portProfile.keyBottomRight
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = panelThickness + 2mm,
+)
+  |> translate(z = -1mm, global = true)
+hide(portProfile)
+
+reliefProfile = sketch(on = XY) {
+  bottom = line(start = [var -15.4mm, var -11.3mm], end = [var 15.4mm, var -11.3mm])
+  right = line(start = [var 15.4mm, var -11.3mm], end = [var 15.4mm, var 11.3mm])
+  top = line(start = [var 15.4mm, var 11.3mm], end = [var -15.4mm, var 11.3mm])
+  left = line(start = [var -15.4mm, var 11.3mm], end = [var -15.4mm, var -11.3mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == reliefWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == reliefHeight / 2
+  horizontalDistance([bottom.start, bottom.end]) == reliefWidth
+  verticalDistance([right.start, right.end]) == reliefHeight
+}
+reliefTool = extrude(
+  region(
+    segments = [
+      reliefProfile.bottom,
+      reliefProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = panelThickness - retainedThickness,
+)
+hide(reliefProfile)
+vlTwoCutter = union([throughTool, reliefTool])

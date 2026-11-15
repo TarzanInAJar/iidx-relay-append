@@ -1,0 +1,69 @@
+// Modular supply layout: both north
+// Concept with both inputs north and a blank south panel.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "modularSupplyTray.kcl" as trayPart
+import "supplyPanelBoth.kcl" as northPanelPart
+import "supplyPanelBlank.kcl" as southPanelPart
+import "westPanel.kcl" as westPanelPart
+import "carrier.kcl" as lowerCarrierPart
+import "upperCarrier.kcl" as upperCarrierPart
+import "carrierSpacer.kcl" as spacerPart
+import "ceiling.kcl" as ceilingPart
+
+tray = appearance(trayPart, color = "#495c68")
+northSupply = rotate(
+  northPanelPart,
+  axis = X,
+  angle = 90deg,
+  global = true,
+)
+  |> rotate(axis = Z, angle = 180deg, global = true)
+  |> translate(
+       x = -53.8mm,
+       y = 31mm,
+       z = 38.5mm,
+       global = true,
+     )
+  |> appearance(color = "#e9bd6d")
+southSupply = rotate(
+  southPanelPart,
+  axis = X,
+  angle = 90deg,
+  global = true,
+)
+  |> translate(
+       x = -53.8mm,
+       y = -31mm,
+       z = 38.5mm,
+       global = true,
+     )
+  |> appearance(color = "#b6b6b0")
+westPanel = translate(
+  westPanelPart,
+  x = 112mm,
+  z = 36mm,
+  global = true,
+)
+  |> appearance(color = "#74848a")
+lowerCarrier = translate(lowerCarrierPart, z = 8mm, global = true)
+  |> appearance(color = "#b5c3b9")
+upperCarrier = translate(upperCarrierPart, z = 29.5mm, global = true)
+  |> appearance(color = "#b5c3b9")
+secondSpacer = clone(spacerPart)
+eastSpacer = translate(
+  spacerPart,
+  x = -84mm,
+  y = 13mm,
+  z = 10mm,
+  global = true,
+)
+westSpacer = translate(
+  secondSpacer,
+  x = 84mm,
+  y = -13mm,
+  z = 10mm,
+  global = true,
+)
+ceiling = translate(ceilingPart, z = 69mm, global = true)
+  |> appearance(color = "#d6dadd")

@@ -1,0 +1,49 @@
+// VLR-06V supply side panel
+// One +5 V input opening in an interchangeable slide-in panel.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "vlSixPanelCutter.kcl" as portTool
+
+panelLength = 84mm
+panelHeight = 60.6mm
+panelThickness = 3mm
+panelProfile = sketch(on = XY) {
+  bottom = line(start = [var -42mm, var -30.3mm], end = [var 42mm, var -30.3mm])
+  right = line(start = [var 42mm, var -30.3mm], end = [var 42mm, var 30.3mm])
+  top = line(start = [var 42mm, var 30.3mm], end = [var -42mm, var 30.3mm])
+  left = line(start = [var -42mm, var 30.3mm], end = [var -42mm, var -30.3mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == panelLength / 2
+  verticalDistance([bottom.start, ORIGIN]) == panelHeight / 2
+  horizontalDistance([bottom.start, bottom.end]) == panelLength
+  verticalDistance([right.start, right.end]) == panelHeight
+}
+panelBlank = extrude(
+  region(
+    segments = [
+      panelProfile.bottom,
+      panelProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = panelThickness,
+)
+hide(panelProfile)
+
+portX = -20mm
+portHeight = -4.5mm
+positionedTool = translate(
+  portTool,
+  x = portX,
+  y = portHeight,
+  global = true,
+)
+vlSixSupplyPanel = subtract(panelBlank, tools = [positionedTool])

@@ -1,0 +1,195 @@
+// Open-top inspection view for the proposed both-south supply layout.
+// Review only: no lid, VL connector bodies, wiring, fasteners or lever motion.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "modularSupplyTray.kcl" as trayPart
+import "supplyPanelBoth.kcl" as southPanelPart
+import "supplyPanelBlank.kcl" as northPanelPart
+import "westPanel.kcl" as westPanelPart
+import "carrier.kcl" as carrierPart
+import "upperCarrier.kcl" as upperCarrierPart
+import "carrierSpacer.kcl" as spacerPart
+import "wagoFiveEnvelope.kcl" as fivePortPart
+import "wagoTenEnvelope.kcl" as tenPortPart
+import "wagoFiveRetainer.kcl" as fiveRetainerPart
+import "wagoTenRetainer.kcl" as tenRetainerPart
+
+secondSpacerBlank = clone(spacerPart)
+lowerGroundFiveBlank = clone(fivePortPart)
+upperPowerFiveBlank = clone(fivePortPart)
+upperGroundFiveBlank = clone(fivePortPart)
+groundTenBlank = clone(tenPortPart)
+upperFiveRetainerBlank = clone(fiveRetainerPart)
+
+tray = appearance(trayPart, color = "#495c68")
+northSupply = rotate(
+  northPanelPart,
+  axis = X,
+  angle = 90deg,
+  global = true,
+)
+  |> rotate(axis = Z, angle = 180deg, global = true)
+  |> translate(
+       x = -53.8mm,
+       y = 31mm,
+       z = 38.5mm,
+       global = true,
+     )
+  |> appearance(color = "#b6b6b0")
+southSupply = rotate(
+  southPanelPart,
+  axis = X,
+  angle = 90deg,
+  global = true,
+)
+  |> translate(
+       x = -53.8mm,
+       y = -31mm,
+       z = 38.5mm,
+       global = true,
+     )
+  |> appearance(color = "#df936b")
+westPanel = translate(
+  westPanelPart,
+  x = 112mm,
+  z = 36mm,
+  global = true,
+)
+  |> appearance(color = "#74848a")
+carrier = translate(carrierPart, z = 8mm, global = true)
+  |> appearance(color = "#b5c3b9")
+upperCarrier = translate(upperCarrierPart, z = 29.5mm, global = true)
+  |> appearance(color = "#b5c3b9")
+eastSpacer = translate(
+  spacerPart,
+  x = -84mm,
+  y = 13mm,
+  z = 10mm,
+  global = true,
+)
+westSpacer = translate(
+  secondSpacerBlank,
+  x = 84mm,
+  y = -13mm,
+  z = 10mm,
+  global = true,
+)
+
+lowerRetainerFirst = translate(
+  fiveRetainerPart,
+  x = -54mm,
+  z = 10mm,
+  global = true,
+)
+  |> appearance(color = "#7ea28d")
+lowerRetainers = patternLinear3d(
+  lowerRetainerFirst,
+  instances = 4,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+upperRetainerFirst = translate(
+  upperFiveRetainerBlank,
+  x = -54mm,
+  z = 31.5mm,
+  global = true,
+)
+  |> appearance(color = "#7ea28d")
+upperRetainers = patternLinear3d(
+  upperRetainerFirst,
+  instances = 2,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+tenRetainerFirst = translate(
+  tenRetainerPart,
+  x = 18mm,
+  z = 31.5mm,
+  global = true,
+)
+  |> appearance(color = "#7ea28d")
+tenRetainers = patternLinear3d(
+  tenRetainerFirst,
+  instances = 2,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+
+lowerPowerFirst = scale(
+  fivePortPart,
+  x = 29.6 / 30,
+  y = 18.1 / 18.8,
+  z = 8.05 / 8.4,
+  global = true,
+)
+  |> translate(x = -54mm, z = 11.6mm, global = true)
+  |> appearance(color = "#e88b54")
+lowerPower = patternLinear3d(
+  lowerPowerFirst,
+  instances = 2,
+  distance = 72mm,
+  axis = [1, 0, 0],
+)
+lowerGroundFirst = scale(
+  lowerGroundFiveBlank,
+  x = 29.6 / 30,
+  y = 18.1 / 18.8,
+  z = 8.05 / 8.4,
+  global = true,
+)
+  |> translate(x = -18mm, z = 11.6mm, global = true)
+  |> appearance(color = "#456a97")
+lowerGround = patternLinear3d(
+  lowerGroundFirst,
+  instances = 2,
+  distance = 72mm,
+  axis = [1, 0, 0],
+)
+upperPower = scale(
+  upperPowerFiveBlank,
+  x = 29.6 / 30,
+  y = 18.1 / 18.8,
+  z = 8.05 / 8.4,
+  global = true,
+)
+  |> translate(x = -54mm, z = 33.1mm, global = true)
+  |> appearance(color = "#e88b54")
+upperGround = scale(
+  upperGroundFiveBlank,
+  x = 29.6 / 30,
+  y = 18.1 / 18.8,
+  z = 8.05 / 8.4,
+  global = true,
+)
+  |> translate(x = -18mm, z = 33.1mm, global = true)
+  |> appearance(color = "#456a97")
+upperTenPower = scale(
+  tenPortPart,
+  x = 29.6 / 29.8,
+  y = 18.1 / 18.3,
+  z = 15.6 / 15.8,
+  global = true,
+)
+  |> rotate(axis = X, angle = -90deg, global = true)
+  |> translate(
+       x = 18mm,
+       y = -7.8mm,
+       z = 42.15mm,
+       global = true,
+     )
+  |> appearance(color = "#e6bd64")
+upperTenGround = scale(
+  groundTenBlank,
+  x = 29.6 / 29.8,
+  y = 18.1 / 18.3,
+  z = 15.6 / 15.8,
+  global = true,
+)
+  |> rotate(axis = X, angle = -90deg, global = true)
+  |> translate(
+       x = 54mm,
+       y = -7.8mm,
+       z = 42.15mm,
+       global = true,
+     )
+  |> appearance(color = "#456a97")
