@@ -19,7 +19,7 @@ Print the two fit coupons in PETG with the flat exterior face on the bed and the
 
 Test all connectors unpowered for insertion, seating, latch retention and removal, and use mating plugs to check release access at the real ceiling spacing. Coupons reproduce local opening shapes and reliefs only; they do not test tray, carrier or wiring clearances. Their copied dimensions must be synchronized if the corresponding production panels change.
 
-The user reports that the 4.4 mm hole fit perfectly on both insert coupons; this result does not by itself verify the final boss geometry or screw depth.
+The user reports that the 4.4 mm hole fit perfectly on both insert coupons. After the later west-boss, carrier-mount and ceiling-corner test batch, the user reported that everything fits fine. This is a general fit report; exact screw sizes and detailed strength, torque or full-enclosure results were not specified.
 
 For the insert-fit strips, print in PETG using the intended final print settings. Place `insertFitCoupon.kcl` flat with its four blind openings up. Print `sideInsertFitCoupon.kcl` on its 8 × 60 mm bottom (z = 0), with its four insert openings horizontal and the small marker hole vertical. Inspect horizontal holes for drooping and avoid support material inside them if practical. Trial diameters are not specified by Bambu; test seating and retention with the actual inserts and screws after cooling. Do not drill out the holes before judging the printed fit.
 
