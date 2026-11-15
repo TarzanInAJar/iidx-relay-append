@@ -1,0 +1,124 @@
+// Sideways AB012 heat-set insert fit coupon
+// Horizontal blind holes test the intended west-panel mounting orientation.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+couponWidth = 8mm
+couponLength = 60mm
+couponHeight = 12mm
+holeDepth = 5.2mm
+holePitch = 12mm
+firstHoleY = -18mm
+holeCenterZ = 6mm
+markerY = -27mm
+
+couponProfile = sketch(on = XY) {
+  bottom = line(start = [var -4mm, var -30mm], end = [var 4mm, var -30mm])
+  right = line(start = [var 4mm, var -30mm], end = [var 4mm, var 30mm])
+  top = line(start = [var 4mm, var 30mm], end = [var -4mm, var 30mm])
+  left = line(start = [var -4mm, var 30mm], end = [var -4mm, var -30mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == couponWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == couponLength / 2
+  horizontalDistance([bottom.start, bottom.end]) == couponWidth
+  verticalDistance([right.start, right.end]) == couponLength
+}
+couponBlank = extrude(
+  region(
+    segments = [
+      couponProfile.bottom,
+      couponProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = couponHeight,
+)
+hide(couponProfile)
+
+holeSmallProfile = sketch(on = YZ) {
+  opening = circle(center = [var 0mm, var 0mm], start = [var 2.15mm, var 0mm])
+  coincident([opening.center, ORIGIN])
+  radius(opening) == 2.15mm
+  horizontal([opening.center, opening.start])
+}
+holeSmall = extrude(region(segments = [holeSmallProfile.opening]), length = holeDepth + 0.1mm)
+  |> translate(
+       x = couponWidth / 2 - holeDepth,
+       y = firstHoleY,
+       z = holeCenterZ,
+       global = true,
+     )
+hide(holeSmallProfile)
+
+holeSecondProfile = sketch(on = YZ) {
+  opening = circle(center = [var 0mm, var 0mm], start = [var 2.2mm, var 0mm])
+  coincident([opening.center, ORIGIN])
+  radius(opening) == 2.2mm
+  horizontal([opening.center, opening.start])
+}
+holeSecond = extrude(region(segments = [holeSecondProfile.opening]), length = holeDepth + 0.1mm)
+  |> translate(
+       x = couponWidth / 2 - holeDepth,
+       y = firstHoleY + holePitch,
+       z = holeCenterZ,
+       global = true,
+     )
+hide(holeSecondProfile)
+
+holeThirdProfile = sketch(on = YZ) {
+  opening = circle(center = [var 0mm, var 0mm], start = [var 2.25mm, var 0mm])
+  coincident([opening.center, ORIGIN])
+  radius(opening) == 2.25mm
+  horizontal([opening.center, opening.start])
+}
+holeThird = extrude(region(segments = [holeThirdProfile.opening]), length = holeDepth + 0.1mm)
+  |> translate(
+       x = couponWidth / 2 - holeDepth,
+       y = firstHoleY + 2 * holePitch,
+       z = holeCenterZ,
+       global = true,
+     )
+hide(holeThirdProfile)
+
+holeLargeProfile = sketch(on = YZ) {
+  opening = circle(center = [var 0mm, var 0mm], start = [var 2.3mm, var 0mm])
+  coincident([opening.center, ORIGIN])
+  radius(opening) == 2.3mm
+  horizontal([opening.center, opening.start])
+}
+holeLarge = extrude(region(segments = [holeLargeProfile.opening]), length = holeDepth + 0.1mm)
+  |> translate(
+       x = couponWidth / 2 - holeDepth,
+       y = firstHoleY + 3 * holePitch,
+       z = holeCenterZ,
+       global = true,
+     )
+hide(holeLargeProfile)
+
+markerProfile = sketch(on = XY) {
+  marker = circle(center = [var 0mm, var 0mm], start = [var 0.7mm, var 0mm])
+  coincident([marker.center, ORIGIN])
+  radius(marker) == 0.7mm
+  horizontal([marker.center, marker.start])
+}
+markerTool = extrude(region(segments = [markerProfile.marker]), length = couponHeight + 2mm)
+  |> translate(y = markerY, z = -1mm, global = true)
+hide(markerProfile)
+
+couponWithBlindHoles = subtract(
+  couponBlank,
+  tools = [
+    holeSmall,
+    holeSecond,
+    holeThird,
+    holeLarge
+  ],
+)
+sideInsertFitCoupon = subtract(couponWithBlindHoles, tools = [markerTool])
