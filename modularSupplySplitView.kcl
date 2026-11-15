@@ -10,6 +10,8 @@ import "carrier.kcl" as lowerCarrierPart
 import "upperCarrier.kcl" as upperCarrierPart
 import "carrierSpacer.kcl" as spacerPart
 import "ceiling.kcl" as ceilingPart
+import "vlTwoRearEnvelope.kcl" as northRearReference
+import "vlSixRearEnvelope.kcl" as southRearReference
 
 tray = appearance(trayPart, color = "#495c68")
 northSupply = rotate(
@@ -65,5 +67,32 @@ westSpacer = translate(
   z = 10mm,
   global = true,
 )
+// Simplified manufacturer-based body/retainer references; not printable parts.
+northRear = rotate(
+  northRearReference,
+  axis = X,
+  angle = 90deg,
+  global = true,
+)
+  |> translate(
+       x = -73.8mm,
+       y = 31mm,
+       z = 43mm,
+       global = true,
+     )
+  |> appearance(color = "#d95757")
+southRear = rotate(
+  southRearReference,
+  axis = X,
+  angle = -90deg,
+  global = true,
+)
+  |> translate(
+       x = -73.8mm,
+       y = -31mm,
+       z = 43mm,
+       global = true,
+     )
+  |> appearance(color = "#d95757")
 ceiling = translate(ceilingPart, z = 69mm, global = true)
   |> appearance(color = "#d6dadd")

@@ -1,0 +1,147 @@
+// North dual-supply clearance review
+// Open-top concept with approximate VL and WAGO envelopes, not a print part.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "modularSupplyTray.kcl" as trayPart
+import "supplyPanelBoth.kcl" as northPanelPart
+import "supplyPanelBlank.kcl" as southPanelPart
+import "westPanel.kcl" as westPanelPart
+import "carrier.kcl" as carrierPart
+import "upperCarrier.kcl" as upperCarrierPart
+import "vlTwoRearEnvelope.kcl" as twoRearReference
+import "vlSixRearEnvelope.kcl" as sixRearReference
+import "wagoFiveEnvelope.kcl" as fivePortPart
+import "wagoTenEnvelope.kcl" as tenPortPart
+import "xmrFiveEnvelope.kcl" as xmrFiveReference
+
+secondFive = clone(fivePortPart)
+secondTen = clone(tenPortPart)
+tray = appearance(trayPart, color = "#495c68")
+northSupply = rotate(
+  northPanelPart,
+  axis = X,
+  angle = 90deg,
+  global = true,
+)
+  |> rotate(axis = Z, angle = 180deg, global = true)
+  |> translate(
+       x = -53.8mm,
+       y = 31mm,
+       z = 38.5mm,
+       global = true,
+     )
+  |> appearance(color = "#df936b")
+southSupply = rotate(
+  southPanelPart,
+  axis = X,
+  angle = 90deg,
+  global = true,
+)
+  |> translate(
+       x = -53.8mm,
+       y = -31mm,
+       z = 38.5mm,
+       global = true,
+     )
+  |> appearance(color = "#b6b6b0")
+westPanel = translate(
+  westPanelPart,
+  x = 112mm,
+  z = 36mm,
+  global = true,
+)
+  |> appearance(color = "#74848a")
+carrier = translate(carrierPart, z = 8mm, global = true)
+  |> appearance(color = "#b5c3b9")
+upperCarrier = translate(upperCarrierPart, z = 29.5mm, global = true)
+  |> appearance(color = "#b5c3b9")
+northTwoRear = rotate(
+  twoRearReference,
+  axis = X,
+  angle = 90deg,
+  global = true,
+)
+  |> translate(
+       x = -73.8mm,
+       y = 31mm,
+       z = 43mm,
+       global = true,
+     )
+  |> appearance(color = "#d95757")
+northSixRear = rotate(
+  sixRearReference,
+  axis = X,
+  angle = 90deg,
+  global = true,
+)
+  |> translate(
+       x = -33.8mm,
+       y = 31mm,
+       z = 43mm,
+       global = true,
+     )
+  |> appearance(color = "#d95757")
+upperPower = scale(
+  fivePortPart,
+  x = 29.6 / 30,
+  y = 18.1 / 18.8,
+  z = 8.05 / 8.4,
+  global = true,
+)
+  |> translate(x = -54mm, z = 33.1mm, global = true)
+  |> appearance(color = "#e88b54")
+upperGround = scale(
+  secondFive,
+  x = 29.6 / 30,
+  y = 18.1 / 18.8,
+  z = 8.05 / 8.4,
+  global = true,
+)
+  |> translate(x = -18mm, z = 33.1mm, global = true)
+  |> appearance(color = "#456a97")
+upperTenPower = scale(
+  tenPortPart,
+  x = 29.6 / 29.8,
+  y = 18.1 / 18.3,
+  z = 15.6 / 15.8,
+  global = true,
+)
+  |> rotate(axis = X, angle = -90deg, global = true)
+  |> translate(
+       x = 18mm,
+       y = -7.8mm,
+       z = 42.15mm,
+       global = true,
+     )
+  |> appearance(color = "#e6bd64")
+// Approximate rear volumes at the six ceiling +12 V ports.
+xmrFirst = translate(
+  xmrFiveReference,
+  x = -72mm,
+  y = -12mm,
+  z = 69mm,
+  global = true,
+)
+  |> appearance(color = "#b58fc4")
+xmrReferences = patternLinear3d(
+  xmrFirst,
+  instances = 2,
+  distance = 24mm,
+  axis = [1, 0, 0],
+)
+  |> patternLinear3d(instances = 3, distance = 60mm, axis = [1, 0, 0])
+upperTenGround = scale(
+  secondTen,
+  x = 29.6 / 29.8,
+  y = 18.1 / 18.3,
+  z = 15.6 / 15.8,
+  global = true,
+)
+  |> rotate(axis = X, angle = -90deg, global = true)
+  |> translate(
+       x = 54mm,
+       y = -7.8mm,
+       z = 42.15mm,
+       global = true,
+     )
+  |> appearance(color = "#456a97")

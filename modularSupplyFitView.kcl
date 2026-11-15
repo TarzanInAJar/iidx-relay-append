@@ -1,5 +1,5 @@
 // Open-top inspection view for the proposed both-south supply layout.
-// Review only: no lid, VL connector bodies, wiring, fasteners or lever motion.
+// Review only: simplified VL bodies; no lid, wires, fasteners or lever motion.
 @settings(defaultLengthUnit = mm, kclVersion = 3.0)
 
 import "modularSupplyTray.kcl" as trayPart
@@ -13,6 +13,9 @@ import "wagoFiveEnvelope.kcl" as fivePortPart
 import "wagoTenEnvelope.kcl" as tenPortPart
 import "wagoFiveRetainer.kcl" as fiveRetainerPart
 import "wagoTenRetainer.kcl" as tenRetainerPart
+import "vlTwoRearEnvelope.kcl" as twoRearReference
+import "vlSixRearEnvelope.kcl" as sixRearReference
+import "xmrFiveEnvelope.kcl" as xmrFiveReference
 
 secondSpacerBlank = clone(spacerPart)
 lowerGroundFiveBlank = clone(fivePortPart)
@@ -49,6 +52,33 @@ southSupply = rotate(
        global = true,
      )
   |> appearance(color = "#df936b")
+// Red references mark approximate rear body space, not actual connectors.
+southTwoRear = rotate(
+  twoRearReference,
+  axis = X,
+  angle = -90deg,
+  global = true,
+)
+  |> translate(
+       x = -33.8mm,
+       y = -31mm,
+       z = 43mm,
+       global = true,
+     )
+  |> appearance(color = "#d95757")
+southSixRear = rotate(
+  sixRearReference,
+  axis = X,
+  angle = -90deg,
+  global = true,
+)
+  |> translate(
+       x = -73.8mm,
+       y = -31mm,
+       z = 43mm,
+       global = true,
+     )
+  |> appearance(color = "#d95757")
 westPanel = translate(
   westPanelPart,
   x = 112mm,
@@ -178,6 +208,22 @@ upperTenPower = scale(
        global = true,
      )
   |> appearance(color = "#e6bd64")
+// Approximate rear volumes at the six ceiling +12 V ports.
+xmrFirst = translate(
+  xmrFiveReference,
+  x = -72mm,
+  y = -12mm,
+  z = 69mm,
+  global = true,
+)
+  |> appearance(color = "#b58fc4")
+xmrReferences = patternLinear3d(
+  xmrFirst,
+  instances = 2,
+  distance = 24mm,
+  axis = [1, 0, 0],
+)
+  |> patternLinear3d(instances = 3, distance = 60mm, axis = [1, 0, 0])
 upperTenGround = scale(
   groundTenBlank,
   x = 29.6 / 29.8,

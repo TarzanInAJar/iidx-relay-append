@@ -43,8 +43,9 @@ For every connector in this row, pin 1 is +12 V and pin 5 is GND; the individual
 
 ## Supply inputs
 
-- North JST VLR-02V: pin 1 = +12 V; pin 2 = GND.
-- South JST VLR-06V: pins 1–3 = +5 V; pins 4–6 = GND. Confirmed matched supply pairs: pins 1 (+5 V)/4 (GND) feed WAGO pair A; pins 2 (+5 V)/5 (GND) feed pair B; pins 3 (+5 V)/6 (GND) feed pair C.
+- JST VLR-02V: pin 1 = +12 V; pin 2 = GND. The original layout places it north; the proposed interchangeable panels also permit it on the south.
+- JST VLR-06V: pins 1–3 = +5 V; pins 4–6 = GND. The original layout places it south; the proposed interchangeable panels also permit it on the north. Confirmed matched supply pairs: pins 1 (+5 V)/4 (GND) feed WAGO pair A; pins 2 (+5 V)/5 (GND) feed pair B; pins 3 (+5 V)/6 (GND) feed pair C.
+- Proposed panel configurations are split (02 north / 06 south), both south, and both north. Preserve the same electrical destinations in each layout; relocating panels can require different harness lengths and routing. A common pre-made harness, slack, bend space, connector insertion, and the ability to install a fully wired carrier and panels are not validated. Do not assume the +5 V and +12 V grounds are common.
 
 ## CN18 — top west XADR-12V
 

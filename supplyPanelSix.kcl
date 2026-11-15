@@ -39,7 +39,7 @@ panelBlank = extrude(
 hide(panelProfile)
 
 portX = -20mm
-portHeight = -4.5mm
+portHeight = 4.5mm
 positionedTool = translate(
   portTool,
   x = portX,
