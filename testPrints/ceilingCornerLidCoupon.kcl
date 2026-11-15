@@ -1,0 +1,45 @@
+// Ceiling corner plate test
+// Local lid section matching the ceiling corner post coupon.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+cornerSize = 25mm
+lidThickness = 3mm
+holeRadius = 1.7mm
+holeX = 12mm
+holeY = 8mm
+
+lidProfile = sketch(on = XY) {
+  bottom = line(start = [var 0mm, var 0mm], end = [var 25mm, var 0mm])
+  right = line(start = [var 25mm, var 0mm], end = [var 25mm, var 25mm])
+  top = line(start = [var 25mm, var 25mm], end = [var 0mm, var 25mm])
+  left = line(start = [var 0mm, var 25mm], end = [var 0mm, var 0mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  coincident([bottom.start, ORIGIN])
+  horizontalDistance([bottom.start, bottom.end]) == cornerSize
+  verticalDistance([right.start, right.end]) == cornerSize
+}
+lidBlank = extrude(region(segments = [lidProfile.bottom, lidProfile.right], intersectionIndex = -1, direction = CCW), length = lidThickness)
+hide(lidProfile)
+
+holeProfile = sketch(on = XY) {
+  hole = circle(center = [var 0mm, var 0mm], start = [var 1.7mm, var 0mm])
+  coincident([hole.center, ORIGIN])
+  radius(hole) == holeRadius
+  horizontal([hole.center, hole.start])
+}
+holeTool = extrude(region(segments = [holeProfile.hole]), length = lidThickness + 2mm)
+  |> translate(
+       x = holeX,
+       y = holeY,
+       z = -1mm,
+       global = true,
+     )
+hide(holeProfile)
+ceilingCornerLidCoupon = subtract(lidBlank, tools = [holeTool])

@@ -74,7 +74,8 @@ hollowTray = subtract(outerBody, tools = [cavityTool])
 cornerPostRadius = 6mm
 cornerPostX = 103mm
 cornerPostY = 27mm
-pilotRadius = 1.2mm
+insertBoreRadius = 2.2mm
+insertBoreDepth = 5.2mm
 postProfile = sketch(on = XY) {
   postCircle = circle(center = [var 0mm, var 0mm], start = [var 6mm, var 0mm])
   coincident([postCircle.center, ORIGIN])
@@ -122,37 +123,41 @@ carrierPosts = patternLinear3d(
 trayCarrierOne = union([trayWithCorners, carrierPosts[0]])
 trayWithPosts = union([trayCarrierOne, carrierPosts[1]])
 
-pilotProfile = sketch(on = XY) {
-  pilotCircle = circle(center = [var 0mm, var 0mm], start = [var 1.2mm, var 0mm])
-  coincident([pilotCircle.center, ORIGIN])
-  radius(pilotCircle) == pilotRadius
-  horizontal([pilotCircle.center, pilotCircle.start])
+// The tested 4.4 mm insert bores leave space below a 4 mm insert.
+insertProfile = sketch(on = XY) {
+  insertCircle = circle(center = [var 0mm, var 0mm], start = [var 2.2mm, var 0mm])
+  coincident([insertCircle.center, ORIGIN])
+  radius(insertCircle) == insertBoreRadius
+  horizontal([
+    insertCircle.center,
+    insertCircle.start
+  ])
 }
-cornerPilot = extrude(region(segments = [pilotProfile.pilotCircle]), length = 13mm)
+cornerInsertTool = extrude(region(segments = [insertProfile.insertCircle]), length = insertBoreDepth + 1mm)
   |> translate(
        x = -cornerPostX,
        y = -cornerPostY,
-       z = trayHeight - 12mm,
+       z = trayHeight - 0.1mm - insertBoreDepth,
        global = true,
      )
-cornerPilots = patternLinear3d(
-  cornerPilot,
+cornerInsertTools = patternLinear3d(
+  cornerInsertTool,
   instances = 2,
   distance = 2 * cornerPostX,
   axis = [1, 0, 0],
 )
   |> patternLinear3d(instances = 2, distance = 2 * cornerPostY, axis = [0, 1, 0])
-trayWithLidPilots = subtract(trayWithPosts, tools = cornerPilots)
-carrierPilot = extrude(region(segments = [pilotProfile.pilotCircle]), length = 5mm)
-  |> translate(x = -carrierPostX, z = 4mm, global = true)
-carrierPilots = patternLinear3d(
-  carrierPilot,
+trayWithLidInsertBores = subtract(trayWithPosts, tools = cornerInsertTools)
+carrierInsertTool = extrude(region(segments = [insertProfile.insertCircle]), length = insertBoreDepth + 1mm)
+  |> translate(x = -carrierPostX, z = carrierPostHeight - insertBoreDepth, global = true)
+carrierInsertTools = patternLinear3d(
+  carrierInsertTool,
   instances = 2,
   distance = 2 * carrierPostX,
   axis = [1, 0, 0],
 )
-hide(pilotProfile)
-trayWithCarrierPilots = subtract(trayWithLidPilots, tools = carrierPilots)
+hide(insertProfile)
+trayWithCarrierInsertBores = subtract(trayWithLidInsertBores, tools = carrierInsertTools)
 
 // Open the middle of the west end while retaining the floor and side-wall frame.
 westOpeningWidth = 52mm
@@ -185,7 +190,7 @@ westOpeningRegion = region(
 hide(westOpeningProfile)
 westOpeningTool = extrude(westOpeningRegion, length = trayHeight - wallThickness + 1mm)
   |> translate(z = wallThickness, global = true)
-trayWithWestOpening = subtract(trayWithCarrierPilots, tools = [westOpeningTool])
+trayWithWestOpening = subtract(trayWithCarrierInsertBores, tools = [westOpeningTool])
 
 // Two internal bosses attach to existing corner posts and support the end panel.
 westBossRadius = 4.5mm
@@ -215,28 +220,31 @@ westBosses = patternLinear3d(
 trayWithFirstWestBoss = union([trayWithWestOpening, westBosses[0]])
 trayWithWestBosses = union([trayWithFirstWestBoss, westBosses[1]])
 
-westPilotProfile = sketch(on = YZ) {
-  pilot = circle(center = [var 0mm, var 0mm], start = [var 1.2mm, var 0mm])
-  coincident([pilot.center, ORIGIN])
-  radius(pilot) == pilotRadius
-  horizontal([pilot.center, pilot.start])
+westInsertProfile = sketch(on = YZ) {
+  insertCircle = circle(center = [var 0mm, var 0mm], start = [var 2.2mm, var 0mm])
+  coincident([insertCircle.center, ORIGIN])
+  radius(insertCircle) == insertBoreRadius
+  horizontal([
+    insertCircle.center,
+    insertCircle.start
+  ])
 }
-westPilotRegion = region(segments = [westPilotProfile.pilot])
-hide(westPilotProfile)
-westPilotBlank = extrude(westPilotRegion, length = 9mm)
+westInsertRegion = region(segments = [westInsertProfile.insertCircle])
+hide(westInsertProfile)
+westInsertBlank = extrude(westInsertRegion, length = insertBoreDepth + 1mm)
   |> translate(
-       x = 104mm,
+       x = trayLength / 2 - wallThickness - insertBoreDepth,
        y = -westBossY,
        z = westBossZ,
        global = true,
      )
-westPilots = patternLinear3d(
-  westPilotBlank,
+westInsertTools = patternLinear3d(
+  westInsertBlank,
   instances = 2,
   distance = 2 * westBossY,
   axis = [0, 1, 0],
 )
-trayWithWestPilots = subtract(trayWithWestBosses, tools = westPilots)
+trayWithWestInsertBores = subtract(trayWithWestBosses, tools = westInsertTools)
 
 // Supply openings sit near the east end, clear of the corner posts.
 vlPortX = -80mm
@@ -365,7 +373,7 @@ vlTwoTool = extrude(
        global = true,
      )
 hide(vlTwoProfile)
-trayWithNorthVl = subtract(trayWithWestPilots, tools = [vlTwoTool])
+trayWithNorthVl = subtract(trayWithWestInsertBores, tools = [vlTwoTool])
 
 // VLR-06V dual-row south opening.
 vlSixProfile = sketch(on = XZ) {

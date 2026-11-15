@@ -1,0 +1,68 @@
+// Ceiling corner post test
+// Local east-south wall and lid-post replica for an AB012 insert joint.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+cornerSize = 25mm
+wallThickness = 3mm
+couponHeight = 15mm
+postRadius = 6mm
+postRecess = 0.1mm
+insertRadius = 2.2mm
+insertDepth = 5.2mm
+postX = 12mm
+postY = 8mm
+
+wallProfile = sketch(on = XY) {
+  bottom = line(start = [var 0mm, var 0mm], end = [var 25mm, var 0mm])
+  right = line(start = [var 25mm, var 0mm], end = [var 25mm, var 3mm])
+  innerBottom = line(start = [var 25mm, var 3mm], end = [var 3mm, var 3mm])
+  innerLeft = line(start = [var 3mm, var 3mm], end = [var 3mm, var 25mm])
+  top = line(start = [var 3mm, var 25mm], end = [var 0mm, var 25mm])
+  left = line(start = [var 0mm, var 25mm], end = [var 0mm, var 0mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, innerBottom.start])
+  coincident([innerBottom.end, innerLeft.start])
+  coincident([innerLeft.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(innerBottom)
+  vertical(innerLeft)
+  horizontal(top)
+  vertical(left)
+  coincident([bottom.start, ORIGIN])
+  horizontalDistance([bottom.start, bottom.end]) == cornerSize
+  verticalDistance([left.end, left.start]) == cornerSize
+  verticalDistance([right.start, right.end]) == wallThickness
+  horizontalDistance([top.end, top.start]) == wallThickness
+}
+wall = extrude(region(segments = [wallProfile.bottom, wallProfile.right], intersectionIndex = -1, direction = CCW), length = couponHeight)
+hide(wallProfile)
+
+postProfile = sketch(on = XY) {
+  postCircle = circle(center = [var 0mm, var 0mm], start = [var 6mm, var 0mm])
+  coincident([postCircle.center, ORIGIN])
+  radius(postCircle) == postRadius
+  horizontal([postCircle.center, postCircle.start])
+}
+post = extrude(region(segments = [postProfile.postCircle]), length = couponHeight - postRecess)
+  |> translate(x = postX, y = postY, global = true)
+hide(postProfile)
+cornerWithPost = union([wall, post])
+
+insertProfile = sketch(on = XY) {
+  bore = circle(center = [var 0mm, var 0mm], start = [var 2.2mm, var 0mm])
+  coincident([bore.center, ORIGIN])
+  radius(bore) == insertRadius
+  horizontal([bore.center, bore.start])
+}
+insertTool = extrude(region(segments = [insertProfile.bore]), length = insertDepth + 1mm)
+  |> translate(
+       x = postX,
+       y = postY,
+       z = couponHeight - postRecess - insertDepth,
+       global = true,
+     )
+hide(insertProfile)
+ceilingCornerPostCoupon = subtract(cornerWithPost, tools = [insertTool])

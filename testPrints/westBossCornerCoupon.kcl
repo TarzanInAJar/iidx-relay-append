@@ -1,0 +1,136 @@
+// West-panel boss corner test
+// Local replica of the tray's south-west corner and one insert boss.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+couponLength = 23mm
+couponWidth = 25mm
+couponHeight = 50mm
+wallThickness = 3mm
+cornerRadius = 6mm
+bossRadius = 4.5mm
+bossLength = 11mm
+bossHeight = 34mm
+insertRadius = 2.2mm
+insertDepth = 5.2mm
+
+outerProfile = sketch(on = XY) {
+  bottom = line(start = [var 0mm, var 0mm], end = [var 23mm, var 0mm])
+  right = line(start = [var 23mm, var 0mm], end = [var 23mm, var 25mm])
+  top = line(start = [var 23mm, var 25mm], end = [var 0mm, var 25mm])
+  left = line(start = [var 0mm, var 25mm], end = [var 0mm, var 0mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  coincident([bottom.start, ORIGIN])
+  horizontalDistance([bottom.start, bottom.end]) == couponLength
+  verticalDistance([right.start, right.end]) == couponWidth
+}
+outerBlank = extrude(
+  region(
+    segments = [
+      outerProfile.bottom,
+      outerProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = couponHeight,
+)
+hide(outerProfile)
+
+cavityProfile = sketch(on = XY) {
+  bottom = line(start = [var -1mm, var 3mm], end = [var 20mm, var 3mm])
+  step = line(start = [var 20mm, var 3mm], end = [var 20mm, var 9mm])
+  ledge = line(start = [var 20mm, var 9mm], end = [var 23.2mm, var 9mm])
+  right = line(start = [var 23.2mm, var 9mm], end = [var 23.2mm, var 26mm])
+  top = line(start = [var 23.2mm, var 26mm], end = [var -1mm, var 26mm])
+  left = line(start = [var -1mm, var 26mm], end = [var -1mm, var 3mm])
+  coincident([bottom.end, step.start])
+  coincident([step.end, ledge.start])
+  coincident([ledge.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(step)
+  horizontal(ledge)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == 1mm
+  verticalDistance([ORIGIN, bottom.start]) == wallThickness
+  horizontalDistance([bottom.start, bottom.end]) == couponLength - wallThickness + 1mm
+  horizontalDistance([ledge.start, ledge.end]) == wallThickness + 0.2mm
+  verticalDistance([step.start, step.end]) == 6mm
+  verticalDistance([bottom.start, top.end]) == couponWidth - wallThickness + 1mm
+}
+cavityTool = extrude(
+  region(
+    segments = [
+      cavityProfile.bottom,
+      cavityProfile.step
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = couponHeight,
+)
+  |> translate(z = wallThickness, global = true)
+hide(cavityProfile)
+cornerShell = subtract(outerBlank, tools = [cavityTool])
+
+postProfile = sketch(on = XY) {
+  postCircle = circle(center = [var 0mm, var 0mm], start = [var 6mm, var 0mm])
+  coincident([postCircle.center, ORIGIN])
+  radius(postCircle) == cornerRadius
+  horizontal([postCircle.center, postCircle.start])
+}
+post = extrude(region(segments = [postProfile.postCircle]), length = couponHeight - wallThickness)
+  |> translate(
+       x = 11mm,
+       y = 8mm,
+       z = wallThickness - 0.1mm,
+       global = true,
+     )
+hide(postProfile)
+cornerWithPost = union([cornerShell, post])
+
+bossProfile = sketch(on = YZ) {
+  bossCircle = circle(center = [var 0mm, var 0mm], start = [var 4.5mm, var 0mm])
+  coincident([bossCircle.center, ORIGIN])
+  radius(bossCircle) == bossRadius
+  horizontal([bossCircle.center, bossCircle.start])
+}
+boss = extrude(region(segments = [bossProfile.bossCircle]), length = bossLength)
+  |> translate(
+       x = 9mm,
+       y = 13mm,
+       z = bossHeight,
+       global = true,
+     )
+hide(bossProfile)
+cornerWithBoss = union([cornerWithPost, boss])
+
+insertProfile = sketch(on = YZ) {
+  insertCircle = circle(center = [var 0mm, var 0mm], start = [var 2.2mm, var 0mm])
+  coincident([insertCircle.center, ORIGIN])
+  radius(insertCircle) == insertRadius
+  horizontal([
+    insertCircle.center,
+    insertCircle.start
+  ])
+}
+insertTool = extrude(region(segments = [insertProfile.insertCircle]), length = insertDepth + 1mm)
+  |> translate(
+       x = couponLength - wallThickness - insertDepth,
+       y = 13mm,
+       z = bossHeight,
+       global = true,
+     )
+hide(insertProfile)
+westBossCornerCoupon = subtract(cornerWithBoss, tools = [insertTool])

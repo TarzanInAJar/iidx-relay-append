@@ -1,0 +1,63 @@
+// Carrier mounting-post test
+// Tray floor and one insert post for a trial with the existing carrier stack.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+floorSize = 26mm
+floorThickness = 3mm
+postRadius = 4.5mm
+postHeight = 8mm
+insertRadius = 2.2mm
+insertDepth = 5.2mm
+
+floorProfile = sketch(on = XY) {
+  bottom = line(start = [var -13mm, var -13mm], end = [var 13mm, var -13mm])
+  right = line(start = [var 13mm, var -13mm], end = [var 13mm, var 13mm])
+  top = line(start = [var 13mm, var 13mm], end = [var -13mm, var 13mm])
+  left = line(start = [var -13mm, var 13mm], end = [var -13mm, var -13mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == floorSize / 2
+  verticalDistance([bottom.start, ORIGIN]) == floorSize / 2
+  horizontalDistance([bottom.start, bottom.end]) == floorSize
+  verticalDistance([right.start, right.end]) == floorSize
+}
+floor = extrude(
+  region(
+    segments = [
+      floorProfile.bottom,
+      floorProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = floorThickness,
+)
+hide(floorProfile)
+
+postProfile = sketch(on = XY) {
+  postCircle = circle(center = [var 0mm, var 0mm], start = [var 4.5mm, var 0mm])
+  coincident([postCircle.center, ORIGIN])
+  radius(postCircle) == postRadius
+  horizontal([postCircle.center, postCircle.start])
+}
+post = extrude(region(segments = [postProfile.postCircle]), length = postHeight - floorThickness + 0.1mm)
+  |> translate(z = floorThickness - 0.1mm, global = true)
+hide(postProfile)
+floorWithPost = union([floor, post])
+
+insertProfile = sketch(on = XY) {
+  bore = circle(center = [var 0mm, var 0mm], start = [var 2.2mm, var 0mm])
+  coincident([bore.center, ORIGIN])
+  radius(bore) == insertRadius
+  horizontal([bore.center, bore.start])
+}
+insertTool = extrude(region(segments = [insertProfile.bore]), length = insertDepth + 1mm)
+  |> translate(z = postHeight - insertDepth, global = true)
+hide(insertProfile)
+carrierMountCoupon = subtract(floorWithPost, tools = [insertTool])

@@ -1,0 +1,10 @@
+// Ceiling corner joint review
+// Placement view of the two separate test-print parts; not a print part.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "ceilingCornerPostCoupon.kcl" as cornerPostPart
+import "ceilingCornerLidCoupon.kcl" as cornerLidPart
+
+cornerPost = appearance(cornerPostPart, color = "#537184")
+cornerLid = translate(cornerLidPart, z = 15mm, global = true)
+  |> appearance(color = "#d9d2c0")
