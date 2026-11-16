@@ -1,0 +1,172 @@
+// Modular supply slide-guide fit coupon
+// Short full-width sample of the south tray channel and panel stop.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+couponWidth = 96mm
+floorDepth = 18mm
+floorThickness = 3mm
+wallThickness = 3mm
+couponHeight = 24mm
+channelWidth = 84.4mm
+channelDepth = 3.2mm
+openingWidth = 80.4mm
+channelBottom = 8mm
+railWidth = 8mm
+railDepth = 4.2mm
+railBottom = 7.9mm
+
+floorProfile = sketch(on = XY) {
+  bottom = line(start = [var -48mm, var -9mm], end = [var 48mm, var -9mm])
+  right = line(start = [var 48mm, var -9mm], end = [var 48mm, var 9mm])
+  top = line(start = [var 48mm, var 9mm], end = [var -48mm, var 9mm])
+  left = line(start = [var -48mm, var 9mm], end = [var -48mm, var -9mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == couponWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == floorDepth / 2
+  horizontalDistance([bottom.start, bottom.end]) == couponWidth
+  verticalDistance([right.start, right.end]) == floorDepth
+}
+floor = extrude(
+  region(
+    segments = [
+      floorProfile.bottom,
+      floorProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = floorThickness,
+)
+  |> translate(y = floorDepth / 2, global = true)
+hide(floorProfile)
+
+wallProfile = sketch(on = XY) {
+  bottom = line(start = [var -48mm, var -1.5mm], end = [var 48mm, var -1.5mm])
+  right = line(start = [var 48mm, var -1.5mm], end = [var 48mm, var 1.5mm])
+  top = line(start = [var 48mm, var 1.5mm], end = [var -48mm, var 1.5mm])
+  left = line(start = [var -48mm, var 1.5mm], end = [var -48mm, var -1.5mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == couponWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == wallThickness / 2
+  horizontalDistance([bottom.start, bottom.end]) == couponWidth
+  verticalDistance([right.start, right.end]) == wallThickness
+}
+wall = extrude(region(segments = [wallProfile.bottom, wallProfile.right], intersectionIndex = -1, direction = CCW), length = couponHeight)
+  |> translate(y = wallThickness / 2, global = true)
+hide(wallProfile)
+baseWithWall = union([floor, wall])
+
+railProfile = sketch(on = XY) {
+  bottom = line(start = [var -4mm, var -2.1mm], end = [var 4mm, var -2.1mm])
+  right = line(start = [var 4mm, var -2.1mm], end = [var 4mm, var 2.1mm])
+  top = line(start = [var 4mm, var 2.1mm], end = [var -4mm, var 2.1mm])
+  left = line(start = [var -4mm, var 2.1mm], end = [var -4mm, var -2.1mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == railWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == railDepth / 2
+  horizontalDistance([bottom.start, bottom.end]) == railWidth
+  verticalDistance([right.start, right.end]) == railDepth
+}
+rail = extrude(region(segments = [railProfile.bottom, railProfile.right], intersectionIndex = -1, direction = CCW), length = couponHeight - railBottom)
+  |> translate(
+       x = -channelWidth / 2,
+       y = 3.9mm,
+       z = railBottom,
+       global = true,
+     )
+hide(railProfile)
+rails = patternLinear3d(
+  rail,
+  instances = 2,
+  distance = channelWidth,
+  axis = [1, 0, 0],
+)
+withFirstRail = union([baseWithWall, rails[0]])
+withRails = union([withFirstRail, rails[1]])
+
+openingProfile = sketch(on = XY) {
+  bottom = line(start = [var -40.2mm, var -4mm], end = [var 40.2mm, var -4mm])
+  right = line(start = [var 40.2mm, var -4mm], end = [var 40.2mm, var 4mm])
+  top = line(start = [var 40.2mm, var 4mm], end = [var -40.2mm, var 4mm])
+  left = line(start = [var -40.2mm, var 4mm], end = [var -40.2mm, var -4mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == openingWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == 4mm
+  horizontalDistance([bottom.start, bottom.end]) == openingWidth
+  verticalDistance([right.start, right.end]) == 8mm
+}
+opening = extrude(
+  region(
+    segments = [
+      openingProfile.bottom,
+      openingProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = couponHeight - channelBottom + 1mm,
+)
+  |> translate(y = 3mm, z = channelBottom, global = true)
+hide(openingProfile)
+withOpening = subtract(withRails, tools = [opening])
+
+channelProfile = sketch(on = XY) {
+  bottom = line(start = [var -42.2mm, var -1.6mm], end = [var 42.2mm, var -1.6mm])
+  right = line(start = [var 42.2mm, var -1.6mm], end = [var 42.2mm, var 1.6mm])
+  top = line(start = [var 42.2mm, var 1.6mm], end = [var -42.2mm, var 1.6mm])
+  left = line(start = [var -42.2mm, var 1.6mm], end = [var -42.2mm, var -1.6mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == channelWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == channelDepth / 2
+  horizontalDistance([bottom.start, bottom.end]) == channelWidth
+  verticalDistance([right.start, right.end]) == channelDepth
+}
+channel = extrude(
+  region(
+    segments = [
+      channelProfile.bottom,
+      channelProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = couponHeight - channelBottom + 1mm,
+)
+  |> translate(y = 2.6mm, z = channelBottom, global = true)
+hide(channelProfile)
+supplySlideGuideCoupon = subtract(withOpening, tools = [channel])
