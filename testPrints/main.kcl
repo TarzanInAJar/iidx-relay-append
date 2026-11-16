@@ -4,3 +4,4 @@
 
 export import fixtureBase from "clearanceFixtureBase.kcl"
 export import fixtureLid from "clearanceFixtureLid.kcl"
+export import vlFitCoupon from "vlFitCoupon.kcl"

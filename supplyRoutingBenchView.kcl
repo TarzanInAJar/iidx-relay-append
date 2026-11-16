@@ -1,0 +1,262 @@
+// Supply routing bench staging view
+// Taller dual-supply clearance proposal; references only, not a print file.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+// The coupon is reconstructed from the tested panel cutters so this view does not
+// import the unrelated clearance-fixture solids exported by testPrints/main.kcl.
+import "vlTwoPanelCutter.kcl" as twoPortTool
+import "vlSixPanelCutter.kcl" as sixPortTool
+import "carrier.kcl" as lowerCarrierPart
+import "upperCarrier.kcl" as upperCarrierPart
+import "carrierSpacer.kcl" as spacerPart
+import "wagoFiveRetainer.kcl" as fiveRetainerPart
+import "wagoTenRetainer.kcl" as tenRetainerPart
+import "wagoFiveEnvelope.kcl" as fiveBodyReference
+import "wagoTenEnvelope.kcl" as tenBodyReference
+import "vlTwoRearEnvelope.kcl" as twoRearReference
+import "vlSixRearEnvelope.kcl" as sixRearReference
+import "ceiling.kcl" as ceilingPart
+import "xmrFiveEnvelope.kcl" as xmrFiveReference
+
+lowerZ = 8mm
+plateThickness = 2mm
+spacerHeight = 19.5mm
+upperZ = lowerZ + plateThickness + spacerHeight
+upperFaceZ = upperZ + plateThickness
+couponCenterX = -53.8mm
+couponInnerY = -31mm
+couponLength = 84mm
+couponWidth = 34mm
+couponThickness = 3mm
+openingZ = 51.5mm
+// Set to 0 for both south or 1 for both north; split is not shown together.
+northTrial = 0
+trialRotation = 180deg * northTrial
+trialXOffset = 2 * couponCenterX * northTrial
+trialBoxHeight = 85mm
+ceilingThickness = 3mm
+ceilingUndersideZ = trialBoxHeight - ceilingThickness
+portOffset = 20mm
+retainerBaseThickness = 1.6mm
+
+secondSpacer = clone(spacerPart)
+secondFiveRetainer = clone(fiveRetainerPart)
+secondFiveReference = clone(fiveBodyReference)
+secondTenRetainer = clone(tenRetainerPart)
+secondTenReference = clone(tenBodyReference)
+lowerCarrier = translate(lowerCarrierPart, z = lowerZ, global = true)
+  |> appearance(color = "#a9b9b2")
+upperCarrier = translate(upperCarrierPart, z = upperZ, global = true)
+  |> appearance(color = "#a9b9b2")
+eastSpacer = translate(
+  spacerPart,
+  x = -84mm,
+  y = 13mm,
+  z = lowerZ + plateThickness,
+  global = true,
+)
+  |> appearance(color = "#c8b68d")
+westSpacer = translate(
+  secondSpacer,
+  x = 84mm,
+  y = -13mm,
+  z = lowerZ + plateThickness,
+  global = true,
+)
+  |> appearance(color = "#c8b68d")
+
+fiveRetainer = translate(
+  fiveRetainerPart,
+  x = -54mm,
+  z = upperFaceZ,
+  global = true,
+)
+  |> appearance(color = "#72a58b")
+fiveBody = scale(
+  fiveBodyReference,
+  x = 29.6 / 30,
+  y = 18.1 / 18.8,
+  z = 8.05 / 8.4,
+  global = true,
+)
+  |> translate(x = -54mm, z = upperFaceZ + retainerBaseThickness, global = true)
+  |> appearance(color = "#e88b54")
+secondFive = translate(
+  secondFiveRetainer,
+  x = -18mm,
+  z = upperFaceZ,
+  global = true,
+)
+  |> appearance(color = "#72a58b")
+secondFiveBody = scale(
+  secondFiveReference,
+  x = 29.6 / 30,
+  y = 18.1 / 18.8,
+  z = 8.05 / 8.4,
+  global = true,
+)
+  |> translate(x = -18mm, z = upperFaceZ + retainerBaseThickness, global = true)
+  |> appearance(color = "#456a97")
+tenRetainer = translate(
+  tenRetainerPart,
+  x = 18mm,
+  z = upperFaceZ,
+  global = true,
+)
+  |> appearance(color = "#72a58b")
+tenBody = scale(
+  tenBodyReference,
+  x = 29.6 / 29.8,
+  y = 18.1 / 18.3,
+  z = 15.6 / 15.8,
+  global = true,
+)
+  |> rotate(axis = X, angle = -90deg, global = true)
+  |> translate(
+       x = 18mm,
+       y = -7.8mm,
+       z = upperFaceZ + retainerBaseThickness + 9.05mm,
+       global = true,
+     )
+  |> appearance(color = "#e6bd64")
+secondTen = translate(
+  secondTenRetainer,
+  x = 54mm,
+  z = upperFaceZ,
+  global = true,
+)
+  |> appearance(color = "#72a58b")
+secondTenBody = scale(
+  secondTenReference,
+  x = 29.6 / 29.8,
+  y = 18.1 / 18.3,
+  z = 15.6 / 15.8,
+  global = true,
+)
+  |> rotate(axis = X, angle = -90deg, global = true)
+  |> translate(
+       x = 54mm,
+       y = -7.8mm,
+       z = upperFaceZ + retainerBaseThickness + 9.05mm,
+       global = true,
+     )
+  |> appearance(color = "#456a97")
+
+// Review-only representation of the printed VL fit coupon. The tool reliefs
+// are flipped onto the same face as the printed coupon.
+couponProfile = sketch(on = XY) {
+  bottom = line(start = [var -42mm, var -17mm], end = [var 42mm, var -17mm])
+  right = line(start = [var 42mm, var -17mm], end = [var 42mm, var 17mm])
+  top = line(start = [var 42mm, var 17mm], end = [var -42mm, var 17mm])
+  left = line(start = [var -42mm, var 17mm], end = [var -42mm, var -17mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == couponLength / 2
+  verticalDistance([bottom.start, ORIGIN]) == couponWidth / 2
+  horizontalDistance([bottom.start, bottom.end]) == couponLength
+  verticalDistance([right.start, right.end]) == couponWidth
+}
+couponBlank = extrude(
+  region(
+    segments = [
+      couponProfile.bottom,
+      couponProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = couponThickness,
+)
+hide(couponProfile)
+couponTwoTool = rotate(
+  twoPortTool,
+  axis = Y,
+  angle = 180deg,
+  global = true,
+)
+  |> translate(x = -portOffset, z = couponThickness, global = true)
+couponWithTwo = subtract(couponBlank, tools = [couponTwoTool])
+couponSixTool = rotate(
+  sixPortTool,
+  axis = Y,
+  angle = 180deg,
+  global = true,
+)
+  |> translate(x = portOffset, z = couponThickness, global = true)
+couponPart = subtract(couponWithTwo, tools = [couponSixTool])
+
+// The coupon's recessed face is inward on either side; its support is not modeled.
+supplyCoupon = rotate(
+  couponPart,
+  axis = Y,
+  angle = 180deg,
+  global = true,
+)
+  |> rotate(axis = X, angle = 90deg, global = true)
+  |> translate(
+       x = couponCenterX,
+       y = couponInnerY - couponThickness,
+       z = openingZ,
+       global = true,
+     )
+  |> rotate(axis = Z, angle = trialRotation, global = true)
+  |> translate(x = trialXOffset, global = true)
+  |> appearance(color = "#536f85")
+
+// Boxes indicate approximate rear connector volume, not exact housings or wire paths.
+sixPortRear = rotate(
+  sixRearReference,
+  axis = X,
+  angle = -90deg,
+  global = true,
+)
+  |> translate(
+       x = couponCenterX - portOffset,
+       y = couponInnerY,
+       z = openingZ,
+       global = true,
+     )
+  |> rotate(axis = Z, angle = trialRotation, global = true)
+  |> translate(x = trialXOffset, global = true)
+  |> appearance(color = "#d56c68")
+twoPortRear = rotate(
+  twoRearReference,
+  axis = X,
+  angle = -90deg,
+  global = true,
+)
+  |> translate(
+       x = couponCenterX + portOffset,
+       y = couponInnerY,
+       z = openingZ,
+       global = true,
+     )
+  |> rotate(axis = Z, angle = trialRotation, global = true)
+  |> translate(x = trialXOffset, global = true)
+  |> appearance(color = "#bb8cc8")
+
+// The existing lid floats at the proposed taller enclosure height for review.
+// Its translucent appearance is a visualization aid, not a material specification.
+trialCeiling = translate(ceilingPart, z = ceilingUndersideZ, global = true)
+  |> appearance(color = "#d6dadd", opacity = 25)
+xmrFirst = translate(
+  xmrFiveReference,
+  x = -72mm,
+  y = -12mm,
+  z = ceilingUndersideZ,
+  global = true,
+)
+  |> appearance(color = "#b58fc4")
+xmrReferences = patternLinear3d(
+  xmrFirst,
+  instances = 2,
+  distance = 24mm,
+  axis = [1, 0, 0],
+)
+  |> patternLinear3d(instances = 3, distance = 60mm, axis = [1, 0, 0])

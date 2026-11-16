@@ -277,4 +277,4 @@ vlReliefs = patternLinear3d(
   distance = 2 * portOffset,
   axis = [1, 0, 0],
 )
-vlFitCoupon = subtract(couponWithPorts, tools = vlReliefs)
+export vlFitCoupon = subtract(couponWithPorts, tools = vlReliefs)

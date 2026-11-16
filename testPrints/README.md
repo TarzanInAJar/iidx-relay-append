@@ -3,7 +3,7 @@
 - `clearanceFixtureBase.kcl` — printable fixture base.
 - `clearanceFixtureLid.kcl` — printable XMR-05V fixture lid.
 - `ceilingFitCoupon.kcl` — printable 76 × 48 × 3 mm sample of the first ceiling connector positions: one XMR-04V and two SMP-04V-BC in one row, with two XMR-05V in the other at the actual 24 mm pitch and 24 mm row spacing. The openings and underside reliefs match `../ceiling.kcl` as modeled.
-- `vlFitCoupon.kcl` — printable 84 × 34 × 3 mm sample with VLR-02V and VLR-06V openings and rear reliefs as modeled in `../tray.kcl`. The two openings represent separate walls and their spacing on this coupon is not an assembly feature.
+- `vlFitCoupon.kcl` — printable 84 × 34 × 3 mm sample with VLR-02V and VLR-06V openings and rear reliefs as modeled in `../tray.kcl`. The openings originally represented separate walls; their 40 mm spacing also matches the staged modular dual-supply panel.
 - `insertFitCoupon.kcl` — 60 × 9 × 7 mm insert-test strip for the user's AB012 M3 × 5 × 4 inserts. Four nominal blind-hole diameters, from the end with the tiny marker hole: 4.3, 4.4, 4.5 and 4.6 mm; each is 5.2 mm deep. The strip width matches the existing carrier-post diameter but is not the same boss geometry; sideways-printed west-panel holes are not represented.
 - `sideInsertFitCoupon.kcl` — 8 × 60 × 12 mm coupon with the same four blind-hole trial diameters and 5.2 mm depth, arranged horizontally to compare sideways-printed holes. Its top marker hole identifies the 4.3 mm end. This rectangular block does not reproduce actual west-boss geometry, support needs or insertion access.
 - `westBossCornerCoupon.kcl` — 23 × 25 × 50 mm local replica of the south-west tray corner with one horizontal west-panel boss, 4.4 mm × 5.2 mm insert bore and the adjoining wall/floor geometry. It is a separate copy, not linked to `../tray.kcl`; synchronize it if that geometry changes. The shortened post ends 0.1 mm below the coupon's cut top, which does not affect the boss interface.
@@ -11,7 +11,8 @@
 - `ceilingCornerPostCoupon.kcl` — 25 × 25 × 15 mm section of the east-south wall corner and 12 mm diameter lid post, with the tray's nominal 0.1 mm post-to-rim gap and one 4.4 mm × 5.2 mm blind insert bore.
 - `ceilingCornerLidCoupon.kcl` — matching 25 × 25 × 3 mm lid corner with a 3.4 mm through-hole. The paired parts are separate printable bodies.
 - `ceilingCornerJointView.kcl` — assembled view of the two ceiling corner coupons; not a print part or a fastener model.
-- `main.kcl` — module interface for the review view; not a print part.
+- `supplyRoutingBenchTest.md` — no-new-print instructions for checking the staged VL supply routing with existing printed parts. `../supplyRoutingBenchView.kcl` shows the both-south trial setup using the coupon and carrier; it is a review view, not a print part.
+- `main.kcl` — module interface for the review views; not a print part.
 
 The assembled review is `../clearanceFixtureView.kcl`. The accepted WAGO retainer models remain in the project root because the enclosure assembly also uses them; reuse the existing printed 221-420 retainer with this fixture.
 
