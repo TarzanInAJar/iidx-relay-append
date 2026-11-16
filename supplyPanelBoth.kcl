@@ -6,7 +6,7 @@ import "vlTwoPanelCutter.kcl" as twoPortTool
 import "vlSixPanelCutter.kcl" as sixPortTool
 
 panelLength = 84mm
-panelHeight = 60.6mm
+panelHeight = 73.6mm
 panelThickness = 3mm
 panelProfile = sketch(on = XY) {
   bottom = line(start = [var -42mm, var -30.3mm], end = [var 42mm, var -30.3mm])
@@ -40,18 +40,21 @@ panelBlank = extrude(
 hide(panelProfile)
 
 portPitch = 40mm
-portHeight = 4.5mm
-twoPortPositioned = translate(
-  twoPortTool,
-  x = portPitch / 2,
-  y = portHeight,
-  global = true,
-)
+portHeight = 6.5mm
+// Extend cutters below the surface without changing the 1.5 mm relief depth.
+twoPortPositioned = scale(twoPortTool, z = 1.02, global = true)
+  |> translate(
+       x = portPitch / 2,
+       y = portHeight,
+       z = -0.03mm,
+       global = true,
+     )
 panelWithTwo = subtract(panelBlank, tools = [twoPortPositioned])
-sixPortPositioned = translate(
-  sixPortTool,
-  x = -portPitch / 2,
-  y = portHeight,
-  global = true,
-)
+sixPortPositioned = scale(sixPortTool, z = 1.02, global = true)
+  |> translate(
+       x = -portPitch / 2,
+       y = portHeight,
+       z = -0.03mm,
+       global = true,
+     )
 supplyPanelBoth = subtract(panelWithTwo, tools = [sixPortPositioned])

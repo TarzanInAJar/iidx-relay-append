@@ -5,7 +5,7 @@
 import "modularSupplyTray.kcl" as trayPart
 import "supplyPanelBoth.kcl" as northPanelPart
 import "supplyPanelBlank.kcl" as southPanelPart
-import "westPanel.kcl" as westPanelPart
+import "westPanelTall.kcl" as westPanelPart
 import "carrier.kcl" as carrierPart
 import "upperCarrier.kcl" as upperCarrierPart
 import "vlTwoRearEnvelope.kcl" as twoRearReference
@@ -16,7 +16,8 @@ import "xmrFiveEnvelope.kcl" as xmrFiveReference
 
 secondFive = clone(fivePortPart)
 secondTen = clone(tenPortPart)
-tray = appearance(trayPart, color = "#495c68")
+// Translucent tray is a review aid; printable tray geometry is unchanged.
+tray = appearance(trayPart, color = "#495c68", opacity = 25)
 northSupply = rotate(
   northPanelPart,
   axis = X,
@@ -27,7 +28,7 @@ northSupply = rotate(
   |> translate(
        x = -53.8mm,
        y = 31mm,
-       z = 38.5mm,
+       z = 45mm,
        global = true,
      )
   |> appearance(color = "#df936b")
@@ -40,7 +41,7 @@ southSupply = rotate(
   |> translate(
        x = -53.8mm,
        y = -31mm,
-       z = 38.5mm,
+       z = 45mm,
        global = true,
      )
   |> appearance(color = "#b6b6b0")
@@ -64,7 +65,7 @@ northTwoRear = rotate(
   |> translate(
        x = -73.8mm,
        y = 31mm,
-       z = 43mm,
+       z = 51.5mm,
        global = true,
      )
   |> appearance(color = "#d95757")
@@ -77,7 +78,7 @@ northSixRear = rotate(
   |> translate(
        x = -33.8mm,
        y = 31mm,
-       z = 43mm,
+       z = 51.5mm,
        global = true,
      )
   |> appearance(color = "#d95757")
@@ -119,7 +120,7 @@ xmrFirst = translate(
   xmrFiveReference,
   x = -72mm,
   y = -12mm,
-  z = 69mm,
+  z = 82mm,
   global = true,
 )
   |> appearance(color = "#b58fc4")

@@ -5,7 +5,7 @@
 import "modularSupplyTray.kcl" as trayPart
 import "supplyPanelTwo.kcl" as northPanelPart
 import "supplyPanelSix.kcl" as southPanelPart
-import "westPanel.kcl" as westPanelPart
+import "westPanelTall.kcl" as westPanelPart
 import "carrier.kcl" as lowerCarrierPart
 import "upperCarrier.kcl" as upperCarrierPart
 import "carrierSpacer.kcl" as spacerPart
@@ -24,7 +24,7 @@ northSupply = rotate(
   |> translate(
        x = -53.8mm,
        y = 31mm,
-       z = 38.5mm,
+       z = 45mm,
        global = true,
      )
   |> appearance(color = "#e9bd6d")
@@ -37,7 +37,7 @@ southSupply = rotate(
   |> translate(
        x = -53.8mm,
        y = -31mm,
-       z = 38.5mm,
+       z = 45mm,
        global = true,
      )
   |> appearance(color = "#df936b")
@@ -77,7 +77,7 @@ northRear = rotate(
   |> translate(
        x = -73.8mm,
        y = 31mm,
-       z = 43mm,
+       z = 51.5mm,
        global = true,
      )
   |> appearance(color = "#d95757")
@@ -90,9 +90,9 @@ southRear = rotate(
   |> translate(
        x = -73.8mm,
        y = -31mm,
-       z = 43mm,
+       z = 51.5mm,
        global = true,
      )
   |> appearance(color = "#d95757")
-ceiling = translate(ceilingPart, z = 69mm, global = true)
+ceiling = translate(ceilingPart, z = 82mm, global = true)
   |> appearance(color = "#d6dadd")

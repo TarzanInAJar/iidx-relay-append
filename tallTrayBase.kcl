@@ -1,0 +1,192 @@
+// Taller tray base
+// Extends the existing tray to the revised lid height while preserving lower interfaces.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "tray.kcl" as originalTray
+
+trayLength = 230mm
+trayWidth = 70mm
+wallThickness = 3mm
+originalRimZ = 69mm
+raisedRimZ = 82mm
+cornerPostX = 103mm
+cornerPostY = 27mm
+cornerPostRadius = 6mm
+insertRadius = 2.2mm
+insertDepth = 5.2mm
+
+// Fill the original lid-insert holes before adding the higher corner posts.
+plugProfile = sketch(on = XY) {
+  plugCircle = circle(center = [var 0mm, var 0mm], start = [var 2.3mm, var 0mm])
+  coincident([plugCircle.center, ORIGIN])
+  radius(plugCircle) == insertRadius + 0.1mm
+  horizontal([plugCircle.center, plugCircle.start])
+}
+plug = extrude(region(segments = [plugProfile.plugCircle]), length = insertDepth + 1.2mm)
+  |> translate(
+       x = -cornerPostX,
+       y = -cornerPostY,
+       z = originalRimZ - insertDepth - 0.2mm,
+       global = true,
+     )
+hide(plugProfile)
+plugs = patternLinear3d(
+  plug,
+  instances = 2,
+  distance = 2 * cornerPostX,
+  axis = [1, 0, 0],
+)
+  |> patternLinear3d(instances = 2, distance = 2 * cornerPostY, axis = [0, 1, 0])
+filledCornerOne = union([originalTray, plugs[0]])
+filledCornerTwo = union([filledCornerOne, plugs[1]])
+filledCornerThree = union([filledCornerTwo, plugs[2]])
+filledOriginalTray = union([filledCornerThree, plugs[3]])
+
+outerProfile = sketch(on = XY) {
+  bottom = line(start = [var -115mm, var -35mm], end = [var 115mm, var -35mm])
+  right = line(start = [var 115mm, var -35mm], end = [var 115mm, var 35mm])
+  top = line(start = [var 115mm, var 35mm], end = [var -115mm, var 35mm])
+  left = line(start = [var -115mm, var 35mm], end = [var -115mm, var -35mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == trayLength / 2
+  verticalDistance([bottom.start, ORIGIN]) == trayWidth / 2
+  horizontalDistance([bottom.start, bottom.end]) == trayLength
+  verticalDistance([right.start, right.end]) == trayWidth
+}
+outerExtension = extrude(
+  region(
+    segments = [
+      outerProfile.bottom,
+      outerProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = raisedRimZ - originalRimZ + 0.1mm,
+)
+  |> translate(z = originalRimZ - 0.1mm, global = true)
+hide(outerProfile)
+
+innerProfile = sketch(on = XY) {
+  bottom = line(start = [var -112mm, var -32mm], end = [var 112mm, var -32mm])
+  right = line(start = [var 112mm, var -32mm], end = [var 112mm, var 32mm])
+  top = line(start = [var 112mm, var 32mm], end = [var -112mm, var 32mm])
+  left = line(start = [var -112mm, var 32mm], end = [var -112mm, var -32mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == trayLength / 2 - wallThickness
+  verticalDistance([bottom.start, ORIGIN]) == trayWidth / 2 - wallThickness
+  horizontalDistance([bottom.start, bottom.end]) == trayLength - (2 * wallThickness)
+  verticalDistance([right.start, right.end]) == trayWidth - (2 * wallThickness)
+}
+innerTool = extrude(
+  region(
+    segments = [
+      innerProfile.bottom,
+      innerProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = raisedRimZ - originalRimZ + 1mm,
+)
+  |> translate(z = originalRimZ - 0.2mm, global = true)
+hide(innerProfile)
+wallExtension = subtract(outerExtension, tools = [innerTool])
+trayWithRaisedWalls = union([filledOriginalTray, wallExtension])
+
+postProfile = sketch(on = XY) {
+  postCircle = circle(center = [var 0mm, var 0mm], start = [var 6mm, var 0mm])
+  coincident([postCircle.center, ORIGIN])
+  // Slight overlap with the original post avoids coincident lateral faces.
+  radius(postCircle) == cornerPostRadius + 0.02mm
+  horizontal([postCircle.center, postCircle.start])
+}
+postExtension = extrude(region(segments = [postProfile.postCircle]), length = raisedRimZ - originalRimZ + 0.1mm)
+  |> translate(
+       x = -cornerPostX,
+       y = -cornerPostY,
+       z = originalRimZ - 0.2mm,
+       global = true,
+     )
+hide(postProfile)
+posts = patternLinear3d(
+  postExtension,
+  instances = 2,
+  distance = 2 * cornerPostX,
+  axis = [1, 0, 0],
+)
+  |> patternLinear3d(instances = 2, distance = 2 * cornerPostY, axis = [0, 1, 0])
+raisedPostOne = union([trayWithRaisedWalls, posts[0]])
+raisedPostTwo = union([raisedPostOne, posts[1]])
+raisedPostThree = union([raisedPostTwo, posts[2]])
+trayWithRaisedPosts = union([raisedPostThree, posts[3]])
+
+westOpeningProfile = sketch(on = XY) {
+  bottom = line(start = [var 111.9mm, var -26mm], end = [var 115.2mm, var -26mm])
+  right = line(start = [var 115.2mm, var -26mm], end = [var 115.2mm, var 26mm])
+  top = line(start = [var 115.2mm, var 26mm], end = [var 111.9mm, var 26mm])
+  left = line(start = [var 111.9mm, var 26mm], end = [var 111.9mm, var -26mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([ORIGIN, bottom.start]) == trayLength / 2 - wallThickness - 0.1mm
+  verticalDistance([bottom.start, ORIGIN]) == 26mm
+  horizontalDistance([bottom.start, bottom.end]) == wallThickness + 0.3mm
+  verticalDistance([right.start, right.end]) == 52mm
+}
+westOpeningTool = extrude(
+  region(
+    segments = [
+      westOpeningProfile.bottom,
+      westOpeningProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = raisedRimZ - originalRimZ + 1.2mm,
+)
+  |> translate(z = originalRimZ - 0.2mm, global = true)
+hide(westOpeningProfile)
+trayWithWestOpening = subtract(trayWithRaisedPosts, tools = [westOpeningTool])
+
+insertProfile = sketch(on = XY) {
+  bore = circle(center = [var 0mm, var 0mm], start = [var 2.2mm, var 0mm])
+  coincident([bore.center, ORIGIN])
+  radius(bore) == insertRadius
+  horizontal([bore.center, bore.start])
+}
+insertTool = extrude(region(segments = [insertProfile.bore]), length = insertDepth + 1mm)
+  |> translate(
+       x = -cornerPostX,
+       y = -cornerPostY,
+       z = raisedRimZ - 0.1mm - insertDepth,
+       global = true,
+     )
+hide(insertProfile)
+insertTools = patternLinear3d(
+  insertTool,
+  instances = 2,
+  distance = 2 * cornerPostX,
+  axis = [1, 0, 0],
+)
+  |> patternLinear3d(instances = 2, distance = 2 * cornerPostY, axis = [0, 1, 0])
+tallTrayBase = subtract(trayWithWestOpening, tools = insertTools)

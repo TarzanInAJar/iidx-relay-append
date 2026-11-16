@@ -3,7 +3,7 @@
 @settings(defaultLengthUnit = mm, kclVersion = 3.0)
 
 panelLength = 84mm
-panelHeight = 60.6mm
+panelHeight = 73.6mm
 panelThickness = 3mm
 
 panelProfile = sketch(on = XY) {

@@ -1,8 +1,8 @@
 // Modular supply tray concept
-// Existing tray with two proposed slide-in supply-panel channels.
+// Taller tray with two proposed slide-in supply-panel channels.
 @settings(defaultLengthUnit = mm, kclVersion = 3.0)
 
-import "tray.kcl" as originalTray
+import "tallTrayBase.kcl" as originalTray
 
 panelCenterX = -53.8mm
 channelWidth = 84.4mm
@@ -12,7 +12,8 @@ channelBottom = 8mm
 railWidth = 8mm
 railDepth = 4.2mm
 railBottom = 7.9mm
-railHeight = 60.9mm
+trayRimZ = 82mm
+railHeight = trayRimZ - 0.2mm - railBottom
 
 railProfile = sketch(on = XY) {
   bottom = line(start = [var -4mm, var -2.1mm], end = [var 4mm, var -2.1mm])
@@ -79,7 +80,7 @@ opening = extrude(
     intersectionIndex = -1,
     direction = CCW,
   ),
-  length = 62mm,
+  length = trayRimZ - channelBottom + 1mm,
 )
   |> translate(
        x = panelCenterX,
@@ -123,7 +124,7 @@ channel = extrude(
     intersectionIndex = -1,
     direction = CCW,
   ),
-  length = 62mm,
+  length = trayRimZ - channelBottom + 1mm,
 )
   |> translate(
        x = panelCenterX,

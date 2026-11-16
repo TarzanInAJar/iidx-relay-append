@@ -11,7 +11,7 @@
 - `ceilingCornerPostCoupon.kcl` — 25 × 25 × 15 mm section of the east-south wall corner and 12 mm diameter lid post, with the tray's nominal 0.1 mm post-to-rim gap and one 4.4 mm × 5.2 mm blind insert bore.
 - `ceilingCornerLidCoupon.kcl` — matching 25 × 25 × 3 mm lid corner with a 3.4 mm through-hole. The paired parts are separate printable bodies.
 - `ceilingCornerJointView.kcl` — assembled view of the two ceiling corner coupons; not a print part or a fastener model.
-- `supplyRoutingBenchTest.md` — no-new-print instructions for checking the staged VL supply routing with existing printed parts. `../supplyRoutingBenchView.kcl` shows the both-south trial setup using the coupon and carrier; it is a review view, not a print part.
+- `supplyRoutingBenchTest.md` — no-new-print instructions for checking the staged VL supply routing with existing printed parts. `../supplyRoutingBenchView.kcl` shows the taller trial setup using the coupon and carrier, with a parameter for the north or south placement; it is a review view, not a print part.
 - `main.kcl` — module interface for the review views; not a print part.
 
 The assembled review is `../clearanceFixtureView.kcl`. The accepted WAGO retainer models remain in the project root because the enclosure assembly also uses them; reuse the existing printed 221-420 retainer with this fixture.

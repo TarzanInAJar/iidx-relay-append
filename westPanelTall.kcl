@@ -1,0 +1,44 @@
+// Taller west connector panel
+// Extends the accepted west panel upward without moving its cutouts or mounts.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "westPanel.kcl" as originalWestPanel
+
+panelWidth = 51.6mm
+panelThickness = 3mm
+originalTop = 32.8mm
+heightIncrease = 13mm
+joinOverlap = 0.1mm
+extensionHeight = heightIncrease + joinOverlap
+
+extensionProfile = sketch(on = YZ) {
+  bottom = line(start = [var -25.8mm, var 32.7mm], end = [var 25.8mm, var 32.7mm])
+  right = line(start = [var 25.8mm, var 32.7mm], end = [var 25.8mm, var 45.8mm])
+  top = line(start = [var 25.8mm, var 45.8mm], end = [var -25.8mm, var 45.8mm])
+  left = line(start = [var -25.8mm, var 45.8mm], end = [var -25.8mm, var 32.7mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == panelWidth / 2
+  verticalDistance([ORIGIN, bottom.start]) == originalTop - joinOverlap
+  horizontalDistance([bottom.start, bottom.end]) == panelWidth
+  verticalDistance([right.start, right.end]) == extensionHeight
+}
+extension = extrude(
+  region(
+    segments = [
+      extensionProfile.bottom,
+      extensionProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = panelThickness,
+)
+hide(extensionProfile)
+tallWestPanel = union([originalWestPanel, extension])
