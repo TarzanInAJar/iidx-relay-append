@@ -3,7 +3,8 @@
 - [x] Model 230 × 70 × 85 mm modular tray and interchangeable VL panels.
 - [x] Execute the split, both-north and both-south CAD views.
 - [x] Check representative VLR-to-WAGO wire reach on the taller bench setup.
-- [ ] Print `testPrints/supplySlideGuideCoupon.kcl` and `supplyPanelBoth.kcl`; test the short slide-channel fit, bottom stop and panel retention in PETG. Full-height tray fit remains untested.
+- [x] User reports the short supply slide-guide coupon and panel fit fine; detailed retention and stop results were not specified.
+- [ ] Check full-height slide fit, bottom stop and panel retention in the assembled tray.
 - [ ] Check the complete VLR-06V wire bundle, both VLR-02V leads and service loops in all three arrangements.
 - [ ] Check installed ceiling connectors, wires, west-panel assembly and fastener access.
 - [ ] Confirm wire protection, branch fusing and actual electrical loads before energizing.
