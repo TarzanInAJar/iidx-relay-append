@@ -1,0 +1,201 @@
+// Removable tray-mounted supply-panel transfer frame.
+// Early prototype: guides and removable stops are separate parts.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+spineLength = 104.8mm
+spineDepth = 8mm
+frameThickness = 5mm
+mountWidth = 12mm
+mountDepth = 16.5mm
+pegWidth = 4mm
+pegDepth = 6mm
+pegHeight = 4mm
+pegOffset = 47mm
+skirtDepth = 2.1mm
+skirtHeight = 8mm
+mountHoleRadius = 1.7mm
+counterboreRadius = 3.2mm
+counterboreDepth = 3.4mm
+joinOverlap = 0.1mm
+
+spineProfile = sketch(on = XY) {
+  bottom = line(start = [var -55.2mm, var -12mm], end = [var 49.6mm, var -12mm])
+  right = line(start = [var 49.6mm, var -12mm], end = [var 49.6mm, var -4mm])
+  top = line(start = [var 49.6mm, var -4mm], end = [var -55.2mm, var -4mm])
+  left = line(start = [var -55.2mm, var -4mm], end = [var -55.2mm, var -12mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == 55.2mm
+  verticalDistance([bottom.start, ORIGIN]) == 12mm
+  horizontalDistance([bottom.start, bottom.end]) == spineLength
+  verticalDistance([right.start, right.end]) == spineDepth
+}
+spine = extrude(
+  region(
+    segments = [
+      spineProfile.bottom,
+      spineProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = frameThickness,
+)
+hide(spineProfile)
+
+mountProfile = sketch(on = XY) {
+  bottom = line(start = [var -55.2mm, var -5mm], end = [var -43.2mm, var -5mm])
+  right = line(start = [var -43.2mm, var -5mm], end = [var -43.2mm, var 11.5mm])
+  top = line(start = [var -43.2mm, var 11.5mm], end = [var -55.2mm, var 11.5mm])
+  left = line(start = [var -55.2mm, var 11.5mm], end = [var -55.2mm, var -5mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == 55.2mm
+  verticalDistance([bottom.start, ORIGIN]) == 5mm
+  horizontalDistance([bottom.start, bottom.end]) == mountWidth
+  verticalDistance([right.start, right.end]) == mountDepth
+}
+mountPad = extrude(
+  region(
+    segments = [
+      mountProfile.bottom,
+      mountProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = frameThickness,
+)
+hide(mountProfile)
+frameWithMount = union([spine, mountPad])
+
+endPadProfile = sketch(on = XY) {
+  bottom = line(start = [var 44.4mm, var -5mm], end = [var 49.6mm, var -5mm])
+  right = line(start = [var 49.6mm, var -5mm], end = [var 49.6mm, var 5mm])
+  top = line(start = [var 49.6mm, var 5mm], end = [var 44.4mm, var 5mm])
+  left = line(start = [var 44.4mm, var 5mm], end = [var 44.4mm, var -5mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([ORIGIN, bottom.start]) == 44.4mm
+  verticalDistance([bottom.start, ORIGIN]) == 5mm
+  horizontalDistance([bottom.start, bottom.end]) == 5.2mm
+  verticalDistance([right.start, right.end]) == 10mm
+}
+endPad = extrude(
+  region(
+    segments = [
+      endPadProfile.bottom,
+      endPadProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = frameThickness,
+)
+hide(endPadProfile)
+frameWithPads = union([frameWithMount, endPad])
+
+skirtProfile = sketch(on = XY) {
+  bottom = line(start = [var -55.1mm, var -4.9mm], end = [var -43.3mm, var -4.9mm])
+  right = line(start = [var -43.3mm, var -4.9mm], end = [var -43.3mm, var -2.8mm])
+  top = line(start = [var -43.3mm, var -2.8mm], end = [var -55.1mm, var -2.8mm])
+  left = line(start = [var -55.1mm, var -2.8mm], end = [var -55.1mm, var -4.9mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == 55.1mm
+  verticalDistance([bottom.start, ORIGIN]) == 4.9mm
+  horizontalDistance([bottom.start, bottom.end]) == mountWidth - 0.2mm
+  verticalDistance([right.start, right.end]) == skirtDepth
+}
+skirt = extrude(
+  region(
+    segments = [
+      skirtProfile.bottom,
+      skirtProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = skirtHeight + joinOverlap,
+)
+  |> translate(z = -skirtHeight, global = true)
+hide(skirtProfile)
+frameWithSkirt = union([frameWithPads, skirt])
+
+pegProfile = sketch(on = XY) {
+  bottom = line(start = [var -2mm, var -3mm], end = [var 2mm, var -3mm])
+  right = line(start = [var 2mm, var -3mm], end = [var 2mm, var 3mm])
+  top = line(start = [var 2mm, var 3mm], end = [var -2mm, var 3mm])
+  left = line(start = [var -2mm, var 3mm], end = [var -2mm, var -3mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == pegWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == pegDepth / 2
+  horizontalDistance([bottom.start, bottom.end]) == pegWidth
+  verticalDistance([right.start, right.end]) == pegDepth
+}
+firstPeg = extrude(region(segments = [pegProfile.bottom, pegProfile.right], intersectionIndex = -1, direction = CCW), length = pegHeight + joinOverlap)
+  |> translate(x = -pegOffset, z = frameThickness - joinOverlap, global = true)
+hide(pegProfile)
+pegs = patternLinear3d(
+  firstPeg,
+  instances = 2,
+  distance = 2 * pegOffset,
+  axis = [1, 0, 0],
+)
+frameWithOnePeg = union([frameWithSkirt, pegs[0]])
+frameWithPegs = union([frameWithOnePeg, pegs[1]])
+
+mountHoleProfile = sketch(on = XY) {
+  mountHole = circle(center = [var -49.2mm, var 5.5mm], start = [var -47.5mm, var 5.5mm])
+  horizontalDistance([mountHole.center, ORIGIN]) == 49.2mm
+  verticalDistance([ORIGIN, mountHole.center]) == 5.5mm
+  radius(mountHole) == mountHoleRadius
+  horizontal([mountHole.center, mountHole.start])
+}
+mountHoleTool = extrude(region(segments = [mountHoleProfile.mountHole]), length = frameThickness + 0.2mm)
+  |> translate(z = -0.1mm, global = true)
+hide(mountHoleProfile)
+frameWithMountHole = subtract(frameWithPegs, tools = [mountHoleTool])
+
+counterboreProfile = sketch(on = XY) {
+  counterbore = circle(center = [var -49.2mm, var 5.5mm], start = [var -46mm, var 5.5mm])
+  horizontalDistance([counterbore.center, ORIGIN]) == 49.2mm
+  verticalDistance([ORIGIN, counterbore.center]) == 5.5mm
+  radius(counterbore) == counterboreRadius
+  horizontal([counterbore.center, counterbore.start])
+}
+counterboreTool = extrude(region(segments = [counterboreProfile.counterbore]), length = counterboreDepth + 0.1mm)
+  |> translate(z = frameThickness - counterboreDepth, global = true)
+hide(counterboreProfile)
+panelTransferFrame = subtract(frameWithMountHole, tools = [counterboreTool])

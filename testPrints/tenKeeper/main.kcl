@@ -1,0 +1,160 @@
+// 221-420 screw-retained trial keeper for the existing printed retainer.
+// Candidate only: lever, wire-entry and contact geometry must be checked on real parts.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+outsideWidth = 35.6mm
+footDepth = 5mm
+footThickness = 1.6mm
+footCenter = 14.5mm
+baseTop = 1.6mm
+sideThickness = 0.8mm
+sideDepth = 33.6mm
+sideCenterX = (outsideWidth - sideThickness) / 2
+sideTop = 20.8mm
+bridgeWidth = 2mm
+bridgeThickness = 1.6mm
+bridgeBottom = 20.8mm
+padWidth = 1.2mm
+padX = 12.9mm
+padBottom = 19.75mm
+holeRadius = 1.7mm
+joinOverlap = 0.1mm
+
+footProfile = sketch(on = XY) {
+  bottom = line(start = [var -17.8mm, var -2.5mm], end = [var 17.8mm, var -2.5mm])
+  right = line(start = [var 17.8mm, var -2.5mm], end = [var 17.8mm, var 2.5mm])
+  top = line(start = [var 17.8mm, var 2.5mm], end = [var -17.8mm, var 2.5mm])
+  left = line(start = [var -17.8mm, var 2.5mm], end = [var -17.8mm, var -2.5mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == outsideWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == footDepth / 2
+  horizontalDistance([bottom.start, bottom.end]) == outsideWidth
+  verticalDistance([right.start, right.end]) == footDepth
+}
+firstFoot = extrude(region(segments = [footProfile.bottom, footProfile.right], intersectionIndex = -1, direction = CCW), length = footThickness)
+  |> translate(y = -footCenter, z = baseTop, global = true)
+hide(footProfile)
+feet = patternLinear3d(
+  firstFoot,
+  instances = 2,
+  distance = 2 * footCenter,
+  axis = [0, 1, 0],
+)
+
+sideProfile = sketch(on = XY) {
+  bottom = line(start = [var -0.4mm, var -16.8mm], end = [var 0.4mm, var -16.8mm])
+  right = line(start = [var 0.4mm, var -16.8mm], end = [var 0.4mm, var 16.8mm])
+  top = line(start = [var 0.4mm, var 16.8mm], end = [var -0.4mm, var 16.8mm])
+  left = line(start = [var -0.4mm, var 16.8mm], end = [var -0.4mm, var -16.8mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == sideThickness / 2
+  verticalDistance([bottom.start, ORIGIN]) == sideDepth / 2
+  horizontalDistance([bottom.start, bottom.end]) == sideThickness
+  verticalDistance([right.start, right.end]) == sideDepth
+}
+firstSide = extrude(region(segments = [sideProfile.bottom, sideProfile.right], intersectionIndex = -1, direction = CCW), length = sideTop - baseTop + joinOverlap)
+  |> translate(x = -sideCenterX, z = baseTop, global = true)
+hide(sideProfile)
+sides = patternLinear3d(
+  firstSide,
+  instances = 2,
+  distance = 2 * sideCenterX,
+  axis = [1, 0, 0],
+)
+frameOne = union([feet[0], sides[0]])
+frameTwo = union([frameOne, feet[1]])
+frameThree = union([frameTwo, sides[1]])
+
+bridgeProfile = sketch(on = XY) {
+  bottom = line(start = [var -17.8mm, var -1mm], end = [var 17.8mm, var -1mm])
+  right = line(start = [var 17.8mm, var -1mm], end = [var 17.8mm, var 1mm])
+  top = line(start = [var 17.8mm, var 1mm], end = [var -17.8mm, var 1mm])
+  left = line(start = [var -17.8mm, var 1mm], end = [var -17.8mm, var -1mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == outsideWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == bridgeWidth / 2
+  horizontalDistance([bottom.start, bottom.end]) == outsideWidth
+  verticalDistance([right.start, right.end]) == bridgeWidth
+}
+bridge = extrude(
+  region(
+    segments = [
+      bridgeProfile.bottom,
+      bridgeProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = bridgeThickness,
+)
+  |> translate(z = bridgeBottom, global = true)
+hide(bridgeProfile)
+frameWithBridge = union([frameThree, bridge])
+
+padProfile = sketch(on = XY) {
+  bottom = line(start = [var -0.6mm, var -1mm], end = [var 0.6mm, var -1mm])
+  right = line(start = [var 0.6mm, var -1mm], end = [var 0.6mm, var 1mm])
+  top = line(start = [var 0.6mm, var 1mm], end = [var -0.6mm, var 1mm])
+  left = line(start = [var -0.6mm, var 1mm], end = [var -0.6mm, var -1mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == padWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == bridgeWidth / 2
+  horizontalDistance([bottom.start, bottom.end]) == padWidth
+  verticalDistance([right.start, right.end]) == bridgeWidth
+}
+firstPad = extrude(region(segments = [padProfile.bottom, padProfile.right], intersectionIndex = -1, direction = CCW), length = bridgeBottom - padBottom + joinOverlap)
+  |> translate(x = -padX, z = padBottom, global = true)
+hide(padProfile)
+pads = patternLinear3d(
+  firstPad,
+  instances = 2,
+  distance = 2 * padX,
+  axis = [1, 0, 0],
+)
+frameWithFirstPad = union([frameWithBridge, pads[0]])
+frameWithPads = union([frameWithFirstPad, pads[1]])
+
+holeProfile = sketch(on = XY) {
+  hole = circle(center = [var 0mm, var 0mm], start = [var 1.7mm, var 0mm])
+  coincident([hole.center, ORIGIN])
+  radius(hole) == holeRadius
+  horizontal([hole.center, hole.start])
+}
+firstHole = extrude(region(segments = [holeProfile.hole]), length = footThickness + 0.2mm)
+  |> translate(y = -footCenter, z = baseTop - 0.1mm, global = true)
+hide(holeProfile)
+holes = patternLinear3d(
+  firstHole,
+  instances = 2,
+  distance = 2 * footCenter,
+  axis = [0, 1, 0],
+)
+tenKeeper = subtract(frameWithPads, tools = holes)

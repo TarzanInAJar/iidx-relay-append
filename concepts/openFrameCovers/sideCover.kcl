@@ -1,0 +1,81 @@
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+coverLength = 229.6mm
+coverHeight = 85mm
+coverThickness = 2mm
+windowWidth = 80mm
+windowX = -53.8mm
+skinProfile = sketch(on = XZ) {
+  base = line(start = [var -114.8mm, var -6mm], end = [var 114.8mm, var -6mm])
+  right = line(start = [var 114.8mm, var -6mm], end = [var 114.8mm, var 79mm])
+  top = line(start = [var 114.8mm, var 79mm], end = [var -114.8mm, var 79mm])
+  left = line(start = [var -114.8mm, var 79mm], end = [var -114.8mm, var -6mm])
+  coincident([base.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, base.start])
+  horizontal(base)
+  horizontal(top)
+  vertical(right)
+  vertical(left)
+  horizontalDistance([base.start, ORIGIN]) == coverLength / 2
+  verticalDistance([base.start, ORIGIN]) == 6mm
+  horizontalDistance([base.start, base.end]) == coverLength
+  verticalDistance([right.start, right.end]) == coverHeight
+}
+skin = extrude(region(segments = [skinProfile.base, skinProfile.right], intersectionIndex = -1, direction = CCW), length = coverThickness)
+hide(skinProfile)
+windowProfile = sketch(on = XZ) {
+  base = line(start = [var -40mm, var 5.2mm], end = [var 40mm, var 5.2mm])
+  right = line(start = [var 40mm, var 5.2mm], end = [var 40mm, var 80.2mm])
+  top = line(start = [var 40mm, var 80.2mm], end = [var -40mm, var 80.2mm])
+  left = line(start = [var -40mm, var 80.2mm], end = [var -40mm, var 5.2mm])
+  coincident([base.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, base.start])
+  horizontal(base)
+  horizontal(top)
+  vertical(right)
+  vertical(left)
+  horizontalDistance([base.start, ORIGIN]) == windowWidth / 2
+  verticalDistance([ORIGIN, base.start]) == 5.2mm
+  horizontalDistance([base.start, base.end]) == windowWidth
+  verticalDistance([right.start, right.end]) == 75mm
+}
+window = extrude(
+  region(
+    segments = [
+      windowProfile.base,
+      windowProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = coverThickness + 1mm,
+)
+  |> translate(x = windowX, y = 0.5mm, global = true)
+hide(windowProfile)
+notchedSkin = subtract(skin, tools = [window])
+mountProfile = sketch(on = XZ) {
+  hole = circle(center = [var 0mm, var 0mm], start = [var 1.7mm, var 0mm])
+  coincident([hole.center, ORIGIN])
+  horizontal([hole.center, hole.start])
+  radius(hole) == 1.7mm
+}
+firstHole = extrude(region(segments = [mountProfile.hole]), length = coverThickness + 1mm)
+  |> translate(
+       x = -103mm,
+       z = 14mm,
+       y = 0.5mm,
+       global = true,
+     )
+hide(mountProfile)
+holes = patternLinear3d(
+  firstHole,
+  instances = 3,
+  distance = 103mm,
+  axis = [1, 0, 0],
+)
+  |> patternLinear3d(instances = 2, distance = 55mm, axis = [0, 0, 1])
+sideCover = subtract(notchedSkin, tools = holes)

@@ -1,0 +1,38 @@
+// Four-post upper carrier trial
+// Adds two stack mounting holes while retaining existing retainer and driver access holes.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "upperCarrier.kcl" as originalCarrier
+
+stackX = 84mm
+stackY = 13mm
+stackHoleRadius = 1.7mm
+carrierThickness = 2mm
+
+additionalStackHoleProfile = sketch(on = XY) {
+  stackHole = circle(center = [var 0mm, var 0mm], start = [var 1.7mm, var 0mm])
+  coincident([stackHole.center, ORIGIN])
+  radius(stackHole) == stackHoleRadius
+  horizontal([stackHole.center, stackHole.start])
+}
+additionalStackHole = extrude(region(segments = [additionalStackHoleProfile.stackHole]), length = carrierThickness + 2mm)
+  |> translate(
+       x = -stackX,
+       y = -stackY,
+       z = -1mm,
+       global = true,
+     )
+hide(additionalStackHoleProfile)
+otherAdditionalStackHole = translate(
+  clone(additionalStackHole),
+  x = 2 * stackX,
+  y = 2 * stackY,
+  global = true,
+)
+fourPostUpperCarrier = subtract(
+  originalCarrier,
+  tools = [
+    additionalStackHole,
+    otherAdditionalStackHole
+  ],
+)

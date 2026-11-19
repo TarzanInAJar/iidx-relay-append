@@ -1,0 +1,113 @@
+// Four-post carrier in printed modular tray
+// Fit review only; fasteners, wires and the proposed 221-420 keeper are not represented.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "modularSupplyTray.kcl" as trayPart
+import "centerSupportedCarrier.kcl" as lowerPart
+import "upperCarrierFourPost.kcl" as upperPart
+import "carrierSpacer.kcl" as spacerPart
+import "wagoFiveRetainer.kcl" as fiveRetainerPart
+import "wagoTenRetainer.kcl" as tenRetainerPart
+import "supplyPanelBoth.kcl" as supplyPanelPart
+import "supplyPanelBlank.kcl" as blankPanelPart
+import "westPanelTall.kcl" as endPanelPart
+
+upperFiveRetainerBlank = clone(fiveRetainerPart)
+tray = appearance(trayPart, color = "#495c68", opacity = 40)
+lowerCarrier = translate(lowerPart, z = 8mm, global = true)
+  |> appearance(color = "#aebfb1")
+upperCarrier = translate(upperPart, z = 29.5mm, global = true)
+  |> appearance(color = "#aebfb1")
+firstSpacer = translate(
+  spacerPart,
+  x = -84mm,
+  y = -13mm,
+  z = 10mm,
+  global = true,
+)
+  |> appearance(color = "#c6b58e")
+spacersAlongX = patternLinear3d(
+  firstSpacer,
+  instances = 2,
+  distance = 168mm,
+  axis = [1, 0, 0],
+)
+spacers = patternLinear3d(
+  spacersAlongX,
+  instances = 2,
+  distance = 26mm,
+  axis = [0, 1, 0],
+)
+lowerFiveSeed = translate(
+  fiveRetainerPart,
+  x = -54mm,
+  z = 10mm,
+  global = true,
+)
+  |> appearance(color = "#6c9578")
+lowerFiveRetainers = patternLinear3d(
+  lowerFiveSeed,
+  instances = 4,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+upperFiveSeed = translate(
+  upperFiveRetainerBlank,
+  x = -54mm,
+  z = 31.5mm,
+  global = true,
+)
+  |> appearance(color = "#6c9578")
+upperFiveRetainers = patternLinear3d(
+  upperFiveSeed,
+  instances = 2,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+upperTenSeed = translate(
+  tenRetainerPart,
+  x = 18mm,
+  z = 31.5mm,
+  global = true,
+)
+  |> appearance(color = "#6c9578")
+upperTenRetainers = patternLinear3d(
+  upperTenSeed,
+  instances = 2,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+southSupply = rotate(
+  supplyPanelPart,
+  axis = X,
+  angle = 90deg,
+  global = true,
+)
+  |> translate(
+       x = -53.8mm,
+       y = -31mm,
+       z = 45mm,
+       global = true,
+     )
+  |> appearance(color = "#df936b")
+northSupply = rotate(
+  blankPanelPart,
+  axis = X,
+  angle = 90deg,
+  global = true,
+)
+  |> rotate(axis = Z, angle = 180deg, global = true)
+  |> translate(
+       x = -53.8mm,
+       y = 31mm,
+       z = 45mm,
+       global = true,
+     )
+  |> appearance(color = "#b6b6b0")
+endPanel = translate(
+  endPanelPart,
+  x = 112mm,
+  z = 36mm,
+  global = true,
+)
+  |> appearance(color = "#74848a")

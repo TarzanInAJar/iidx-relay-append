@@ -1,0 +1,73 @@
+// Wall-mount review for the open-frame enclosure.
+// The wall is the XZ plane at y = 3 mm; supply plugs and fasteners are omitted.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "concepts/openFrameBench/main.kcl" as framePart
+import "openFrameCeiling.kcl" as ceilingPart
+import "openFrameWestSlide.kcl" as westPart
+import "wallMountClip.kcl" as clipPart
+
+frame = rotate(
+  framePart,
+  axis = X,
+  angle = 90deg,
+  global = true,
+)
+ceiling = translate(ceilingPart, z = 82mm, global = true)
+  |> rotate(axis = X, angle = 90deg, global = true)
+westPanel = translate(
+  westPart,
+  x = 115mm,
+  z = 36mm,
+  global = true,
+)
+  |> rotate(axis = X, angle = 90deg, global = true)
+upperRightBlank = clone(clipPart)
+lowerLeftBlank = clone(clipPart)
+lowerRightBlank = clone(clipPart)
+upperLeft = translate(
+  clipPart,
+  x = -101mm,
+  y = 39.9mm,
+  z = -3mm,
+  global = true,
+)
+  |> rotate(axis = X, angle = 90deg, global = true)
+  |> appearance(color = "#e4ad55")
+upperRight = translate(
+  upperRightBlank,
+  x = 101mm,
+  y = 39.9mm,
+  z = -3mm,
+  global = true,
+)
+  |> rotate(axis = X, angle = 90deg, global = true)
+  |> appearance(color = "#e4ad55")
+lowerLeft = rotate(
+  lowerLeftBlank,
+  axis = Z,
+  angle = 180deg,
+  global = true,
+)
+  |> translate(
+       x = -101mm,
+       y = -39.9mm,
+       z = -3mm,
+       global = true,
+     )
+  |> rotate(axis = X, angle = 90deg, global = true)
+  |> appearance(color = "#e4ad55")
+lowerRight = rotate(
+  lowerRightBlank,
+  axis = Z,
+  angle = 180deg,
+  global = true,
+)
+  |> translate(
+       x = 101mm,
+       y = -39.9mm,
+       z = -3mm,
+       global = true,
+     )
+  |> rotate(axis = X, angle = 90deg, global = true)
+  |> appearance(color = "#e4ad55")

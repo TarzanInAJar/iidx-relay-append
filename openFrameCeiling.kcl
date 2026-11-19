@@ -1,0 +1,97 @@
+// Open-frame ceiling extension.
+// Preserves the original connector openings and bridges both cover seams.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "ceiling.kcl" as originalCeiling
+edgeWidth = 3.2mm
+edgeLength = 230mm
+edgeProfile = sketch(on = XY) {
+  bottom = line(start = [var -115mm, var -1.6mm], end = [var 115mm, var -1.6mm])
+  right = line(start = [var 115mm, var -1.6mm], end = [var 115mm, var 1.6mm])
+  top = line(start = [var 115mm, var 1.6mm], end = [var -115mm, var 1.6mm])
+  left = line(start = [var -115mm, var 1.6mm], end = [var -115mm, var -1.6mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  horizontal(top)
+  vertical(right)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == edgeLength / 2
+  verticalDistance([bottom.start, ORIGIN]) == edgeWidth / 2
+  horizontalDistance([bottom.start, bottom.end]) == edgeLength
+  verticalDistance([right.start, right.end]) == edgeWidth
+}
+edge = extrude(region(segments = [edgeProfile.bottom, edgeProfile.right], intersectionIndex = -1, direction = CCW), length = 3mm)
+  |> translate(y = -36.4mm, global = true)
+hide(edgeProfile)
+edges = patternLinear3d(
+  edge,
+  instances = 2,
+  distance = 72.8mm,
+  axis = [0, 1, 0],
+)
+ceilingWithFirstEdge = union([originalCeiling, edges[0]])
+ceilingWithEdges = union([ceilingWithFirstEdge, edges[1]])
+midHoleProfile = sketch(on = XY) {
+  hole = circle(center = [var 0mm, var 0mm], start = [var 1.7mm, var 0mm])
+  coincident([hole.center, ORIGIN])
+  horizontal([hole.center, hole.start])
+  radius(hole) == 1.7mm
+}
+firstHole = extrude(region(segments = [midHoleProfile.hole]), length = 3.4mm)
+  |> translate(y = -28.5mm, z = -0.2mm, global = true)
+hide(midHoleProfile)
+holes = patternLinear3d(
+  firstHole,
+  instances = 2,
+  distance = 57mm,
+  axis = [0, 1, 0],
+)
+ceilingWithAllHoles = subtract(ceilingWithEdges, tools = holes)
+
+// End extensions cover and trap the slide-track tops.
+endBandWidth = 5mm
+endBandSpan = 76mm
+endBandProfile = sketch(on = XY) {
+  bottom = line(start = [var -2.5mm, var -38mm], end = [var 2.5mm, var -38mm])
+  right = line(start = [var 2.5mm, var -38mm], end = [var 2.5mm, var 38mm])
+  top = line(start = [var 2.5mm, var 38mm], end = [var -2.5mm, var 38mm])
+  left = line(start = [var -2.5mm, var 38mm], end = [var -2.5mm, var -38mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  horizontal(top)
+  vertical(right)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == endBandWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == endBandSpan / 2
+  horizontalDistance([bottom.start, bottom.end]) == endBandWidth
+  verticalDistance([right.start, right.end]) == endBandSpan
+}
+firstEndBand = extrude(
+  region(
+    segments = [
+      endBandProfile.bottom,
+      endBandProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = 3mm,
+)
+  |> translate(x = -117.3mm, global = true)
+hide(endBandProfile)
+endBands = patternLinear3d(
+  firstEndBand,
+  instances = 2,
+  distance = 234.6mm,
+  axis = [1, 0, 0],
+)
+ceilingWithFirstEnd = union([ceilingWithAllHoles, endBands[0]])
+ceilingWithEndBands = union([ceilingWithFirstEnd, endBands[1]])
+
+openFrameCeiling = ceilingWithEndBands

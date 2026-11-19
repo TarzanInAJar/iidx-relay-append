@@ -5,3 +5,5 @@
 export import fixtureBase from "clearanceFixtureBase.kcl"
 export import fixtureLid from "clearanceFixtureLid.kcl"
 export import vlFitCoupon from "vlFitCoupon.kcl"
+export import benchFixtureBase from "benchFixtureBase.kcl"
+export import benchPanelGuide from "benchPanelGuide.kcl"

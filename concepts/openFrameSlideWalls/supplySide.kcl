@@ -1,0 +1,49 @@
+// Supply-side slide-in wall.
+// The open-bottom window passes around the already-mounted connector panel.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+wallLength = 107.2mm
+wallHeight = 78.6mm
+wallThickness = 1.6mm
+profile = sketch(on = XZ) {
+  bottom = line(start = [var -53.6mm, var 0mm], end = [var 53.6mm, var 0mm])
+  right = line(start = [var 53.6mm, var 0mm], end = [var 53.6mm, var 78.6mm])
+  top = line(start = [var 53.6mm, var 78.6mm], end = [var -53.6mm, var 78.6mm])
+  left = line(start = [var -53.6mm, var 78.6mm], end = [var -53.6mm, var 0mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  horizontal(top)
+  vertical(right)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == wallLength / 2
+  horizontal([bottom.start, ORIGIN])
+  horizontalDistance([bottom.start, bottom.end]) == wallLength
+  verticalDistance([right.start, right.end]) == wallHeight
+}
+blank = extrude(region(segments = [profile.bottom, profile.right], intersectionIndex = -1, direction = CCW), length = wallThickness)
+hide(profile)
+window = sketch(on = XZ) {
+  bottom = line(start = [var -44mm, var -1mm], end = [var 46.4mm, var -1mm])
+  right = line(start = [var 46.4mm, var -1mm], end = [var 46.4mm, var 76.2mm])
+  top = line(start = [var 46.4mm, var 76.2mm], end = [var -44mm, var 76.2mm])
+  left = line(start = [var -44mm, var 76.2mm], end = [var -44mm, var -1mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  horizontal(top)
+  vertical(right)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == 44mm
+  verticalDistance([bottom.start, ORIGIN]) == 1mm
+  horizontalDistance([bottom.start, bottom.end]) == 90.4mm
+  verticalDistance([right.start, right.end]) == 77.2mm
+}
+tool = extrude(region(segments = [window.bottom, window.right], intersectionIndex = -1, direction = CCW), length = wallThickness + 1mm)
+  |> translate(y = 0.5mm, global = true)
+hide(window)
+supplyWall = subtract(blank, tools = [tool])

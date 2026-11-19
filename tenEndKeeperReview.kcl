@@ -1,0 +1,28 @@
+// CAD review only: two independently removable keeper halves and the existing holder.
+// The rectangular connector reference omits wire entries, levers and the actual top profile.
+// Contact on the reported 2.75 mm end land is assumed and requires a physical check.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "wagoTenRetainer.kcl" as holderPart
+import "wagoTenEnvelope.kcl" as bodyPart
+import "concepts/tenEndKeeper/main.kcl" as keeperPart
+
+holder = appearance(holderPart, color = "#6c9578")
+connector = scale(
+  bodyPart,
+  x = 29.6 / 29.8,
+  y = 18.1 / 18.3,
+  z = 15.6 / 15.8,
+  global = true,
+)
+  |> rotate(axis = X, angle = -90deg, global = true)
+  |> translate(y = -7.8mm, z = 10.65mm, global = true)
+  |> appearance(color = "#e1bb62", opacity = 60)
+firstKeeper = appearance(keeperPart, color = "#bd8ce1")
+secondKeeper = rotate(
+  clone(keeperPart),
+  axis = Z,
+  angle = 180deg,
+  global = true,
+)
+  |> appearance(color = "#7eaee5")

@@ -1,0 +1,113 @@
+// Permanent wall backer: exploded drilling and mounting review.
+// Floor holes and washers are illustrative only; the printed frame is unchanged.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "concepts/openFrameBench/main.kcl" as framePart
+import "wagoTenRetainer.kcl" as tenRetainerPart
+import "wagoFiveRetainer.kcl" as fiveRetainerPart
+import "concepts/upperWagoRail/main.kcl" as railPart
+import "permanentWallBacker.kcl" as backerPart
+
+frameLift = 22mm
+boxHoleX = 104mm
+boxHoleY = 12mm
+mountHoleRadius = 2.5mm
+
+// Apply holes only to this review copy, not to floorFrame.kcl.
+mountHoleSketch = sketch(on = XY) {
+  hole = circle(center = [var 0mm, var 0mm], start = [var 2.5mm, var 0mm])
+  coincident([hole.center, ORIGIN])
+  horizontal([hole.center, hole.start])
+  radius(hole) == mountHoleRadius
+}
+mountHoleCutter = extrude(region(segments = [mountHoleSketch.hole]), length = 6.4mm)
+  |> translate(
+       x = -boxHoleX,
+       y = -boxHoleY,
+       z = -3.2mm,
+       global = true,
+     )
+hide(mountHoleSketch)
+frameHoleCutters = patternLinear3d(
+  mountHoleCutter,
+  instances = 2,
+  distance = 2 * boxHoleX,
+  axis = X,
+)
+  |> patternLinear3d(instances = 2, distance = 2 * boxHoleY, axis = Y)
+drilledFrame = subtract(framePart, tools = frameHoleCutters)
+frame = translate(drilledFrame, z = frameLift, global = true)
+  |> appearance(color = "#728a7f")
+
+// The frame is raised above the board solely to expose the matching hole pattern.
+backer = translate(backerPart, z = -15mm, global = true)
+  |> appearance(color = "#c69d70", roughness = 85)
+
+tenRetainers = translate(
+  tenRetainerPart,
+  x = -78mm,
+  z = 3mm + frameLift,
+  global = true,
+)
+  |> patternLinear3d(instances = 2, distance = 40mm, axis = X)
+  |> appearance(color = "#b7d4b6")
+fiveRetainers = translate(
+  fiveRetainerPart,
+  x = 2mm,
+  z = 3mm + frameLift,
+  global = true,
+)
+  |> patternLinear3d(instances = 3, distance = 38mm, axis = X)
+  |> appearance(color = "#a3c4a5")
+southRailBlank = clone(railPart)
+northRail = translate(
+  railPart,
+  x = 40mm,
+  y = 14.5mm,
+  z = 3mm + frameLift,
+  global = true,
+)
+  |> appearance(color = "#bba57a")
+southRail = rotate(
+  southRailBlank,
+  axis = Z,
+  angle = 180deg,
+  global = true,
+)
+  |> translate(
+       x = 40mm,
+       y = -14.5mm,
+       z = 3mm + frameLift,
+       global = true,
+     )
+  |> appearance(color = "#bba57a")
+
+// Schematic 10 mm OD washers mark the four holes to drill in the printed floor.
+washerOutline = sketch(on = XY) {
+  outside = circle(center = [var 0mm, var 0mm], start = [var 5mm, var 0mm])
+  coincident([outside.center, ORIGIN])
+  horizontal([outside.center, outside.start])
+  radius(outside) == 5mm
+}
+washerBlank = extrude(region(segments = [washerOutline.outside]), length = 1mm)
+hide(washerOutline)
+washerHoleSketch = sketch(on = XY) {
+  hole = circle(center = [var 0mm, var 0mm], start = [var 2.5mm, var 0mm])
+  coincident([hole.center, ORIGIN])
+  horizontal([hole.center, hole.start])
+  radius(hole) == mountHoleRadius
+}
+washerCutter = extrude(region(segments = [washerHoleSketch.hole]), length = 1.4mm)
+  |> translate(z = -0.2mm, global = true)
+hide(washerHoleSketch)
+washer = subtract(washerBlank, tools = [washerCutter])
+washers = translate(
+  washer,
+  x = -boxHoleX,
+  y = -boxHoleY,
+  z = 3mm + frameLift,
+  global = true,
+)
+  |> patternLinear3d(instances = 2, distance = 2 * boxHoleX, axis = X)
+  |> patternLinear3d(instances = 2, distance = 2 * boxHoleY, axis = Y)
+  |> appearance(color = "#f2b650")

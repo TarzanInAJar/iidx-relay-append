@@ -1,0 +1,50 @@
+// Bench-only ceiling cradle. Use two and secure the plate with a clamp or strap.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+baseWidth = 48mm
+baseHeight = 24mm
+baseLength = 24mm
+slotWidth = 3.6mm
+slotFloor = 8mm
+profile = sketch(on = YZ) {
+  bottom = line(start = [var -24mm, var 0mm], end = [var 24mm, var 0mm])
+  right = line(start = [var 24mm, var 0mm], end = [var 24mm, var 24mm])
+  top = line(start = [var 24mm, var 24mm], end = [var -24mm, var 24mm])
+  left = line(start = [var -24mm, var 24mm], end = [var -24mm, var 0mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  horizontal(top)
+  vertical(right)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == baseWidth / 2
+  horizontal([bottom.start, ORIGIN])
+  horizontalDistance([bottom.start, bottom.end]) == baseWidth
+  verticalDistance([right.start, right.end]) == baseHeight
+}
+blank = extrude(region(segments = [profile.bottom, profile.right], intersectionIndex = -1, direction = CCW), length = baseLength)
+hide(profile)
+slot = sketch(on = YZ) {
+  bottom = line(start = [var -1.8mm, var 8mm], end = [var 1.8mm, var 8mm])
+  right = line(start = [var 1.8mm, var 8mm], end = [var 1.8mm, var 25mm])
+  top = line(start = [var 1.8mm, var 25mm], end = [var -1.8mm, var 25mm])
+  left = line(start = [var -1.8mm, var 25mm], end = [var -1.8mm, var 8mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  horizontal(top)
+  vertical(right)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == slotWidth / 2
+  verticalDistance([ORIGIN, bottom.start]) == slotFloor
+  horizontalDistance([bottom.start, bottom.end]) == slotWidth
+  verticalDistance([right.start, right.end]) == baseHeight - slotFloor + 1mm
+}
+cutter = extrude(region(segments = [slot.bottom, slot.right], intersectionIndex = -1, direction = CCW), length = baseLength + 1mm)
+  |> translate(x = -0.5mm, global = true)
+hide(slot)
+cradle = subtract(blank, tools = [cutter])

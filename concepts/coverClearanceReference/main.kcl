@@ -1,0 +1,29 @@
+// Local cover-clearance reference plane.
+// An assumed 2 mm wall section for static comparison only; not a cover design.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+referenceWidth = 28mm
+referenceHeight = 28mm
+assumedThickness = 2mm
+wallProfile = sketch(on = XZ) {
+  bottom = line(start = [var -14mm, var -14mm], end = [var 14mm, var -14mm])
+  right = line(start = [var 14mm, var -14mm], end = [var 14mm, var 14mm])
+  top = line(start = [var 14mm, var 14mm], end = [var -14mm, var 14mm])
+  left = line(start = [var -14mm, var 14mm], end = [var -14mm, var -14mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == referenceWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == referenceHeight / 2
+  horizontalDistance([bottom.start, bottom.end]) == referenceWidth
+  verticalDistance([right.start, right.end]) == referenceHeight
+}
+wallReference = extrude(region(segments = [wallProfile.bottom, wallProfile.right], intersectionIndex = -1, direction = CCW), length = assumedThickness)
+  |> appearance(color = "#75d8df", opacity = 35)
+hide(wallProfile)
+export reviewWall = wallReference

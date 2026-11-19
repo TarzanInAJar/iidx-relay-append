@@ -1,0 +1,107 @@
+// Permanent wall backer and assembled enclosure review.
+// Backer and representative spacers are separate; fasteners and floor drilling are not shown.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "concepts/openFrameBench/main.kcl" as framePart
+import plainSkin, eastSkin from "concepts/openFrameSlideWalls/main.kcl"
+import "openFrameCeiling.kcl" as ceilingPart
+import "openFrameSupplyTwo.kcl" as twoPart
+import "openFrameSupplySix.kcl" as sixPart
+import "openFrameWestSlide.kcl" as westPart
+import "permanentWallBacker.kcl" as backerPart
+
+frame = appearance(framePart, color = "#728a7f")
+ceiling = translate(ceilingPart, z = 82mm, global = true)
+  |> appearance(color = "#d6dadd")
+westPanel = translate(
+  westPart,
+  x = 115mm,
+  z = 36mm,
+  global = true,
+)
+  |> appearance(color = "#a8c2cb")
+northPanel = rotate(
+  twoPart,
+  axis = X,
+  angle = 90deg,
+  global = true,
+)
+  |> rotate(axis = Z, angle = 180deg, global = true)
+  |> translate(
+       x = -55mm,
+       y = 33.4mm,
+       z = 42.5mm,
+       global = true,
+     )
+  |> appearance(color = "#56646d")
+southPanel = rotate(
+  sixPart,
+  axis = X,
+  angle = 90deg,
+  global = true,
+)
+  |> translate(
+       x = -55mm,
+       y = -33.4mm,
+       z = 42.5mm,
+       global = true,
+     )
+  |> appearance(color = "#56646d")
+northPlainWall = translate(
+  clone(plainSkin),
+  x = 55mm,
+  y = 36.4mm,
+  z = 3.2mm,
+  global = true,
+)
+  |> appearance(color = "#56646d")
+southPlainWall = translate(
+  plainSkin,
+  x = 55mm,
+  y = -34.8mm,
+  z = 3.2mm,
+  global = true,
+)
+  |> appearance(color = "#56646d")
+eastPanel = rotate(
+  eastSkin,
+  axis = Z,
+  angle = 180deg,
+  global = true,
+)
+  |> translate(x = -115mm, z = 3.2mm, global = true)
+  |> appearance(color = "#687983")
+
+// The floor bottom is z = -3 mm; the backer's upper face rests against it.
+backer = translate(backerPart, z = -15mm, global = true)
+  |> appearance(color = "#c69d70", roughness = 85)
+
+// Representative 8 mm stand-offs provide space for nuts behind the backer.
+spacerSketch = sketch(on = XY) {
+  outline = circle(center = [var 0mm, var 0mm], start = [var 6mm, var 0mm])
+  coincident([outline.center, ORIGIN])
+  horizontal([outline.center, outline.start])
+  radius(outline) == 6mm
+}
+spacerBlank = extrude(region(segments = [spacerSketch.outline]), length = 8mm)
+hide(spacerSketch)
+spacerHoleSketch = sketch(on = XY) {
+  hole = circle(center = [var 0mm, var 0mm], start = [var 2.5mm, var 0mm])
+  coincident([hole.center, ORIGIN])
+  horizontal([hole.center, hole.start])
+  radius(hole) == 2.5mm
+}
+spacerCutter = extrude(region(segments = [spacerHoleSketch.hole]), length = 8.4mm)
+  |> translate(z = -0.2mm, global = true)
+hide(spacerHoleSketch)
+spacer = subtract(spacerBlank, tools = [spacerCutter])
+spacers = translate(
+  spacer,
+  x = -90mm,
+  y = -44mm,
+  z = -23mm,
+  global = true,
+)
+  |> patternLinear3d(instances = 2, distance = 180mm, axis = X)
+  |> patternLinear3d(instances = 2, distance = 88mm, axis = Y)
+  |> appearance(color = "#dfbd67")

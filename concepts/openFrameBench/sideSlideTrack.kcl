@@ -1,0 +1,53 @@
+// Slide-wall upright with opposing 2 mm slots.
+// The wall is 1.6 mm thick; the slots have 0.2 mm clearance per face.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+trackHeight = 79.5mm
+trackWidth = 8mm
+trackDepth = 9mm
+backExtension = 1.5mm
+slotDepth = 3mm
+slotHeight = 2mm
+profile = sketch(on = XY) {
+  bottom = line(start = [var -4mm, var -1.5mm], end = [var 4mm, var -1.5mm])
+  right = line(start = [var 4mm, var -1.5mm], end = [var 4mm, var 9mm])
+  top = line(start = [var 4mm, var 9mm], end = [var -4mm, var 9mm])
+  left = line(start = [var -4mm, var 9mm], end = [var -4mm, var -1.5mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  horizontal(top)
+  vertical(right)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == trackWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == backExtension
+  horizontalDistance([bottom.start, bottom.end]) == trackWidth
+  verticalDistance([right.start, right.end]) == trackDepth + backExtension
+}
+blank = extrude(region(segments = [profile.bottom, profile.right], intersectionIndex = -1, direction = CCW), length = trackHeight)
+hide(profile)
+slotProfile = sketch(on = XY) {
+  bottom = line(start = [var -4.2mm, var 5.6mm], end = [var -1.2mm, var 5.6mm])
+  right = line(start = [var -1.2mm, var 5.6mm], end = [var -1.2mm, var 7.6mm])
+  top = line(start = [var -1.2mm, var 7.6mm], end = [var -4.2mm, var 7.6mm])
+  left = line(start = [var -4.2mm, var 7.6mm], end = [var -4.2mm, var 5.6mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  horizontal(top)
+  vertical(right)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == 4.2mm
+  verticalDistance([ORIGIN, bottom.start]) == 5.6mm
+  horizontalDistance([bottom.start, bottom.end]) == slotDepth
+  verticalDistance([right.start, right.end]) == slotHeight
+}
+firstSlot = extrude(region(segments = [slotProfile.bottom, slotProfile.right], intersectionIndex = -1, direction = CCW), length = trackHeight + 0.2mm)
+  |> translate(z = -0.1mm, global = true)
+hide(slotProfile)
+secondSlot = translate(clone(firstSlot), x = 5.4mm, global = true)
+track = subtract(blank, tools = [firstSlot, secondSlot])

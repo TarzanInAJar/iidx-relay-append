@@ -1,0 +1,135 @@
+// Removable panel-edge guide for the unpowered bench staging fixture.
+// The 3.4 mm slot is an untested clearance for the 3 mm panels.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+guideWidth = 10mm
+guideDepth = 10mm
+guideHeight = 70mm
+mountWidth = 5.2mm
+mountDepth = 10mm
+mountHeight = 5mm
+slotWidth = 8.2mm
+slotDepth = 3.4mm
+pegPocketWidth = 4.4mm
+pegPocketDepth = 6.4mm
+pegPocketHeight = 4.5mm
+
+guideProfile = sketch(on = XY) {
+  bottom = line(start = [var -5mm, var -5mm], end = [var 5mm, var -5mm])
+  right = line(start = [var 5mm, var -5mm], end = [var 5mm, var 5mm])
+  top = line(start = [var 5mm, var 5mm], end = [var -5mm, var 5mm])
+  left = line(start = [var -5mm, var 5mm], end = [var -5mm, var -5mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == guideWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == guideDepth / 2
+  horizontalDistance([bottom.start, bottom.end]) == guideWidth
+  verticalDistance([right.start, right.end]) == guideDepth
+}
+guideBlank = extrude(
+  region(
+    segments = [
+      guideProfile.bottom,
+      guideProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = guideHeight,
+)
+hide(guideProfile)
+
+mountProfile = sketch(on = XY) {
+  bottom = line(start = [var -2.6mm, var -5mm], end = [var 2.6mm, var -5mm])
+  right = line(start = [var 2.6mm, var -5mm], end = [var 2.6mm, var 5mm])
+  top = line(start = [var 2.6mm, var 5mm], end = [var -2.6mm, var 5mm])
+  left = line(start = [var -2.6mm, var 5mm], end = [var -2.6mm, var -5mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == mountWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == mountDepth / 2
+  horizontalDistance([bottom.start, bottom.end]) == mountWidth
+  verticalDistance([right.start, right.end]) == mountDepth
+}
+mountBlank = extrude(
+  region(
+    segments = [
+      mountProfile.bottom,
+      mountProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = mountHeight,
+)
+  |> translate(x = -7.5mm, global = true)
+hide(mountProfile)
+guideWithMount = union([guideBlank, mountBlank])
+
+slotProfile = sketch(on = XY) {
+  bottom = line(start = [var -4.1mm, var -1.7mm], end = [var 4.1mm, var -1.7mm])
+  right = line(start = [var 4.1mm, var -1.7mm], end = [var 4.1mm, var 1.7mm])
+  top = line(start = [var 4.1mm, var 1.7mm], end = [var -4.1mm, var 1.7mm])
+  left = line(start = [var -4.1mm, var 1.7mm], end = [var -4.1mm, var -1.7mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == slotWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == slotDepth / 2
+  horizontalDistance([bottom.start, bottom.end]) == slotWidth
+  verticalDistance([right.start, right.end]) == slotDepth
+}
+slotTool = extrude(region(segments = [slotProfile.bottom, slotProfile.right], intersectionIndex = -1, direction = CCW), length = guideHeight + 0.2mm)
+  |> translate(x = 1.1mm, z = -0.1mm, global = true)
+hide(slotProfile)
+guideWithSlot = subtract(guideWithMount, tools = [slotTool])
+
+pocketProfile = sketch(on = XY) {
+  bottom = line(start = [var -2.2mm, var -3.2mm], end = [var 2.2mm, var -3.2mm])
+  right = line(start = [var 2.2mm, var -3.2mm], end = [var 2.2mm, var 3.2mm])
+  top = line(start = [var 2.2mm, var 3.2mm], end = [var -2.2mm, var 3.2mm])
+  left = line(start = [var -2.2mm, var 3.2mm], end = [var -2.2mm, var -3.2mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == pegPocketWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == pegPocketDepth / 2
+  horizontalDistance([bottom.start, bottom.end]) == pegPocketWidth
+  verticalDistance([right.start, right.end]) == pegPocketDepth
+}
+pegPocket = extrude(
+  region(
+    segments = [
+      pocketProfile.bottom,
+      pocketProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = pegPocketHeight + 0.1mm,
+)
+  |> translate(x = -7.5mm, z = -0.1mm, global = true)
+hide(pocketProfile)
+export benchPanelGuide = subtract(guideWithSlot, tools = [pegPocket])

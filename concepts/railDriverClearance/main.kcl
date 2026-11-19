@@ -1,0 +1,47 @@
+// Reference envelopes for upper-rail and foot screw access.
+// Six-millimeter-diameter straight driver shafts, not hardware or printable parts.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+driverRadius = 3mm
+footScrewZ = 9mm
+upperScrewZ = 38.6mm
+reviewTopZ = 82mm
+
+driverProfile = sketch(on = XY) {
+  shaft = circle(center = [var 0mm, var 0mm], start = [var 3mm, var 0mm])
+  coincident([shaft.center, ORIGIN])
+  horizontal([shaft.center, shaft.start])
+  radius(shaft) == driverRadius
+}
+footDriver = extrude(region(segments = [driverProfile.shaft]), length = reviewTopZ - footScrewZ)
+  |> translate(
+       x = 21mm,
+       y = 29.5mm,
+       z = footScrewZ,
+       global = true,
+     )
+  |> appearance(color = "#ffa0ed", opacity = 35)
+footDrivers = patternLinear3d(
+  footDriver,
+  instances = 2,
+  distance = 38mm,
+  axis = [1, 0, 0],
+)
+  |> patternLinear3d(instances = 2, distance = 59mm, axis = [0, -1, 0])
+upperDriver = extrude(region(segments = [driverProfile.shaft]), length = reviewTopZ - upperScrewZ)
+  |> translate(
+       x = 2mm,
+       y = 14.5mm,
+       z = upperScrewZ,
+       global = true,
+     )
+  |> appearance(color = "#63ddff", opacity = 35)
+upperDrivers = patternLinear3d(
+  upperDriver,
+  instances = 3,
+  distance = 38mm,
+  axis = [1, 0, 0],
+)
+  |> patternLinear3d(instances = 2, distance = 29mm, axis = [0, -1, 0])
+hide(driverProfile)
+allDriverReferences = flatten([footDrivers, upperDrivers])

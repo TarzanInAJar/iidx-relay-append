@@ -1,0 +1,86 @@
+// Open-frame side cover.
+// The open-top notch exposes the interchangeable connector panel.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+coverLength = 229.6mm
+coverHeight = 85mm
+coverThickness = 2mm
+windowWidth = 80mm
+windowHeight = 74mm
+windowX = -53.8mm
+mountRadius = 1.7mm
+skinProfile = sketch(on = XZ) {
+  bottom = line(start = [var -116.5mm, var -6mm], end = [var 116.5mm, var -6mm])
+  right = line(start = [var 116.5mm, var -6mm], end = [var 116.5mm, var 79mm])
+  top = line(start = [var 116.5mm, var 79mm], end = [var -116.5mm, var 79mm])
+  left = line(start = [var -116.5mm, var 79mm], end = [var -116.5mm, var -6mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  horizontal(top)
+  vertical(right)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == coverLength / 2
+  verticalDistance([bottom.start, ORIGIN]) == 6mm
+  horizontalDistance([bottom.start, bottom.end]) == coverLength
+  verticalDistance([right.start, right.end]) == coverHeight
+}
+skin = extrude(region(segments = [skinProfile.bottom, skinProfile.right], intersectionIndex = -1, direction = CCW), length = coverThickness)
+hide(skinProfile)
+// Cut the opening through the top edge; the lid traps the panel vertically.
+windowProfile = sketch(on = XZ) {
+  bottom = line(start = [var -40mm, var 5.2mm], end = [var 40mm, var 5.2mm])
+  right = line(start = [var 40mm, var 5.2mm], end = [var 40mm, var 80.2mm])
+  top = line(start = [var 40mm, var 80.2mm], end = [var -40mm, var 80.2mm])
+  left = line(start = [var -40mm, var 80.2mm], end = [var -40mm, var 5.2mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  horizontal(top)
+  vertical(right)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == windowWidth / 2
+  verticalDistance([ORIGIN, bottom.start]) == 5.2mm
+  horizontalDistance([bottom.start, bottom.end]) == windowWidth
+  verticalDistance([right.start, right.end]) == windowHeight + 1mm
+}
+window = extrude(
+  region(
+    segments = [
+      windowProfile.bottom,
+      windowProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = coverThickness + 1mm,
+)
+  |> translate(x = windowX, y = 0.5mm, global = true)
+hide(windowProfile)
+notchedSkin = subtract(skin, tools = [window])
+mountProfile = sketch(on = XZ) {
+  bore = circle(center = [var 0mm, var 0mm], start = [var 1.7mm, var 0mm])
+  coincident([bore.center, ORIGIN])
+  horizontal([bore.center, bore.start])
+  radius(bore) == mountRadius
+}
+firstHole = extrude(region(segments = [mountProfile.bore]), length = coverThickness + 1mm)
+  |> translate(
+       x = -103mm,
+       z = 14mm,
+       y = 0.5mm,
+       global = true,
+     )
+hide(mountProfile)
+holes = patternLinear3d(
+  firstHole,
+  instances = 3,
+  distance = 103mm,
+  axis = [1, 0, 0],
+)
+  |> patternLinear3d(instances = 2, distance = 55mm, axis = [0, 0, 1])
+sideCover = subtract(notchedSkin, tools = holes)

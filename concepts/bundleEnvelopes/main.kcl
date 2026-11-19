@@ -1,0 +1,132 @@
+// Bundle-clearance reference sections for the open frame.
+// Not wires, tie anchors, final harness paths or printable parts.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+powerWireDiameter = 1.6mm
+signalWireDiameter = 1.397mm
+// One millimeter overall allowance is provisional; packing and sleeving are unverified.
+bundleAllowance = 1mm
+sixPowerEnvelopeDiameter = (sqrt(5_) + 1_) * powerWireDiameter + bundleAllowance
+twelvePowerEnvelopeDiameter = (sqrt(13_) + 1_) * powerWireDiameter + bundleAllowance
+eightSignalEnvelopeDiameter = (sqrt(8_) + 1_) * signalWireDiameter + bundleAllowance
+twoPowerEnvelopeDiameter = 2_ * powerWireDiameter + bundleAllowance
+
+// The six-wire sections represent three pairs in an assumed 3 by 2 arrangement.
+sixPowerProfile = sketch(on = YZ) {
+  boundary = circle(center = [var 0mm, var 0mm], start = [var 3.1mm, var 0mm])
+  coincident([boundary.center, ORIGIN])
+  horizontal([boundary.center, boundary.start])
+  radius(boundary) == sixPowerEnvelopeDiameter / 2
+}
+fiveGroupAEnvelope = extrude(region(segments = [sixPowerProfile.boundary]), length = 86mm)
+  |> translate(
+       x = -84mm,
+       y = 17mm,
+       z = 61mm,
+       global = true,
+     )
+  |> appearance(color = "#f7a737", opacity = 42)
+fiveGroupBEnvelope = extrude(region(segments = [sixPowerProfile.boundary]), length = 52mm)
+  |> translate(
+       x = -12mm,
+       y = 17mm,
+       z = 53mm,
+       global = true,
+     )
+  |> appearance(color = "#e77430", opacity = 42)
+fiveGroupCEnvelope = extrude(region(segments = [sixPowerProfile.boundary]), length = 24mm)
+  |> translate(
+       x = 60mm,
+       y = 17mm,
+       z = 61mm,
+       global = true,
+     )
+  |> appearance(color = "#f7a737", opacity = 42)
+vlSixEnvelope = extrude(region(segments = [sixPowerProfile.boundary]), length = 60mm)
+  |> translate(
+       x = -58mm,
+       y = -22mm,
+       z = 48mm,
+       global = true,
+     )
+  |> appearance(color = "#e77430", opacity = 42)
+hide(sixPowerProfile)
+
+// Twelve-wire section assumes 4 by 3 conductors before any individual drops.
+twelvePowerProfile = sketch(on = YZ) {
+  boundary = circle(center = [var 0mm, var 0mm], start = [var 4.2mm, var 0mm])
+  coincident([boundary.center, ORIGIN])
+  horizontal([boundary.center, boundary.start])
+  radius(boundary) == twelvePowerEnvelopeDiameter / 2
+}
+twelveVoltEnvelope = extrude(region(segments = [twelvePowerProfile.boundary]), length = 144mm)
+  |> translate(
+       x = -72mm,
+       y = -18mm,
+       z = 58mm,
+       global = true,
+     )
+  |> appearance(color = "#ecc14c", opacity = 42)
+hide(twelvePowerProfile)
+
+// Seven- and eight-signal sections use an assumed 3 by 3 arrangement.
+signalProfile = sketch(on = YZ) {
+  boundary = circle(center = [var 0mm, var 0mm], start = [var 3.17mm, var 0mm])
+  coincident([boundary.center, ORIGIN])
+  horizontal([boundary.center, boundary.start])
+  radius(boundary) == eightSignalEnvelopeDiameter / 2
+}
+cn18SignalEnvelope = extrude(region(segments = [signalProfile.boundary]), length = 162mm)
+  |> translate(
+       x = -84mm,
+       y = 22mm,
+       z = 67mm,
+       global = true,
+     )
+  |> appearance(color = "#b84cf2", opacity = 55)
+cn10SignalEnvelope = extrude(region(segments = [signalProfile.boundary]), length = 160mm)
+  |> translate(
+       x = -72mm,
+       y = -22mm,
+       z = 66.5mm,
+       global = true,
+     )
+  |> appearance(color = "#68dc79", opacity = 55)
+cn19SignalEnvelope = extrude(region(segments = [signalProfile.boundary]), length = 163mm)
+  |> translate(
+       x = -72mm,
+       y = -22mm,
+       z = 74.5mm,
+       global = true,
+     )
+  |> appearance(color = "#ed5ca4", opacity = 55)
+hide(signalProfile)
+
+// Separate 5 V and ground conductors to CN18 share an assumed two-wire corridor.
+twoPowerProfile = sketch(on = YZ) {
+  boundary = circle(center = [var 0mm, var 0mm], start = [var 2.1mm, var 0mm])
+  coincident([boundary.center, ORIGIN])
+  horizontal([boundary.center, boundary.start])
+  radius(boundary) == twoPowerEnvelopeDiameter / 2
+}
+cn18PowerEnvelope = extrude(region(segments = [twoPowerProfile.boundary]), length = 20mm)
+  |> translate(
+       x = 78mm,
+       y = 19mm,
+       z = 54mm,
+       global = true,
+     )
+  |> appearance(color = "#ec8b48", opacity = 42)
+hide(twoPowerProfile)
+
+allBundleSections = [
+  fiveGroupAEnvelope,
+  fiveGroupBEnvelope,
+  fiveGroupCEnvelope,
+  vlSixEnvelope,
+  twelveVoltEnvelope,
+  cn18SignalEnvelope,
+  cn10SignalEnvelope,
+  cn19SignalEnvelope,
+  cn18PowerEnvelope
+]

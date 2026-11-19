@@ -1,0 +1,32 @@
+// Detail of a potential clash during carrier insertion.
+// Brown is the simplified VLR-06V rear envelope. Gold is the shared volume,
+// lifted 15 mm upward for visibility; its displayed position is not the clash position.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "wagoFiveRetainer.kcl" as retainerPart
+import "vlSixRearEnvelope.kcl" as rearPart
+
+carrierLift = 15mm
+rearProjection = 17.065625mm
+retainerPositioned = translate(
+  retainerPart,
+  x = -54mm,
+  z = 31.5mm + carrierLift,
+  global = true,
+)
+rearPositioned = scale(rearPart, z = rearProjection / 18.7mm, global = true)
+  |> rotate(axis = X, angle = -90deg, global = true)
+  |> translate(
+       x = -73.8mm,
+       y = -31mm,
+       z = 51.5mm,
+       global = true,
+     )
+shared = intersect([
+  clone(retainerPositioned),
+  clone(rearPositioned)
+])
+retainerReference = appearance(retainerPositioned, color = "#78a58d", opacity = 45)
+rearReference = appearance(rearPositioned, color = "#d78b73", opacity = 45)
+clashReference = translate(shared, z = 15mm, global = true)
+  |> appearance(color = "#f1bd32")

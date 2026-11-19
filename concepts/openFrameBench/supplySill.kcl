@@ -1,0 +1,50 @@
+// Front sill beneath a sliding supply panel.
+// Relieved around both separate guide feet so they can still be installed.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+sillLength = 90.4mm
+sillDepth = 2.4mm
+sillHeight = 5.6mm
+profile = sketch(on = XY) {
+  bottom = line(start = [var -45.2mm, var 0mm], end = [var 45.2mm, var 0mm])
+  right = line(start = [var 45.2mm, var 0mm], end = [var 45.2mm, var 2.4mm])
+  top = line(start = [var 45.2mm, var 2.4mm], end = [var -45.2mm, var 2.4mm])
+  left = line(start = [var -45.2mm, var 2.4mm], end = [var -45.2mm, var 0mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  horizontal(top)
+  vertical(right)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == sillLength / 2
+  horizontal([bottom.start, ORIGIN])
+  horizontalDistance([bottom.start, bottom.end]) == sillLength
+  verticalDistance([right.start, right.end]) == sillDepth
+}
+blank = extrude(region(segments = [profile.bottom, profile.right], intersectionIndex = -1, direction = CCW), length = sillHeight)
+hide(profile)
+notch = sketch(on = XY) {
+  bottom = line(start = [var -44.9mm, var -0.1mm], end = [var -30.5mm, var -0.1mm])
+  right = line(start = [var -30.5mm, var -0.1mm], end = [var -30.5mm, var 1.3mm])
+  top = line(start = [var -30.5mm, var 1.3mm], end = [var -44.9mm, var 1.3mm])
+  left = line(start = [var -44.9mm, var 1.3mm], end = [var -44.9mm, var -0.1mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  horizontal(top)
+  vertical(right)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == 44.9mm
+  verticalDistance([bottom.start, ORIGIN]) == 0.1mm
+  horizontalDistance([bottom.start, bottom.end]) == 14.4mm
+  verticalDistance([right.start, right.end]) == 1.4mm
+}
+firstTool = extrude(region(segments = [notch.bottom, notch.right], intersectionIndex = -1, direction = CCW), length = sillHeight + 0.2mm)
+  |> translate(z = -0.1mm, global = true)
+hide(notch)
+secondTool = translate(clone(firstTool), x = 75.4mm, global = true)
+sill = subtract(blank, tools = [firstTool, secondTool])

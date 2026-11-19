@@ -1,0 +1,67 @@
+// Wall-mount cradle clip for the open-frame enclosure.
+// Rear step bears on the floor edge; the front lip captures the lid.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+clipWidth = 24mm
+screwRadius = 2.4mm
+
+profile = sketch(on = YZ) {
+  base = line(start = [var -3.2mm, var 0mm], end = [var 26mm, var 0mm])
+  toe = line(start = [var 26mm, var 0mm], end = [var 26mm, var 6mm])
+  flange = line(start = [var 26mm, var 6mm], end = [var 13mm, var 6mm])
+  gusset = line(start = [var 13mm, var 6mm], end = [var 5mm, var 38mm])
+  upright = line(start = [var 5mm, var 38mm], end = [var 5mm, var 92.4mm])
+  lip = line(start = [var 5mm, var 92.4mm], end = [var -4mm, var 92.4mm])
+  tip = line(start = [var -4mm, var 92.4mm], end = [var -4mm, var 88.4mm])
+  catch = line(start = [var -4mm, var 88.4mm], end = [var 0mm, var 88.4mm])
+  inside = line(start = [var 0mm, var 88.4mm], end = [var 0mm, var 5mm])
+  step = line(start = [var 0mm, var 5mm], end = [var -3.2mm, var 5mm])
+  bearing = line(start = [var -3.2mm, var 5mm], end = [var -3.2mm, var 0mm])
+  coincident([base.end, toe.start])
+  coincident([toe.end, flange.start])
+  coincident([flange.end, gusset.start])
+  coincident([gusset.end, upright.start])
+  coincident([upright.end, lip.start])
+  coincident([lip.end, tip.start])
+  coincident([tip.end, catch.start])
+  coincident([catch.end, inside.start])
+  coincident([inside.end, step.start])
+  coincident([step.end, bearing.start])
+  coincident([bearing.end, base.start])
+  horizontal(base)
+  vertical(toe)
+  horizontal(flange)
+  vertical(upright)
+  horizontal(lip)
+  vertical(tip)
+  horizontal(catch)
+  vertical(inside)
+  horizontal(step)
+  vertical(bearing)
+  horizontal([base.start, ORIGIN])
+  vertical([inside.end, ORIGIN])
+  horizontalDistance([base.start, ORIGIN]) == 5mm
+  horizontalDistance([ORIGIN, base.end]) == 26mm
+  verticalDistance([toe.start, toe.end]) == 6mm
+  horizontalDistance([flange.end, flange.start]) == 13mm
+  horizontalDistance([gusset.end, gusset.start]) == 8mm
+  verticalDistance([gusset.start, gusset.end]) == 32mm
+  verticalDistance([ORIGIN, lip.start]) == 92.4mm
+  horizontalDistance([lip.end, lip.start]) == 9mm
+  verticalDistance([tip.end, tip.start]) == 4mm
+  verticalDistance([ORIGIN, step.start]) == 5mm
+}
+blank = extrude(region(segments = [profile.base, profile.toe], intersectionIndex = -1, direction = CCW), length = clipWidth, symmetric = true)
+hide(profile)
+
+holeProfile = sketch(on = XY) {
+  bore = circle(center = [var 0mm, var 19mm], start = [var 2.4mm, var 19mm])
+  vertical([ORIGIN, bore.center])
+  verticalDistance([ORIGIN, bore.center]) == 19mm
+  horizontal([bore.center, bore.start])
+  radius(bore) == screwRadius
+}
+cutter = extrude(region(segments = [holeProfile.bore]), length = 6.4mm)
+  |> translate(z = -0.2mm, global = true)
+hide(holeProfile)
+wallMountClip = subtract(blank, tools = [cutter])

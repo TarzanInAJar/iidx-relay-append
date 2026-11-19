@@ -1,0 +1,72 @@
+// Closed enclosure review with east/west mounting ears.
+// Split supply layout; actual connectors, fasteners and wires are omitted.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "floorFrameEndEars.kcl" as framePart
+import plainSkin, eastSkin from "concepts/openFrameSlideWalls/main.kcl"
+import "openFrameCeiling.kcl" as ceilingPart
+import "openFrameSupplyTwo.kcl" as twoPart
+import "openFrameSupplySix.kcl" as sixPart
+import "openFrameWestSlide.kcl" as westPart
+
+frame = appearance(framePart, color = "#728a7f")
+ceiling = translate(ceilingPart, z = 82mm, global = true)
+  |> appearance(color = "#d6dadd")
+westPanel = translate(
+  westPart,
+  x = 115mm,
+  z = 36mm,
+  global = true,
+)
+  |> appearance(color = "#a8c2cb")
+northPanel = rotate(
+  twoPart,
+  axis = X,
+  angle = 90deg,
+  global = true,
+)
+  |> rotate(axis = Z, angle = 180deg, global = true)
+  |> translate(
+       x = -55mm,
+       y = 33.4mm,
+       z = 42.5mm,
+       global = true,
+     )
+  |> appearance(color = "#56646d")
+southPanel = rotate(
+  sixPart,
+  axis = X,
+  angle = 90deg,
+  global = true,
+)
+  |> translate(
+       x = -55mm,
+       y = -33.4mm,
+       z = 42.5mm,
+       global = true,
+     )
+  |> appearance(color = "#56646d")
+northPlainWall = translate(
+  clone(plainSkin),
+  x = 55mm,
+  y = 36.4mm,
+  z = 3.2mm,
+  global = true,
+)
+  |> appearance(color = "#56646d")
+southPlainWall = translate(
+  plainSkin,
+  x = 55mm,
+  y = -34.8mm,
+  z = 3.2mm,
+  global = true,
+)
+  |> appearance(color = "#56646d")
+eastPanel = rotate(
+  eastSkin,
+  axis = Z,
+  angle = 180deg,
+  global = true,
+)
+  |> translate(x = -115mm, z = 3.2mm, global = true)
+  |> appearance(color = "#687983")

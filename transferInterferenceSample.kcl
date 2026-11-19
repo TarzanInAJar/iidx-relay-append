@@ -1,0 +1,32 @@
+// Transfer-motion screening: one sample of the upper 221-415 retainer
+// descending past a preinstalled VLR-06V in the both-south layout.
+// The VLR shape is an approximate envelope, not the actual connector.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "wagoFiveRetainer.kcl" as retainerPart
+import "vlSixRearEnvelope.kcl" as sixRearPart
+
+carrierLift = 15mm
+retainerCenterX = -54mm
+seatedRetainerZ = 31.5mm
+sixPortCenterX = -73.8mm
+sixPortCenterZ = 51.5mm
+innerPanelY = -31mm
+// User measured 43/64 in (~17.07 mm); using it from the inner face is provisional.
+rearProjection = 17.065625mm
+
+retainerAtSample = translate(
+  retainerPart,
+  x = retainerCenterX,
+  z = seatedRetainerZ + carrierLift,
+  global = true,
+)
+sixRearAtPanel = scale(sixRearPart, z = rearProjection / 18.7mm, global = true)
+  |> rotate(axis = X, angle = -90deg, global = true)
+  |> translate(
+       x = sixPortCenterX,
+       y = innerPanelY,
+       z = sixPortCenterZ,
+       global = true,
+     )
+sharedVolume = intersect([retainerAtSample, sixRearAtPanel])

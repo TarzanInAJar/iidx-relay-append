@@ -1,0 +1,169 @@
+// Supply-panel guide comparison for the open frame.
+// Toggle dualOnNorth; connectors are simplified envelopes and wiring is omitted.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "concepts/openFrameBench/main.kcl" as framePart
+import "concepts/slidePanelGuide/main.kcl" as guidePart
+import "supplyPanelBoth.kcl" as bothPanelPart
+import "supplyPanelBlank.kcl" as blankPanelPart
+import "vlTwoRearEnvelope.kcl" as twoRearPart
+import "vlSixRearEnvelope.kcl" as sixRearPart
+
+dualOnNorth = false
+panelCenterX = -53.8mm
+panelDatumY = 31mm
+panelCenterZ = 45mm
+firstGuideX = -91.5mm
+guidePitch = 75.4mm
+deckZ = 3mm
+
+frame = appearance(framePart, color = "#728a7f")
+firstSouthGuide = rotate(
+  clone(guidePart),
+  axis = Z,
+  angle = 180deg,
+  global = true,
+)
+  |> translate(
+       x = firstGuideX,
+       y = -panelDatumY,
+       z = deckZ,
+       global = true,
+     )
+  |> appearance(color = "#d69b57")
+secondSouthGuide = translate(clone(firstSouthGuide), x = guidePitch, global = true)
+firstNorthGuide = translate(
+  guidePart,
+  x = firstGuideX,
+  y = panelDatumY,
+  z = deckZ,
+  global = true,
+)
+  |> appearance(color = "#69a6c0")
+northGuides = patternLinear3d(
+  firstNorthGuide,
+  instances = 2,
+  distance = guidePitch,
+  axis = [1, 0, 0],
+)
+
+bothPanel = if dualOnNorth {
+  rotate(
+    bothPanelPart,
+    axis = X,
+    angle = 90deg,
+    global = true,
+  )
+    |> rotate(axis = Z, angle = 180deg, global = true)
+    |> translate(
+         x = panelCenterX,
+         y = panelDatumY,
+         z = panelCenterZ,
+         global = true,
+       )
+    |> appearance(color = "#d7a075", opacity = 70)
+} else {
+  rotate(
+    bothPanelPart,
+    axis = X,
+    angle = 90deg,
+    global = true,
+  )
+    |> translate(
+         x = panelCenterX,
+         y = -panelDatumY,
+         z = panelCenterZ,
+         global = true,
+       )
+    |> appearance(color = "#d7a075", opacity = 70)
+}
+blankPanel = if dualOnNorth {
+  rotate(
+    blankPanelPart,
+    axis = X,
+    angle = 90deg,
+    global = true,
+  )
+    |> translate(
+         x = panelCenterX,
+         y = -panelDatumY,
+         z = panelCenterZ,
+         global = true,
+       )
+    |> appearance(color = "#aab1ad", opacity = 60)
+} else {
+  rotate(
+    blankPanelPart,
+    axis = X,
+    angle = 90deg,
+    global = true,
+  )
+    |> rotate(axis = Z, angle = 180deg, global = true)
+    |> translate(
+         x = panelCenterX,
+         y = panelDatumY,
+         z = panelCenterZ,
+         global = true,
+       )
+    |> appearance(color = "#aab1ad", opacity = 60)
+}
+twoRear = if dualOnNorth {
+  rotate(
+    twoRearPart,
+    axis = X,
+    angle = -90deg,
+    global = true,
+  )
+    |> rotate(axis = Z, angle = 180deg, global = true)
+    |> translate(
+         x = panelCenterX - 20mm,
+         y = panelDatumY,
+         z = 51.5mm,
+         global = true,
+       )
+    |> appearance(color = "#d95757", opacity = 60)
+} else {
+  rotate(
+    twoRearPart,
+    axis = X,
+    angle = -90deg,
+    global = true,
+  )
+    |> translate(
+         x = panelCenterX + 20mm,
+         y = -panelDatumY,
+         z = 51.5mm,
+         global = true,
+       )
+    |> appearance(color = "#d95757", opacity = 60)
+}
+sixRear = if dualOnNorth {
+  rotate(
+    sixRearPart,
+    axis = X,
+    angle = -90deg,
+    global = true,
+  )
+    |> rotate(axis = Z, angle = 180deg, global = true)
+    |> translate(
+         x = panelCenterX + 20mm,
+         y = panelDatumY,
+         z = 51.5mm,
+         global = true,
+       )
+    |> appearance(color = "#c95f77", opacity = 60)
+} else {
+  rotate(
+    sixRearPart,
+    axis = X,
+    angle = -90deg,
+    global = true,
+  )
+    |> translate(
+         x = panelCenterX - 20mm,
+         y = -panelDatumY,
+         z = 51.5mm,
+         global = true,
+       )
+    |> appearance(color = "#c95f77", opacity = 60)
+}

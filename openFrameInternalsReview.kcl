@@ -1,0 +1,137 @@
+// Open-frame internals review.
+// Shows the populated frame without panels, ceiling, cradles or routing overlays.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "concepts/openFrameBench/main.kcl" as framePart
+import "concepts/upperWagoRail/main.kcl" as railPart
+import "wagoFiveRetainer.kcl" as fiveRetainer
+import "wagoTenRetainer.kcl" as tenRetainer
+import "concepts/tenEndKeeper/main.kcl" as keeperPart
+import "wagoFiveEnvelope.kcl" as fiveBody
+import "wagoTenEnvelope.kcl" as tenBody
+
+frame = appearance(framePart, color = "#728a7f")
+southRailBlank = clone(railPart)
+northRail = translate(
+  railPart,
+  x = 40mm,
+  y = 14.5mm,
+  z = 3mm,
+  global = true,
+)
+  |> appearance(color = "#c6a96e")
+southRail = rotate(
+  southRailBlank,
+  axis = Z,
+  angle = 180deg,
+  global = true,
+)
+  |> translate(
+       x = 40mm,
+       y = -14.5mm,
+       z = 3mm,
+       global = true,
+     )
+  |> appearance(color = "#c6a96e")
+
+lowerFiveBlank = clone(fiveRetainer)
+upperRetainers = translate(
+  fiveRetainer,
+  x = 2mm,
+  z = 37mm,
+  global = true,
+)
+  |> appearance(color = "#76aa8c")
+  |> patternLinear3d(instances = 3, distance = 38mm, axis = X)
+lowerRetainers = translate(
+  lowerFiveBlank,
+  x = 2mm,
+  z = 3mm,
+  global = true,
+)
+  |> appearance(color = "#76aa8c")
+  |> patternLinear3d(instances = 3, distance = 38mm, axis = X)
+tenRetainers = translate(
+  tenRetainer,
+  x = -78mm,
+  z = 3mm,
+  global = true,
+)
+  |> appearance(color = "#76aa8c")
+  |> patternLinear3d(instances = 2, distance = 40mm, axis = X)
+
+oppositeKeeper = rotate(
+  clone(keeperPart),
+  axis = Z,
+  angle = 180deg,
+  global = true,
+)
+keepers = translate(
+  keeperPart,
+  x = -78mm,
+  z = 3mm,
+  global = true,
+)
+  |> appearance(color = "#bd8ce1")
+  |> patternLinear3d(instances = 2, distance = 40mm, axis = X)
+oppositeKeepers = translate(
+  oppositeKeeper,
+  x = -78mm,
+  z = 3mm,
+  global = true,
+)
+  |> appearance(color = "#7eaee5")
+  |> patternLinear3d(instances = 2, distance = 40mm, axis = X)
+
+lowerBodyBlank = clone(fiveBody)
+upperBodies = scale(
+  fiveBody,
+  x = 29.6 / 30,
+  y = 18.1 / 18.8,
+  z = 8.05 / 8.4,
+  global = true,
+)
+  |> translate(x = 2mm, z = 38.6mm, global = true)
+  |> appearance(color = "#ed9c62")
+  |> patternLinear3d(instances = 3, distance = 38mm, axis = X)
+lowerBodies = scale(
+  lowerBodyBlank,
+  x = 29.6 / 30,
+  y = 18.1 / 18.8,
+  z = 8.05 / 8.4,
+  global = true,
+)
+  |> translate(x = 2mm, z = 4.6mm, global = true)
+  |> appearance(color = "#7593c4")
+  |> patternLinear3d(instances = 3, distance = 38mm, axis = X)
+secondTenBlank = clone(tenBody)
+firstTenBody = scale(
+  tenBody,
+  x = 29.6 / 29.8,
+  y = 18.1 / 18.3,
+  z = 15.6 / 15.8,
+  global = true,
+)
+  |> rotate(axis = X, angle = -90deg, global = true)
+  |> translate(
+       x = -78mm,
+       y = -7.8mm,
+       z = 13.65mm,
+       global = true,
+     )
+  |> appearance(color = "#eac66a")
+secondTenBody = scale(
+  secondTenBlank,
+  x = 29.6 / 29.8,
+  y = 18.1 / 18.3,
+  z = 15.6 / 15.8,
+  global = true,
+)
+  |> rotate(axis = X, angle = -90deg, global = true)
+  |> translate(
+       x = -38mm,
+       y = -7.8mm,
+       z = 13.65mm,
+       global = true,
+     )
+  |> appearance(color = "#7593c4")

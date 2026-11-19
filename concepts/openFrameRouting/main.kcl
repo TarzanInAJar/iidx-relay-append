@@ -1,0 +1,393 @@
+// Open-frame harness routing concept.
+// Diagrammatic paths and candidate tie markers; not printable parts or wire geometry.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+fn routeSegment(start, end, guideRadius, guideColor) {
+  dx = end[0] - start[0]
+  dy = end[1] - start[1]
+  dz = end[2] - start[2]
+  dxSquared = (dx * dx): number(_)
+  dySquared = (dy * dy): number(_)
+  dzSquared = (dz * dz): number(_)
+  horizontalLength = sqrt(dxSquared + dySquared): mm
+  segmentLength = sqrt(dxSquared + dySquared + dzSquared): mm
+  yaw = if horizontalLength > 0mm {
+    atan2(y = dy, x = dx)
+  } else {
+    0deg
+  }
+  pitch = atan2(y = horizontalLength, x = dz)
+  guideProfile = sketch(on = XY) {
+    outline = circle(center = [var 0mm, var 0mm], start = [var 0.6mm, var 0mm])
+    coincident([outline.center, ORIGIN])
+    horizontal([outline.center, outline.start])
+    radius(outline) == guideRadius
+  }
+  rod = extrude(region(segments = [guideProfile.outline]), length = segmentLength)
+  hide(guideProfile)
+  return rod
+    |> rotate(axis = Y, angle = pitch, global = true)
+    |> rotate(axis = Z, angle = yaw, global = true)
+    |> translate(
+         x = start[0],
+         y = start[1],
+         z = start[2],
+         global = true,
+       )
+    |> appearance(color = guideColor)
+}
+
+fn routePath(points, guideRadius, guideColor) {
+  return map(
+    [0 ..< count(points) - 1],
+    f = fn(@index) {
+      return routeSegment(
+        start = points[index],
+        end = points[index + 1],
+        guideRadius = guideRadius,
+        guideColor = guideColor,
+      )
+    },
+  )
+}
+
+guideRadius = 0.7mm
+signalWireDiameter = 1.397mm
+signalBundleAllowance = 1mm
+powerColor = "#f17939"
+returnColor = "#24aada"
+pairColor = "#f6b13c"
+cn18Color = "#b84cf2"
+cn10Color = "#68dc79"
+cn19Color = "#ed5ca4"
+tieColor = "#f8ea4c"
+
+// 06V: three separate supply/return pairs, A/B/C; common colored corridors are not splices.
+// The split layout is shown; exact rear wire exits and individual pin positions are unknown.
+bankXs = [2mm, 40mm, 78mm]
+fiveSupplyPower = map(
+  bankXs,
+  f = fn(@x) {
+    return routePath(
+      points = [
+        [-74mm, -12mm, 51mm],
+        [-59mm, -8mm, 51mm],
+        [-58mm, -22mm, 48mm],
+        [x, -22mm, 48mm],
+        [x, -10mm, 43mm]
+      ],
+      guideRadius = guideRadius,
+      guideColor = powerColor,
+    )
+  },
+)
+fiveSupplyReturn = map(
+  bankXs,
+  f = fn(@x) {
+    return routePath(
+      points = [
+        [-74mm, -12mm, 49mm],
+        [-59mm, -7mm, 49mm],
+        [-58mm, -13mm, 48mm],
+        [-58mm, -13mm, 22mm],
+        [x, -13mm, 22mm],
+        [x, -10mm, 9mm]
+      ],
+      guideRadius = guideRadius,
+      guideColor = returnColor,
+    )
+  },
+)
+
+// Each amber run represents separate +5 V and return wires bundled together, not a connection.
+// A feeds the first three ports, B the next three, C the last two and CN18 power/return.
+fiveLowerToBundle = map(
+  bankXs,
+  f = fn(@x) {
+    bundleHeight = if x == 40mm {
+      53mm
+    } else {
+      61mm
+    }
+    return routePath(
+      points = [
+        [x, 10mm, 9mm],
+        [x, 23mm, 18mm],
+        [x, 23mm, 54mm],
+        [x, 17mm, bundleHeight]
+      ],
+      guideRadius = guideRadius,
+      guideColor = returnColor,
+    )
+  },
+)
+fiveUpperToBundle = map(
+  bankXs,
+  f = fn(@x) {
+    bundleHeight = if x == 40mm {
+      53mm
+    } else {
+      61mm
+    }
+    return routePath(
+      points = [
+        [x, 10mm, 43mm],
+        [x, 17mm, 51mm],
+        [x, 17mm, bundleHeight]
+      ],
+      guideRadius = guideRadius,
+      guideColor = powerColor,
+    )
+  },
+)
+fiveBundleA = routePath(points = [[2mm, 17mm, 61mm], [-84mm, 17mm, 61mm]], guideRadius = guideRadius, guideColor = pairColor)
+fiveBundleB = routePath(
+  points = [
+    [40mm, 17mm, 53mm],
+    [-12mm, 17mm, 53mm]
+  ],
+  guideRadius = guideRadius,
+  guideColor = pairColor,
+)
+fiveBundleC = routePath(points = [[60mm, 17mm, 61mm], [84mm, 17mm, 61mm]], guideRadius = guideRadius, guideColor = pairColor)
+fivePortXs = [
+  -84mm,
+  -60mm,
+  -36mm,
+  -12mm,
+  12mm,
+  36mm,
+  60mm,
+  84mm
+]
+fiveFanouts = map(
+  fivePortXs,
+  f = fn(@x) {
+    bundleHeight = if x >= -12mm & x <= 36mm {
+      53mm
+    } else {
+      61mm
+    }
+    return routeSegment(
+      start = [x, 17mm, bundleHeight],
+      end = [x, 12mm, 72mm],
+      guideRadius = guideRadius,
+      guideColor = pairColor,
+    )
+  },
+)
+// CN18 receives one positive and one return from C, in separate slots.
+cn18Power = routePath(
+  points = [
+    [78mm, 10mm, 43mm],
+    [95mm, 19mm, 54mm],
+    [101mm, 4mm, 50mm]
+  ],
+  guideRadius = guideRadius,
+  guideColor = powerColor,
+)
+cn18Return = routePath(
+  points = [
+    [78mm, 10mm, 9mm],
+    [96mm, 24mm, 17mm],
+    [100mm, 24mm, 44mm],
+    [101mm, 4mm, 49mm]
+  ],
+  guideRadius = guideRadius,
+  guideColor = returnColor,
+)
+
+// 02V supply to the two independent 221-420s and individual port power/return.
+twelveSupply = routePath(
+  points = [
+    [-74mm, 12mm, 52mm],
+    [-80mm, 8mm, 39mm],
+    [-78mm, 0mm, 23mm]
+  ],
+  guideRadius = guideRadius,
+  guideColor = powerColor,
+)
+twelveReturn = routePath(
+  points = [
+    [-72mm, 12mm, 50mm],
+    [-59mm, 21mm, 40mm],
+    [-38mm, 10mm, 23mm]
+  ],
+  guideRadius = guideRadius,
+  guideColor = returnColor,
+)
+twelvePositiveToBundle = routePath(
+  points = [
+    [-78mm, -4mm, 23mm],
+    [-78mm, -19mm, 34mm],
+    [-78mm, -18mm, 57mm],
+    [-72mm, -18mm, 58mm]
+  ],
+  guideRadius = guideRadius,
+  guideColor = powerColor,
+)
+twelveGroundToBundle = routePath(
+  points = [
+    [-38mm, -4mm, 23mm],
+    [-38mm, -19mm, 32mm],
+    [-38mm, -18mm, 58mm]
+  ],
+  guideRadius = guideRadius,
+  guideColor = returnColor,
+)
+twelveTrunk = routePath(
+  points = [
+    [-72mm, -18mm, 58mm],
+    [72mm, -18mm, 58mm]
+  ],
+  guideRadius = guideRadius,
+  guideColor = pairColor,
+)
+twelvePortXs = [-72mm, -48mm, -12mm, 12mm, 48mm, 72mm]
+twelveFanouts = map(
+  twelvePortXs,
+  f = fn(@x) {
+    return routeSegment(
+      start = [x, -18mm, 58mm],
+      end = [x, -12mm, 72mm],
+      guideRadius = guideRadius,
+      guideColor = pairColor,
+    )
+  },
+)
+
+// West signal trunks stand for groups of isolated conductors, not connected buses.
+// Coarse diameter-based approach, not a real smooth bend or individual conductors.
+cn18ApproachEnvelope = routePath(
+  points = [
+    [100.5mm, 0mm, 50mm],
+    [97.5mm, 0mm, 50mm],
+    [94mm, 4mm, 54mm],
+    [89mm, 12mm, 61.5mm],
+    [84mm, 20mm, 67mm],
+    [78mm, 22mm, 67mm]
+  ],
+  guideRadius = ((sqrt(8_) + 1_) * signalWireDiameter + signalBundleAllowance) / 2,
+  guideColor = cn18Color,
+)
+cn18Trunk = routePath(
+  points = [
+    [78mm, 22mm, 67mm],
+    [-84mm, 22mm, 67mm]
+  ],
+  guideRadius = guideRadius,
+  guideColor = cn18Color,
+)
+// One signal branches back toward the x = 84 mm ceiling port.
+cn18LastBranch = routeSegment(
+  start = [78mm, 22mm, 67mm],
+  end = [84mm, 22mm, 67mm],
+  guideRadius = guideRadius,
+  guideColor = cn18Color,
+)
+cn18Fanouts = map(
+  fivePortXs,
+  f = fn(@x) {
+    return routeSegment(
+      start = [x, 22mm, 67mm],
+      end = [x, 13mm, 72mm],
+      guideRadius = guideRadius,
+      guideColor = cn18Color,
+    )
+  },
+)
+cn10Trunk = routePath(
+  points = [
+    [101mm, -1mm, 34mm],
+    [98mm, -23mm, 41mm],
+    [88mm, -22mm, 66.5mm],
+    [-72mm, -22mm, 66.5mm]
+  ],
+  guideRadius = guideRadius,
+  guideColor = cn10Color,
+)
+cn10FanoutXs = [-72mm, -48mm, 48mm, 72mm]
+cn10Fanouts = map(
+  cn10FanoutXs,
+  f = fn(@x) {
+    return routeSegment(
+      start = [x, -22mm, 66.5mm],
+      end = [x, -13mm, 72mm],
+      guideRadius = guideRadius,
+      guideColor = cn10Color,
+    )
+  },
+)
+cn19Trunk = routePath(
+  points = [
+    [101mm, -2mm, 18mm],
+    [99mm, -19mm, 25mm],
+    [97mm, -22mm, 54mm],
+    [91mm, -22mm, 74.5mm],
+    [-72mm, -22mm, 74.5mm]
+  ],
+  guideRadius = guideRadius,
+  guideColor = cn19Color,
+)
+cn19FanoutXs = [-72mm, -48mm, -12mm, 12mm]
+cn19Fanouts = map(
+  cn19FanoutXs,
+  f = fn(@x) {
+    return routeSegment(
+      start = [x, -22mm, 74.5mm],
+      end = [x, -13mm, 71mm],
+      guideRadius = guideRadius,
+      guideColor = cn19Color,
+    )
+  },
+)
+
+// Yellow stubs mark additional candidate tie locations, not supported anchors.
+tiePoints = [
+  [-60mm, 22mm, 66mm],
+  [12mm, 22mm, 66mm],
+  [-60mm, -22mm, 65.5mm],
+  [12mm, -22mm, 65.5mm],
+  [72mm, -22mm, 65.5mm],
+  [-20mm, -13mm, 21mm],
+  [60mm, -13mm, 21mm]
+]
+tieMarkers = map(
+  tiePoints,
+  f = fn(@point) {
+    return routeSegment(
+      start = point,
+      end = [point[0], point[1], point[2] + 3mm],
+      guideRadius = 1.8mm,
+      guideColor = tieColor,
+    )
+  },
+)
+
+allRouting = flatten(flatten([
+  fiveSupplyPower,
+  fiveSupplyReturn,
+  fiveLowerToBundle,
+  fiveUpperToBundle,
+  fiveBundleA,
+  fiveBundleB,
+  fiveBundleC,
+  fiveFanouts,
+  cn18Power,
+  cn18Return,
+  twelveSupply,
+  twelveReturn,
+  twelvePositiveToBundle,
+  twelveGroundToBundle,
+  twelveTrunk,
+  twelveFanouts,
+  cn18ApproachEnvelope,
+  cn18Trunk,
+  cn18LastBranch,
+  cn18Fanouts,
+  cn10Trunk,
+  cn10Fanouts,
+  cn19Trunk,
+  cn19Fanouts,
+  tieMarkers
+]))

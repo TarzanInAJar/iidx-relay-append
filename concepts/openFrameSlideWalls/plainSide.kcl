@@ -1,0 +1,28 @@
+// Plain slide-in side wall.
+// Fits the midspan and corner tracks on the exposed frame.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+wallLength = 107.2mm
+wallHeight = 78.6mm
+wallThickness = 1.6mm
+profile = sketch(on = XZ) {
+  bottom = line(start = [var -53.6mm, var 0mm], end = [var 53.6mm, var 0mm])
+  right = line(start = [var 53.6mm, var 0mm], end = [var 53.6mm, var 78.6mm])
+  top = line(start = [var 53.6mm, var 78.6mm], end = [var -53.6mm, var 78.6mm])
+  left = line(start = [var -53.6mm, var 78.6mm], end = [var -53.6mm, var 0mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  horizontal(top)
+  vertical(right)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == wallLength / 2
+  horizontal([bottom.start, ORIGIN])
+  horizontalDistance([bottom.start, bottom.end]) == wallLength
+  verticalDistance([right.start, right.end]) == wallHeight
+}
+blank = extrude(region(segments = [profile.bottom, profile.right], intersectionIndex = -1, direction = CCW), length = wallThickness)
+hide(profile)
+plainWall = blank

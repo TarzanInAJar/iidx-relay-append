@@ -1,0 +1,5 @@
+// Entry point for the open-bench frame build candidate; physical fit is unverified.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "floorFrame.kcl" as floorFrame
+benchFrame = floorFrame

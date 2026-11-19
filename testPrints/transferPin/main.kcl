@@ -1,0 +1,29 @@
+// Removable stop pin for the raised supply-panel guide.
+// Nominal 3 mm shaft in a 3.4 mm printed bore; physical fit is untested.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+pinRadius = 1.5mm
+pinLength = 12mm
+headRadius = 2.5mm
+headThickness = 2mm
+joinOverlap = 0.1mm
+
+headProfile = sketch(on = XY) {
+  head = circle(center = [var 0mm, var 0mm], start = [var 2.5mm, var 0mm])
+  coincident([head.center, ORIGIN])
+  radius(head) == headRadius
+  horizontal([head.center, head.start])
+}
+head = extrude(region(segments = [headProfile.head]), length = headThickness)
+hide(headProfile)
+
+pinProfile = sketch(on = XY) {
+  pin = circle(center = [var 0mm, var 0mm], start = [var 1.5mm, var 0mm])
+  coincident([pin.center, ORIGIN])
+  radius(pin) == pinRadius
+  horizontal([pin.center, pin.start])
+}
+pin = extrude(region(segments = [pinProfile.pin]), length = pinLength + joinOverlap)
+  |> translate(z = headThickness - joinOverlap, global = true)
+hide(pinProfile)
+panelStopPin = union([head, pin])

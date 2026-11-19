@@ -1,0 +1,60 @@
+// Center-supported lower carrier trial
+// Adds a tray-floor bearing foot and a midspan bearing web between existing retainers.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "carrierFourPost.kcl" as lowerCarrier
+
+footWidth = 8mm
+footDepth = 8mm
+floorGap = 5mm
+joinOverlap = 0.1mm
+webWidth = 2mm
+webDepth = 12mm
+plateThickness = 2mm
+upperUnderside = 21.5mm
+
+footProfile = sketch(on = XY) {
+  bottom = line(start = [var -4mm, var -4mm], end = [var 4mm, var -4mm])
+  right = line(start = [var 4mm, var -4mm], end = [var 4mm, var 4mm])
+  top = line(start = [var 4mm, var 4mm], end = [var -4mm, var 4mm])
+  left = line(start = [var -4mm, var 4mm], end = [var -4mm, var -4mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == footWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == footDepth / 2
+  horizontalDistance([bottom.start, bottom.end]) == footWidth
+  verticalDistance([right.start, right.end]) == footDepth
+}
+footBlank = extrude(region(segments = [footProfile.bottom, footProfile.right], intersectionIndex = -1, direction = CCW), length = floorGap + joinOverlap)
+  |> translate(z = -floorGap, global = true)
+hide(footProfile)
+carrierWithFoot = union([lowerCarrier, footBlank])
+
+webProfile = sketch(on = XY) {
+  bottom = line(start = [var -0.8mm, var -6mm], end = [var 0.8mm, var -6mm])
+  right = line(start = [var 0.8mm, var -6mm], end = [var 0.8mm, var 6mm])
+  top = line(start = [var 0.8mm, var 6mm], end = [var -0.8mm, var 6mm])
+  left = line(start = [var -0.8mm, var 6mm], end = [var -0.8mm, var -6mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == webWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == webDepth / 2
+  horizontalDistance([bottom.start, bottom.end]) == webWidth
+  verticalDistance([right.start, right.end]) == webDepth
+}
+centerWeb = extrude(region(segments = [webProfile.bottom, webProfile.right], intersectionIndex = -1, direction = CCW), length = upperUnderside - plateThickness + joinOverlap)
+  |> translate(z = plateThickness - joinOverlap, global = true)
+hide(webProfile)
+centerSupportedCarrier = union([carrierWithFoot, centerWeb])

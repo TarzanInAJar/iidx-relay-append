@@ -1,0 +1,39 @@
+// Retrofit ledge for the original open-frame floor.
+// Bond the flat inner tongue under the floor; the raised shelf catches the panel.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+stopWidth = 16mm
+tongueReach = 12mm
+shelfReach = 4.5mm
+baseThickness = 2.4mm
+shelfRise = 6.2mm
+edgeAllowance = 0.2mm
+
+profile = sketch(on = YZ) {
+  bottom = line(start = [var -12mm, var -2.4mm], end = [var 4.5mm, var -2.4mm])
+  outside = line(start = [var 4.5mm, var -2.4mm], end = [var 4.5mm, var 6.2mm])
+  shelf = line(start = [var 4.5mm, var 6.2mm], end = [var 0.2mm, var 6.2mm])
+  riser = line(start = [var 0.2mm, var 6.2mm], end = [var 0.2mm, var 0mm])
+  tongue = line(start = [var 0.2mm, var 0mm], end = [var -12mm, var 0mm])
+  heel = line(start = [var -12mm, var 0mm], end = [var -12mm, var -2.4mm])
+  coincident([bottom.end, outside.start])
+  coincident([outside.end, shelf.start])
+  coincident([shelf.end, riser.start])
+  coincident([riser.end, tongue.start])
+  coincident([tongue.end, heel.start])
+  coincident([heel.end, bottom.start])
+  horizontal(bottom)
+  vertical(outside)
+  horizontal(shelf)
+  vertical(riser)
+  horizontal(tongue)
+  vertical(heel)
+  horizontal([ORIGIN, riser.end])
+  horizontalDistance([ORIGIN, riser.end]) == edgeAllowance
+  horizontalDistance([tongue.end, ORIGIN]) == tongueReach
+  horizontalDistance([ORIGIN, bottom.end]) == shelfReach
+  verticalDistance([bottom.start, tongue.end]) == baseThickness
+  verticalDistance([riser.end, riser.start]) == shelfRise
+}
+panelStop = extrude(region(segments = [profile.bottom, profile.outside], intersectionIndex = -1, direction = CCW), length = stopWidth, symmetric = true)
+hide(profile)

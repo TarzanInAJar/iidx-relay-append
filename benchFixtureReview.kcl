@@ -1,0 +1,375 @@
+// Bench fixture staging review: dual supply on south, blank on north.
+// Raised risers are an untested staging concept; no wires or fasteners are modeled.
+// Lid positions are selectable: upright for access or closed as a floating reference.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import benchFixtureBase as fixturePart, benchPanelGuide as guidePart from "testPrints/main.kcl"
+import "testPrints/benchGuideRiser/main.kcl" as riserPart
+import "testPrints/transferGuide/main.kcl" as transferGuidePart
+import "testPrints/transferPin/main.kcl" as stopPinPart
+import "testPrints/tenKeeper/main.kcl" as tenKeeperPart
+import "centerSupportedCarrier.kcl" as lowerPart
+import "upperCarrierFourPost.kcl" as upperPart
+import "carrierSpacer.kcl" as spacerPart
+import "wagoFiveRetainer.kcl" as fiveRetainerPart
+import "wagoTenRetainer.kcl" as tenRetainerPart
+import "wagoFiveEnvelope.kcl" as fiveReference
+import "wagoTenEnvelope.kcl" as tenReference
+import "supplyPanelBoth.kcl" as supplyPanelPart
+import "supplyPanelBlank.kcl" as blankPanelPart
+import "westPanelTall.kcl" as endPanelPart
+import "ceiling.kcl" as ceilingPart
+import "xmrFiveEnvelope.kcl" as xmrFiveReference
+
+// The risers match the tray guide height; the transfer and loaded stability are not proven.
+riserHeight = 84mm
+sideGuideZ = 3mm + riserHeight
+sidePanelRaise = 86.5mm
+// true = upright in the rack; false = floating at installed height for reference.
+lidParked = true
+fixture = appearance(fixturePart, color = "#536d79")
+sideGuidePart = transferGuidePart
+firstRiser = translate(
+  riserPart,
+  x = -100.8mm,
+  y = -32.5mm,
+  z = 3mm,
+  global = true,
+)
+  |> appearance(color = "#748da2")
+risersX = patternLinear3d(
+  firstRiser,
+  instances = 2,
+  distance = 94mm,
+  axis = [1, 0, 0],
+)
+riserSet = patternLinear3d(
+  risersX,
+  instances = 2,
+  distance = 65mm,
+  axis = [0, 1, 0],
+)
+southFirstStop = rotate(
+  clone(stopPinPart),
+  axis = X,
+  angle = -90deg,
+  global = true,
+)
+  |> translate(
+       x = -95.3mm,
+       y = -39.5mm,
+       z = 93mm,
+       global = true,
+     )
+  |> appearance(color = "#e9c468")
+southPinSet = patternLinear3d(
+  southFirstStop,
+  instances = 2,
+  distance = 83mm,
+  axis = [1, 0, 0],
+)
+northFirstStop = rotate(
+  stopPinPart,
+  axis = X,
+  angle = 90deg,
+  global = true,
+)
+  |> translate(
+       x = -95.3mm,
+       y = 39.5mm,
+       z = 93mm,
+       global = true,
+     )
+  |> appearance(color = "#e9c468")
+northPinSet = patternLinear3d(
+  northFirstStop,
+  instances = 2,
+  distance = 83mm,
+  axis = [1, 0, 0],
+)
+
+// Side guides lift off separately; this does not carry the wired assembly to the tray.
+leftGuide = translate(
+  clone(sideGuidePart),
+  x = -93.3mm,
+  y = -32.5mm,
+  z = sideGuideZ,
+  global = true,
+)
+  |> appearance(color = "#ddb874")
+southRightGuide = rotate(
+  clone(sideGuidePart),
+  axis = Z,
+  angle = 180deg,
+  global = true,
+)
+  |> translate(
+       x = -14.3mm,
+       y = -32.5mm,
+       z = sideGuideZ,
+       global = true,
+     )
+  |> appearance(color = "#ddb874")
+northLeftGuide = translate(
+  clone(sideGuidePart),
+  x = -93.3mm,
+  y = 32.5mm,
+  z = sideGuideZ,
+  global = true,
+)
+  |> appearance(color = "#ddb874")
+northRightGuide = rotate(
+  sideGuidePart,
+  axis = Z,
+  angle = 180deg,
+  global = true,
+)
+  |> translate(
+       x = -14.3mm,
+       y = 32.5mm,
+       z = sideGuideZ,
+       global = true,
+     )
+  |> appearance(color = "#ddb874")
+endLowerGuide = rotate(
+  clone(guidePart),
+  axis = Z,
+  angle = 90deg,
+  global = true,
+)
+  |> translate(
+       x = 113.5mm,
+       y = -23.3mm,
+       z = 3mm,
+       global = true,
+     )
+  |> appearance(color = "#ddb874")
+endUpperGuide = rotate(
+  guidePart,
+  axis = Z,
+  angle = -90deg,
+  global = true,
+)
+  |> translate(
+       x = 113.5mm,
+       y = 23.3mm,
+       z = 3mm,
+       global = true,
+     )
+  |> appearance(color = "#ddb874")
+
+// Both panels are staged at the tray's proposed raised-guide height.
+southSupply = rotate(
+  supplyPanelPart,
+  axis = X,
+  angle = 90deg,
+  global = true,
+)
+  |> translate(
+       x = -53.8mm,
+       y = -31mm,
+       z = 45mm + sidePanelRaise,
+       global = true,
+     )
+  |> appearance(color = "#db9369")
+northBlank = rotate(
+  blankPanelPart,
+  axis = X,
+  angle = 90deg,
+  global = true,
+)
+  |> rotate(axis = Z, angle = 180deg, global = true)
+  |> translate(
+       x = -53.8mm,
+       y = 31mm,
+       z = 45mm + sidePanelRaise,
+       global = true,
+     )
+  |> appearance(color = "#b7bbb5")
+endPanel = translate(
+  endPanelPart,
+  x = 112mm,
+  z = 36mm,
+  global = true,
+)
+  |> appearance(color = "#809296")
+
+// Carrier preview, with the center support and four corner spacers.
+upperFiveRetainerBlank = clone(fiveRetainerPart)
+upperFiveReferenceBlank = clone(fiveReference)
+lowerCarrier = translate(lowerPart, z = 8mm, global = true)
+  |> appearance(color = "#aebfb1")
+upperCarrier = translate(upperPart, z = 29.5mm, global = true)
+  |> appearance(color = "#aebfb1")
+firstSpacer = translate(
+  spacerPart,
+  x = -84mm,
+  y = -13mm,
+  z = 10mm,
+  global = true,
+)
+  |> appearance(color = "#c6b58e")
+spacersAlongX = patternLinear3d(
+  firstSpacer,
+  instances = 2,
+  distance = 168mm,
+  axis = [1, 0, 0],
+)
+spacers = patternLinear3d(
+  spacersAlongX,
+  instances = 2,
+  distance = 26mm,
+  axis = [0, 1, 0],
+)
+lowerFive = translate(
+  fiveRetainerPart,
+  x = -54mm,
+  z = 10mm,
+  global = true,
+)
+  |> appearance(color = "#6c9578")
+lowerFiveRetainers = patternLinear3d(
+  lowerFive,
+  instances = 4,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+upperFive = translate(
+  upperFiveRetainerBlank,
+  x = -54mm,
+  z = 31.5mm,
+  global = true,
+)
+  |> appearance(color = "#6c9578")
+upperFiveRetainers = patternLinear3d(
+  upperFive,
+  instances = 2,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+upperTen = translate(
+  tenRetainerPart,
+  x = 18mm,
+  z = 31.5mm,
+  global = true,
+)
+  |> appearance(color = "#6c9578")
+upperTenRetainers = patternLinear3d(
+  upperTen,
+  instances = 2,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+firstTenKeeper = translate(
+  tenKeeperPart,
+  x = 18mm,
+  z = 31.5mm,
+  global = true,
+)
+  |> appearance(color = "#b18cda")
+tenKeepers = patternLinear3d(
+  firstTenKeeper,
+  instances = 2,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+
+// Envelope boxes omit lever motion and contact features.
+lowerFiveBody = scale(
+  fiveReference,
+  x = 29.6 / 30,
+  y = 18.1 / 18.8,
+  z = 8.05 / 8.4,
+  global = true,
+)
+  |> translate(x = -54mm, z = 11.6mm, global = true)
+  |> appearance(color = "#e6a67a")
+lowerFiveBodies = patternLinear3d(
+  lowerFiveBody,
+  instances = 4,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+upperFiveBody = scale(
+  upperFiveReferenceBlank,
+  x = 29.6 / 30,
+  y = 18.1 / 18.8,
+  z = 8.05 / 8.4,
+  global = true,
+)
+  |> translate(x = -54mm, z = 33.1mm, global = true)
+  |> appearance(color = "#e6a67a")
+upperFiveBodies = patternLinear3d(
+  upperFiveBody,
+  instances = 2,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+upperTenBody = scale(
+  tenReference,
+  x = 29.6 / 29.8,
+  y = 18.1 / 18.3,
+  z = 15.6 / 15.8,
+  global = true,
+)
+  |> rotate(axis = X, angle = -90deg, global = true)
+  |> translate(
+       x = 18mm,
+       y = -7.8mm,
+       z = 42.15mm,
+       global = true,
+     )
+  |> appearance(color = "#e1bb62")
+upperTenBodies = patternLinear3d(
+  upperTenBody,
+  instances = 2,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+
+// Neither lid position establishes a viable movement path or service-loop length.
+positionedLid = if lidParked {
+  rotate(
+    ceilingPart,
+    axis = X,
+    angle = -90deg,
+    global = true,
+  )
+    |> translate(y = 63mm, z = 38mm, global = true)
+    |> appearance(color = "#b7c8d0")
+} else {
+  translate(ceilingPart, z = 82mm, global = true)
+    |> appearance(color = "#b7c8d0")
+}
+firstLidXmr = if lidParked {
+  translate(
+    xmrFiveReference,
+    x = -72mm,
+    y = -12mm,
+    global = true,
+  )
+    |> rotate(axis = X, angle = -90deg, global = true)
+    |> translate(y = 63mm, z = 38mm, global = true)
+    |> appearance(color = "#ae84c1")
+} else {
+  translate(
+    xmrFiveReference,
+    x = -72mm,
+    y = -12mm,
+    z = 82mm,
+    global = true,
+  )
+    |> appearance(color = "#ae84c1")
+}
+lidXmrPairs = patternLinear3d(
+  firstLidXmr,
+  instances = 2,
+  distance = 24mm,
+  axis = [1, 0, 0],
+)
+lidXmrBodies = patternLinear3d(
+  lidXmrPairs,
+  instances = 3,
+  distance = 60mm,
+  axis = [1, 0, 0],
+)

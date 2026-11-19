@@ -1,0 +1,55 @@
+// Pair-spacing review: experimental independent end keepers on 40 mm centers.
+// Connector envelopes omit wire openings, levers, actual contact faces and screws.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "wagoTenRetainer.kcl" as holderPart
+import "wagoTenEnvelope.kcl" as bodyPart
+import "concepts/tenEndKeeper/main.kcl" as keeperPart
+
+retainerPitch = 40mm
+firstHolder = translate(holderPart, x = -retainerPitch / 2, global = true)
+  |> appearance(color = "#6c9578")
+holders = patternLinear3d(
+  firstHolder,
+  instances = 2,
+  distance = retainerPitch,
+  axis = [1, 0, 0],
+)
+firstConnector = scale(
+  bodyPart,
+  x = 29.6 / 29.8,
+  y = 18.1 / 18.3,
+  z = 15.6 / 15.8,
+  global = true,
+)
+  |> rotate(axis = X, angle = -90deg, global = true)
+  |> translate(
+       x = -retainerPitch / 2,
+       y = -7.8mm,
+       z = 10.65mm,
+       global = true,
+     )
+  |> appearance(color = "#e1bb62", opacity = 60)
+connectors = patternLinear3d(
+  firstConnector,
+  instances = 2,
+  distance = retainerPitch,
+  axis = [1, 0, 0],
+)
+oppositeKeeper = rotate(
+  clone(keeperPart),
+  axis = Z,
+  angle = 180deg,
+  global = true,
+)
+  |> translate(x = -retainerPitch / 2, global = true)
+  |> appearance(color = "#7eaee5")
+secondOppositeKeeper = translate(clone(oppositeKeeper), x = retainerPitch, global = true)
+firstKeeper = translate(keeperPart, x = -retainerPitch / 2, global = true)
+  |> appearance(color = "#bd8ce1")
+firstKeepers = patternLinear3d(
+  firstKeeper,
+  instances = 2,
+  distance = retainerPitch,
+  axis = [1, 0, 0],
+)

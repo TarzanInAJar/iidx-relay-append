@@ -1,0 +1,46 @@
+// West XAD connector panel with integral slide rails.
+// Keeps the three connector openings; former screw holes are filled.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "westPanelTall.kcl" as panelPart
+wingWidth = 4.9mm
+wingHeight = 78.6mm
+panelThickness = 3mm
+wing = sketch(on = YZ) {
+  bottom = line(start = [var 0mm, var -32.8mm], end = [var 4.9mm, var -32.8mm])
+  right = line(start = [var 4.9mm, var -32.8mm], end = [var 4.9mm, var 45.8mm])
+  top = line(start = [var 4.9mm, var 45.8mm], end = [var 0mm, var 45.8mm])
+  left = line(start = [var 0mm, var 45.8mm], end = [var 0mm, var -32.8mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  horizontal(top)
+  vertical(right)
+  vertical(left)
+  vertical([bottom.start, ORIGIN])
+  verticalDistance([bottom.start, ORIGIN]) == 32.8mm
+  horizontalDistance([bottom.start, bottom.end]) == wingWidth
+  verticalDistance([right.start, right.end]) == wingHeight
+}
+wingBlank = extrude(region(segments = [wing.bottom, wing.right], intersectionIndex = -1, direction = CCW), length = panelThickness)
+hide(wing)
+secondWing = translate(clone(wingBlank), y = -30.6mm, global = true)
+firstWing = translate(wingBlank, y = 25.7mm, global = true)
+withFirstWing = union([panelPart, firstWing])
+withBothWings = union([withFirstWing, secondWing])
+
+// The two former screw holes are not needed with the sliding end panel.
+plugProfile = sketch(on = YZ) {
+  plug = circle(center = [var 0mm, var 0mm], start = [var 1.8mm, var 0mm])
+  coincident([plug.center, ORIGIN])
+  horizontal([plug.center, plug.start])
+  radius(plug) == 1.8mm
+}
+firstPlug = extrude(region(segments = [plugProfile.plug]), length = panelThickness)
+  |> translate(y = -22mm, z = -2mm, global = true)
+hide(plugProfile)
+secondPlug = translate(clone(firstPlug), y = 44mm, global = true)
+withFirstPlug = union([withBothWings, firstPlug])
+westSlidePanel = union([withFirstPlug, secondPlug])

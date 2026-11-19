@@ -1,0 +1,26 @@
+// XADR rear envelope
+// Full housing length used as a conservative panel keep-out.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+width = 17.5mm
+height = 10.4mm
+depth = 21.5mm
+profile = sketch(on = YZ) {
+  a = line(start = [var -8.75mm, var -5.2mm], end = [var 8.75mm, var -5.2mm])
+  b = line(start = [var 8.75mm, var -5.2mm], end = [var 8.75mm, var 5.2mm])
+  c = line(start = [var 8.75mm, var 5.2mm], end = [var -8.75mm, var 5.2mm])
+  d = line(start = [var -8.75mm, var 5.2mm], end = [var -8.75mm, var -5.2mm])
+  coincident([a.end,b.start])
+  coincident([b.end,c.start])
+  coincident([c.end,d.start])
+  coincident([d.end,a.start])
+  horizontal(a)
+  vertical(b)
+  horizontal(c)
+  vertical(d)
+  horizontalDistance([a.start,ORIGIN]) == width / 2
+  verticalDistance([a.start,ORIGIN]) == height / 2
+  horizontalDistance([a.start,a.end]) == width
+  verticalDistance([b.start,b.end]) == height
+}
+export rearEnvelope = extrude(region(segments = [profile.a,profile.b],intersectionIndex = -1,direction = CCW),length = -depth)
+hide(profile)

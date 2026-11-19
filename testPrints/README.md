@@ -13,6 +13,9 @@
 - `ceilingCornerLidCoupon.kcl` — matching 25 × 25 × 3 mm lid corner with a 3.4 mm through-hole. The paired parts are separate printable bodies.
 - `ceilingCornerJointView.kcl` — assembled view of the two ceiling corner coupons; not a print part or a fastener model.
 - `supplyRoutingBenchTest.md` — no-new-print instructions for checking the staged VL supply routing with existing printed parts. `../supplyRoutingBenchView.kcl` shows the taller trial setup using the coupon and carrier, with a parameter for the north or south placement; it is a review view, not a print part.
+- `benchFixtureBase.kcl` and `benchPanelGuide.kcl` — untested staging jig concept; see `../benchFixtureReview.kcl`. Not ready to print: transfer, wiring, guide retention and integration with a replacement 221-420 keeper remain unresolved.
+- `transferFrame/main.kcl`, `transferGuide/main.kcl`, and `transferPin/main.kcl` — separate trial parts for the removable raised-panel support shown in `../transferMotionReview.kcl`. `benchGuideRiser/main.kcl` adapts the same guides to the bench staging base; see `../benchFixtureReview.kcl`. Not ready to print: no loaded fit test or supported bench-to-tray transfer; the north-side frame is only reflected in the view.
+- `tenKeeper/main.kcl` — untested screw-retained 221-420 keeper concept for the existing retainer, shown in `../tenKeeperReview.kcl`. Do not print yet: the simplified WAGO does not establish bridge contact or clearance to wire entries and open levers. See `../NOTES.md`.
 - `main.kcl` — module interface for the review views; not a print part.
 
 The assembled review is `../clearanceFixtureView.kcl`. The accepted WAGO retainer models remain in the project root because the enclosure assembly also uses them; reuse the existing printed 221-420 retainer with this fixture.

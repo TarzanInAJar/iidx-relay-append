@@ -1,0 +1,101 @@
+// Raised bench guide riser, one per panel edge.
+// Mates to the bench peg below and the transfer guide above; test concept only.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+riserWidth = 12mm
+riserDepth = 12mm
+riserHeight = 84mm
+socketWidth = 4.4mm
+socketDepth = 6.4mm
+socketHeight = 4.5mm
+pegWidth = 4mm
+pegDepth = 6mm
+pegHeight = 4mm
+joinOverlap = 0.1mm
+
+riserProfile = sketch(on = XY) {
+  bottom = line(start = [var -6mm, var -6mm], end = [var 6mm, var -6mm])
+  right = line(start = [var 6mm, var -6mm], end = [var 6mm, var 6mm])
+  top = line(start = [var 6mm, var 6mm], end = [var -6mm, var 6mm])
+  left = line(start = [var -6mm, var 6mm], end = [var -6mm, var -6mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == riserWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == riserDepth / 2
+  horizontalDistance([bottom.start, bottom.end]) == riserWidth
+  verticalDistance([right.start, right.end]) == riserDepth
+}
+riserBlank = extrude(
+  region(
+    segments = [
+      riserProfile.bottom,
+      riserProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = riserHeight,
+)
+hide(riserProfile)
+
+pegProfile = sketch(on = XY) {
+  bottom = line(start = [var -2mm, var -3mm], end = [var 2mm, var -3mm])
+  right = line(start = [var 2mm, var -3mm], end = [var 2mm, var 3mm])
+  top = line(start = [var 2mm, var 3mm], end = [var -2mm, var 3mm])
+  left = line(start = [var -2mm, var 3mm], end = [var -2mm, var -3mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == pegWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == pegDepth / 2
+  horizontalDistance([bottom.start, bottom.end]) == pegWidth
+  verticalDistance([right.start, right.end]) == pegDepth
+}
+upperPeg = extrude(region(segments = [pegProfile.bottom, pegProfile.right], intersectionIndex = -1, direction = CCW), length = pegHeight + joinOverlap)
+  |> translate(z = riserHeight - joinOverlap, global = true)
+hide(pegProfile)
+riserWithPeg = union([riserBlank, upperPeg])
+
+socketProfile = sketch(on = XY) {
+  bottom = line(start = [var -2.2mm, var -3.2mm], end = [var 2.2mm, var -3.2mm])
+  right = line(start = [var 2.2mm, var -3.2mm], end = [var 2.2mm, var 3.2mm])
+  top = line(start = [var 2.2mm, var 3.2mm], end = [var -2.2mm, var 3.2mm])
+  left = line(start = [var -2.2mm, var 3.2mm], end = [var -2.2mm, var -3.2mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == socketWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == socketDepth / 2
+  horizontalDistance([bottom.start, bottom.end]) == socketWidth
+  verticalDistance([right.start, right.end]) == socketDepth
+}
+socketTool = extrude(
+  region(
+    segments = [
+      socketProfile.bottom,
+      socketProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = socketHeight + 0.1mm,
+)
+  |> translate(z = -0.1mm, global = true)
+hide(socketProfile)
+benchGuideRiser = subtract(riserWithPeg, tools = [socketTool])

@@ -1,0 +1,69 @@
+// Full-height VLR-02V supply-side wall.
+// Slides into the same rails as the adjacent plain wall.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "vlTwoPanelCutter.kcl" as portTool
+
+panelLength = 107.2mm
+panelHeight = 78.6mm
+panelThickness = 3mm
+edgeThickness = 1.6mm
+edgeTrimWidth = 3.4mm
+profile = sketch(on = XY) {
+  bottom = line(start = [var -53.6mm, var -39.3mm], end = [var 53.6mm, var -39.3mm])
+  right = line(start = [var 53.6mm, var -39.3mm], end = [var 53.6mm, var 39.3mm])
+  top = line(start = [var 53.6mm, var 39.3mm], end = [var -53.6mm, var 39.3mm])
+  left = line(start = [var -53.6mm, var 39.3mm], end = [var -53.6mm, var -39.3mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  horizontal(top)
+  vertical(right)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == panelLength / 2
+  verticalDistance([bottom.start, ORIGIN]) == panelHeight / 2
+  horizontalDistance([bottom.start, bottom.end]) == panelLength
+  verticalDistance([right.start, right.end]) == panelHeight
+}
+panelBlank = extrude(region(segments = [profile.bottom, profile.right], intersectionIndex = -1, direction = CCW), length = panelThickness)
+hide(profile)
+edgeProfile = sketch(on = XY) {
+  bottom = line(start = [var -53.8mm, var -39.5mm], end = [var -50.4mm, var -39.5mm])
+  right = line(start = [var -50.4mm, var -39.5mm], end = [var -50.4mm, var 39.5mm])
+  top = line(start = [var -50.4mm, var 39.5mm], end = [var -53.8mm, var 39.5mm])
+  left = line(start = [var -53.8mm, var 39.5mm], end = [var -53.8mm, var -39.5mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  horizontal(top)
+  vertical(right)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == 53.8mm
+  verticalDistance([bottom.start, ORIGIN]) == 39.5mm
+  horizontalDistance([bottom.start, bottom.end]) == edgeTrimWidth
+  verticalDistance([right.start, right.end]) == 79mm
+}
+firstEdgeTool = extrude(region(segments = [edgeProfile.bottom, edgeProfile.right], intersectionIndex = -1, direction = CCW), length = panelThickness - edgeThickness + 0.1mm)
+  |> translate(z = -0.1mm, global = true)
+hide(edgeProfile)
+edgeTools = patternLinear3d(
+  firstEdgeTool,
+  instances = 2,
+  distance = 104.2mm,
+  axis = [1, 0, 0],
+)
+wallBlank = subtract(panelBlank, tools = edgeTools)
+portOffset = 18.8mm
+portHeight = 9mm
+positionedTool = scale(portTool, z = 1.02, global = true)
+  |> translate(
+       x = portOffset,
+       y = portHeight,
+       z = -0.03mm,
+       global = true,
+     )
+supplyTwoWall = subtract(wallBlank, tools = [positionedTool])

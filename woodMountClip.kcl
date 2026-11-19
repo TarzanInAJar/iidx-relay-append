@@ -1,0 +1,68 @@
+// Screw-down clip for the open-frame enclosure on a wood surface.
+// The lip captures the lid; fit and retention are not physically verified.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+boxHeight = 88mm
+heightAllowance = 0.4mm
+clipWidth = 12mm
+wallThickness = 3.2mm
+footReach = 20mm
+footThickness = 4mm
+braceReach = 4mm
+braceRise = 24mm
+lipReach = 4mm
+lipThickness = 3.2mm
+screwOffset = 13.2mm
+screwRadius = 2.4mm
+
+clipProfile = sketch(on = YZ) {
+  bottom = line(start = [var 0mm, var 0mm], end = [var 20mm, var 0mm])
+  toe = line(start = [var 20mm, var 0mm], end = [var 20mm, var 4mm])
+  footTop = line(start = [var 20mm, var 4mm], end = [var 7.2mm, var 4mm])
+  brace = line(start = [var 7.2mm, var 4mm], end = [var 3.2mm, var 28mm])
+  outside = line(start = [var 3.2mm, var 28mm], end = [var 3.2mm, var 91.6mm])
+  lipTop = line(start = [var 3.2mm, var 91.6mm], end = [var -4mm, var 91.6mm])
+  lipEnd = line(start = [var -4mm, var 91.6mm], end = [var -4mm, var 88.4mm])
+  lipBottom = line(start = [var -4mm, var 88.4mm], end = [var 0mm, var 88.4mm])
+  inside = line(start = [var 0mm, var 88.4mm], end = [var 0mm, var 0mm])
+  coincident([bottom.end, toe.start])
+  coincident([toe.end, footTop.start])
+  coincident([footTop.end, brace.start])
+  coincident([brace.end, outside.start])
+  coincident([outside.end, lipTop.start])
+  coincident([lipTop.end, lipEnd.start])
+  coincident([lipEnd.end, lipBottom.start])
+  coincident([lipBottom.end, inside.start])
+  coincident([inside.end, bottom.start])
+  coincident([bottom.start, ORIGIN])
+  horizontal(bottom)
+  vertical(toe)
+  horizontal(footTop)
+  vertical(outside)
+  horizontal(lipTop)
+  vertical(lipEnd)
+  horizontal(lipBottom)
+  vertical(inside)
+  horizontalDistance([bottom.start, bottom.end]) == footReach
+  verticalDistance([toe.start, toe.end]) == footThickness
+  horizontalDistance([footTop.end, footTop.start]) == footReach - wallThickness - braceReach
+  horizontalDistance([brace.end, brace.start]) == braceReach
+  verticalDistance([brace.start, brace.end]) == braceRise
+  verticalDistance([outside.start, outside.end]) == boxHeight + heightAllowance + lipThickness - footThickness - braceRise
+  horizontalDistance([lipTop.end, lipTop.start]) == lipReach + wallThickness
+  verticalDistance([lipEnd.end, lipEnd.start]) == lipThickness
+}
+clipBlank = extrude(region(segments = [clipProfile.bottom, clipProfile.toe], intersectionIndex = -1, direction = CCW), length = clipWidth, symmetric = true)
+hide(clipProfile)
+
+mountHoleProfile = sketch(on = XY) {
+  mountHole = circle(center = [var 0mm, var 13.2mm], start = [var 2.4mm, var 13.2mm])
+  vertical([ORIGIN, mountHole.center])
+  verticalDistance([ORIGIN, mountHole.center]) == screwOffset
+  horizontal([mountHole.center, mountHole.start])
+  radius(mountHole) == screwRadius
+}
+mountCutter = extrude(region(segments = [mountHoleProfile.mountHole]), length = footThickness + 0.4mm)
+  |> translate(z = -0.2mm, global = true)
+hide(mountHoleProfile)
+woodMountClip = subtract(clipBlank, tools = [mountCutter])

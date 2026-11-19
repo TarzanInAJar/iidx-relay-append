@@ -1,0 +1,366 @@
+// Open-bench two-row packaging study, not a print-ready assembly.
+// Open-frame bench configuration with ceiling parked in two bench-only cradles.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "concepts/openFrameBench/main.kcl" as framePart
+import "concepts/upperWagoRail/main.kcl" as upperWagoRailPart
+import "concepts/railDriverClearance/main.kcl" as railDriverReferencePart
+import "wagoFiveRetainer.kcl" as fiveRetainerPart
+import "wagoTenRetainer.kcl" as tenRetainerPart
+import "concepts/tenEndKeeper/main.kcl" as tenKeeperPart
+import "wagoFiveEnvelope.kcl" as fiveEnvelopePart
+import "wagoTenEnvelope.kcl" as tenEnvelopePart
+import "openFrameCeiling.kcl" as ceilingPart
+import "openFrameCeilingCradle.kcl" as cradlePart
+import "openFrameWestSlide.kcl" as westPanelPart
+import "openFrameSupplyTwo.kcl" as supplyTwoSkin
+import "openFrameSupplySix.kcl" as supplySixSkin
+import "xmrFiveEnvelope.kcl" as xmrFivePart
+import "connectorMarker.kcl" as fivePortMarkerPart
+import rearEnvelope as xadRearPart from "concepts/xadRearEnvelope/main.kcl"
+import "concepts/openFrameRouting/main.kcl" as routingPart
+import "concepts/bundleEnvelopes/main.kcl" as bundleEnvelopePart
+import "concepts/tieClearanceStudy/main.kcl" as tieStudyPart
+import reviewWall as coverReferencePart from "concepts/coverClearanceReference/main.kcl"
+
+tenFirstX = -78mm
+tenPitch = 40mm
+fiveFirstX = 2mm
+fivePitch = 38mm
+rowLevelPitch = 34mm
+deckZ = 3mm
+lidDatum = 82mm
+panelFaceY = 33.4mm
+// Review overlays; installed-position markers are not physical hardware.
+showConnectorReferences = true
+showRouting = true
+showBundleEnvelopes = true
+showTieStudy = true
+// Optional 6 mm straight-driver envelopes, not actual tools or clearances for a handle.
+showDriverClearance = false
+// Optional hypothetical wall patch: not the finished protective cover.
+showCoverReference = false
+
+frame = appearance(framePart, color = "#728a7f")
+
+// Matching rails support the six retainer mounting points on floor insert bosses.
+upperRailBlank = clone(upperWagoRailPart)
+upperNorthRail = translate(
+  upperWagoRailPart,
+  x = fiveFirstX + fivePitch,
+  y = 14.5mm,
+  z = deckZ,
+  global = true,
+)
+  |> appearance(color = "#c6a96e")
+upperSouthRail = rotate(
+  upperRailBlank,
+  axis = Z,
+  angle = 180deg,
+  global = true,
+)
+  |> translate(
+       x = fiveFirstX + fivePitch,
+       y = -14.5mm,
+       z = deckZ,
+       global = true,
+     )
+  |> appearance(color = "#c6a96e")
+
+// Each row has three distinct WAGOs. Corresponding +5 V/ground pairs share an X position.
+// The 34 mm level spacing is a layout assumption, NOT verified lever or finger clearance.
+fiveRetainerBlank = clone(fiveRetainerPart)
+powerBankRetainer = translate(
+  fiveRetainerPart,
+  x = fiveFirstX,
+  z = deckZ + rowLevelPitch,
+  global = true,
+)
+  |> appearance(color = "#76aa8c")
+powerBankRetainers = patternLinear3d(
+  powerBankRetainer,
+  instances = 3,
+  distance = fivePitch,
+  axis = [1, 0, 0],
+)
+groundBankRetainer = translate(
+  fiveRetainerBlank,
+  x = fiveFirstX,
+  z = deckZ,
+  global = true,
+)
+  |> appearance(color = "#76aa8c")
+groundBankRetainers = patternLinear3d(
+  groundBankRetainer,
+  instances = 3,
+  distance = fivePitch,
+  axis = [1, 0, 0],
+)
+// Put the two 10-port holders in a single longitudinal row, not side-by-side.
+firstTenRetainer = translate(
+  tenRetainerPart,
+  x = tenFirstX,
+  z = deckZ,
+  global = true,
+)
+  |> appearance(color = "#76aa8c")
+tenRetainers = patternLinear3d(
+  firstTenRetainer,
+  instances = 2,
+  distance = tenPitch,
+  axis = [1, 0, 0],
+)
+
+fiveEnvelopeBlank = clone(fiveEnvelopePart)
+powerBankBody = scale(
+  fiveEnvelopePart,
+  x = 29.6 / 30,
+  y = 18.1 / 18.8,
+  z = 8.05 / 8.4,
+  global = true,
+)
+  |> translate(x = fiveFirstX, z = deckZ + rowLevelPitch + 1.6mm, global = true)
+  |> appearance(color = "#ed9c62")
+powerBankBodies = patternLinear3d(
+  powerBankBody,
+  instances = 3,
+  distance = fivePitch,
+  axis = [1, 0, 0],
+)
+groundBankBody = scale(
+  fiveEnvelopeBlank,
+  x = 29.6 / 30,
+  y = 18.1 / 18.8,
+  z = 8.05 / 8.4,
+  global = true,
+)
+  |> translate(x = fiveFirstX, z = deckZ + 1.6mm, global = true)
+  |> appearance(color = "#7593c4")
+groundBankBodies = patternLinear3d(
+  groundBankBody,
+  instances = 3,
+  distance = fivePitch,
+  axis = [1, 0, 0],
+)
+
+// Split keeper concept: one removable half per mounting screw; physical fit is deferred.
+firstOppositeKeeper = rotate(
+  clone(tenKeeperPart),
+  axis = Z,
+  angle = 180deg,
+  global = true,
+)
+  |> translate(x = tenFirstX, z = deckZ, global = true)
+  |> appearance(color = "#7eaee5")
+secondOppositeKeeper = translate(clone(firstOppositeKeeper), x = tenPitch, global = true)
+firstTenKeeper = translate(
+  tenKeeperPart,
+  x = tenFirstX,
+  z = deckZ,
+  global = true,
+)
+  |> appearance(color = "#bd8ce1")
+tenKeepers = patternLinear3d(
+  firstTenKeeper,
+  instances = 2,
+  distance = tenPitch,
+  axis = [1, 0, 0],
+)
+
+tenEnvelopeBlank = clone(tenEnvelopePart)
+firstTenBody = scale(
+  tenEnvelopePart,
+  x = 29.6 / 29.8,
+  y = 18.1 / 18.3,
+  z = 15.6 / 15.8,
+  global = true,
+)
+  |> rotate(axis = X, angle = -90deg, global = true)
+  |> translate(
+       x = tenFirstX,
+       y = -7.8mm,
+       z = deckZ + 1.6mm + 9.05mm,
+       global = true,
+     )
+  |> appearance(color = "#eac66a")
+secondTenBody = scale(
+  tenEnvelopeBlank,
+  x = 29.6 / 29.8,
+  y = 18.1 / 18.3,
+  z = 15.6 / 15.8,
+  global = true,
+)
+  |> rotate(axis = X, angle = -90deg, global = true)
+  |> translate(
+       x = tenFirstX + tenPitch,
+       y = -7.8mm,
+       z = deckZ + 1.6mm + 9.05mm,
+       global = true,
+     )
+  |> appearance(color = "#7593c4")
+
+// Existing connector panels in the split layout. Covers are omitted for bench access.
+northPanel = rotate(
+  supplyTwoSkin,
+  axis = X,
+  angle = 90deg,
+  global = true,
+)
+  |> rotate(axis = Z, angle = 180deg, global = true)
+  |> translate(
+       x = -55mm,
+       y = panelFaceY,
+       z = 42.5mm,
+       global = true,
+     )
+  |> appearance(color = "#e8bc70", opacity = 55)
+southPanel = rotate(
+  supplySixSkin,
+  axis = X,
+  angle = 90deg,
+  global = true,
+)
+  |> translate(
+       x = -55mm,
+       y = -panelFaceY,
+       z = 42.5mm,
+       global = true,
+     )
+  |> appearance(color = "#d79c73", opacity = 55)
+westPanel = translate(
+  westPanelPart,
+  x = 115mm,
+  z = 36mm,
+  global = true,
+)
+  |> appearance(color = "#8b9ca4")
+// XADR screening envelopes at the existing opening centers.
+westConnectorReferences = if showConnectorReferences {
+  middleRear = clone(xadRearPart)
+  lowerRear = clone(xadRearPart)
+  // Measured from the inside panel face to the wire exit.
+  cn18Rear = scale(xadRearPart, x = 11.5 / 21.5, global = true)
+    |> translate(x = 115mm, z = 50mm, global = true)
+    |> appearance(color = "#b358d2")
+  cn10Rear = scale(middleRear, y = 15 / 17.5, global = true)
+    |> translate(x = 115mm, z = 34mm, global = true)
+    |> appearance(color = "#58ad79")
+  cn19Rear = scale(lowerRear, y = 12.5 / 17.5, global = true)
+    |> translate(x = 115mm, z = 18mm, global = true)
+    |> appearance(color = "#da719e")
+  [cn18Rear, cn10Rear, cn19Rear]
+} else {
+  []
+}
+// The parked ceiling uses two bench-only cradles and requires a clamp or strap.
+ceiling = rotate(
+  ceilingPart,
+  axis = X,
+  angle = 90deg,
+  global = true,
+)
+  |> translate(y = -62mm, z = 43mm, global = true)
+  |> appearance(color = "#d6dadd")
+firstCradle = translate(
+  cradlePart,
+  x = -88mm,
+  y = -63.5mm,
+  z = -3mm,
+  global = true,
+)
+  |> appearance(color = "#ba975c")
+benchCradles = patternLinear3d(
+  firstCradle,
+  instances = 2,
+  distance = 176mm,
+  axis = [1, 0, 0],
+)
+xmrPairs = if showConnectorReferences {
+  firstXmrReference = translate(
+    xmrFivePart,
+    x = -72mm,
+    y = -12mm,
+    z = lidDatum,
+    global = true,
+  )
+    |> appearance(color = "#bc90ca")
+  patternLinear3d(
+    firstXmrReference,
+    instances = 2,
+    distance = 24mm,
+    axis = [1, 0, 0],
+  )
+    |> patternLinear3d(instances = 3, distance = 60mm, axis = [1, 0, 0])
+} else {
+  []
+}
+
+// Schematic 5 V rear contact locations, not measured connector bodies.
+fivePortMarkers = if showConnectorReferences {
+  firstFivePort = scale(
+    fivePortMarkerPart,
+    x = 0.7,
+    y = 0.45,
+    z = 0.7,
+    global = true,
+  )
+    |> translate(
+         x = -84mm,
+         y = 12mm,
+         z = 72mm,
+         global = true,
+       )
+    |> appearance(color = "#ffb962")
+  patternLinear3d(
+    firstFivePort,
+    instances = 8,
+    distance = 24mm,
+    axis = [1, 0, 0],
+  )
+} else {
+  []
+}
+
+// Signal-wire OD is 1.397 mm; lines and cylinders are schematic routing samples.
+routing = if showRouting {
+  routingPart
+} else {
+  []
+}
+bundleSections = if showBundleEnvelopes {
+  bundleEnvelopePart
+} else {
+  []
+}
+
+// The translucent shafts show proposed screw approaches, not hardware.
+driverClearance = if showDriverClearance {
+  railDriverReferencePart
+} else {
+  []
+}
+
+// Rectangular tie loop and head are a static size study, not a tensioned tie.
+tieClearanceStudy = if showTieStudy {
+  translate(
+    tieStudyPart,
+    x = 74mm,
+    y = 27mm,
+    z = 59.5mm,
+    global = true,
+  )
+} else {
+  []
+}
+// 2 mm hypothetical wall with an outside face at the 69.8 mm floor edge.
+coverClearanceReference = if showCoverReference {
+  translate(
+    coverReferencePart,
+    x = 74mm,
+    y = 34.9mm,
+    z = 61mm,
+    global = true,
+  )
+} else {
+  []
+}

@@ -1,0 +1,47 @@
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+coverWidth = 76mm
+coverHeight = 85mm
+coverThickness = 2mm
+profile = sketch(on = YZ) {
+  bottom = line(start = [var -38mm, var 0mm], end = [var 38mm, var 0mm])
+  right = line(start = [var 38mm, var 0mm], end = [var 38mm, var 85mm])
+  top = line(start = [var 38mm, var 85mm], end = [var -38mm, var 85mm])
+  left = line(start = [var -38mm, var 85mm], end = [var -38mm, var 0mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  horizontal(top)
+  vertical(right)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == coverWidth / 2
+  horizontal([bottom.start, ORIGIN])
+  horizontalDistance([bottom.start, bottom.end]) == coverWidth
+  verticalDistance([right.start, right.end]) == coverHeight
+}
+blank = extrude(region(segments = [profile.bottom, profile.right], intersectionIndex = -1, direction = CCW), length = coverThickness)
+hide(profile)
+mountProfile = sketch(on = YZ) {
+  hole = circle(center = [var 0mm, var 0mm], start = [var 1.7mm, var 0mm])
+  coincident([hole.center, ORIGIN])
+  horizontal([hole.center, hole.start])
+  radius(hole) == 1.7mm
+}
+firstHole = extrude(region(segments = [mountProfile.hole]), length = coverThickness + 0.4mm)
+  |> translate(
+       x = -0.2mm,
+       y = -27mm,
+       z = 31mm,
+       global = true,
+     )
+hide(mountProfile)
+holeTools = patternLinear3d(
+  firstHole,
+  instances = 2,
+  distance = 54mm,
+  axis = [0, 1, 0],
+)
+  |> patternLinear3d(instances = 2, distance = 35mm, axis = [0, 0, 1])
+endCover = subtract(blank, tools = holeTools)

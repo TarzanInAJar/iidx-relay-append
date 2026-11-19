@@ -1,0 +1,143 @@
+// One half of an independently removable 221-420 end keeper.
+// Pair by rotating the second half 180 degrees; four halves for two WAGOs.
+// Candidate only: holder contact, retention, and lever clearance are unverified.
+// Uses the holder's existing mounting holes and an assumed flat end-land contact.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+measuredEndLand = 2.75mm
+bodyLength = 29.6mm
+holderBaseTop = 1.6mm
+footLength = 22.8mm
+footWidth = 5mm
+footThickness = 1.6mm
+footCenterX = -7mm
+footCenterY = -14.5mm
+sideThickness = 1.4mm
+sideLength = 19mm
+sideCenterX = -17.7mm
+sideCenterY = -7.5mm
+sideTop = 20.9mm
+capLength = 5.8mm
+capWidth = 4mm
+capThickness = 1.6mm
+capCenterX = -15.5mm
+capBottom = 20.8mm
+padLength = 1mm
+padWidth = 2mm
+padCenterX = -bodyLength / 2 + measuredEndLand - 0.95mm
+assumedContactZ = 19.7mm
+holeRadius = 1.7mm
+joinOverlap = 0.1mm
+
+footProfile = sketch(on = XY) {
+  bottom = line(start = [var -11.4mm, var -2.5mm], end = [var 11.4mm, var -2.5mm])
+  right = line(start = [var 11.4mm, var -2.5mm], end = [var 11.4mm, var 2.5mm])
+  top = line(start = [var 11.4mm, var 2.5mm], end = [var -11.4mm, var 2.5mm])
+  left = line(start = [var -11.4mm, var 2.5mm], end = [var -11.4mm, var -2.5mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == footLength / 2
+  verticalDistance([bottom.start, ORIGIN]) == footWidth / 2
+  horizontalDistance([bottom.start, bottom.end]) == footLength
+  verticalDistance([right.start, right.end]) == footWidth
+}
+foot = extrude(region(segments = [footProfile.bottom, footProfile.right], intersectionIndex = -1, direction = CCW), length = footThickness)
+  |> translate(
+       x = footCenterX,
+       y = footCenterY,
+       z = holderBaseTop,
+       global = true,
+     )
+hide(footProfile)
+
+sideProfile = sketch(on = XY) {
+  bottom = line(start = [var -0.7mm, var -9.5mm], end = [var 0.7mm, var -9.5mm])
+  right = line(start = [var 0.7mm, var -9.5mm], end = [var 0.7mm, var 9.5mm])
+  top = line(start = [var 0.7mm, var 9.5mm], end = [var -0.7mm, var 9.5mm])
+  left = line(start = [var -0.7mm, var 9.5mm], end = [var -0.7mm, var -9.5mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == sideThickness / 2
+  verticalDistance([bottom.start, ORIGIN]) == sideLength / 2
+  horizontalDistance([bottom.start, bottom.end]) == sideThickness
+  verticalDistance([right.start, right.end]) == sideLength
+}
+side = extrude(region(segments = [sideProfile.bottom, sideProfile.right], intersectionIndex = -1, direction = CCW), length = sideTop - holderBaseTop)
+  |> translate(
+       x = sideCenterX,
+       y = sideCenterY,
+       z = holderBaseTop,
+       global = true,
+     )
+hide(sideProfile)
+footWithSide = union([foot, side])
+
+capProfile = sketch(on = XY) {
+  bottom = line(start = [var -2.9mm, var -2mm], end = [var 2.9mm, var -2mm])
+  right = line(start = [var 2.9mm, var -2mm], end = [var 2.9mm, var 2mm])
+  top = line(start = [var 2.9mm, var 2mm], end = [var -2.9mm, var 2mm])
+  left = line(start = [var -2.9mm, var 2mm], end = [var -2.9mm, var -2mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == capLength / 2
+  verticalDistance([bottom.start, ORIGIN]) == capWidth / 2
+  horizontalDistance([bottom.start, bottom.end]) == capLength
+  verticalDistance([right.start, right.end]) == capWidth
+}
+cap = extrude(region(segments = [capProfile.bottom, capProfile.right], intersectionIndex = -1, direction = CCW), length = capThickness)
+  |> translate(x = capCenterX, z = capBottom, global = true)
+hide(capProfile)
+keeperWithCap = union([footWithSide, cap])
+
+// The pad reaches into the measured end land; contact height and profile are assumed.
+padProfile = sketch(on = XY) {
+  bottom = line(start = [var -0.5mm, var -1mm], end = [var 0.5mm, var -1mm])
+  right = line(start = [var 0.5mm, var -1mm], end = [var 0.5mm, var 1mm])
+  top = line(start = [var 0.5mm, var 1mm], end = [var -0.5mm, var 1mm])
+  left = line(start = [var -0.5mm, var 1mm], end = [var -0.5mm, var -1mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == padLength / 2
+  verticalDistance([bottom.start, ORIGIN]) == padWidth / 2
+  horizontalDistance([bottom.start, bottom.end]) == padLength
+  verticalDistance([right.start, right.end]) == padWidth
+}
+pad = extrude(region(segments = [padProfile.bottom, padProfile.right], intersectionIndex = -1, direction = CCW), length = capBottom - assumedContactZ + joinOverlap)
+  |> translate(x = padCenterX, z = assumedContactZ, global = true)
+hide(padProfile)
+keeperWithPad = union([keeperWithCap, pad])
+
+mountHoleProfile = sketch(on = XY) {
+  hole = circle(center = [var 0mm, var 0mm], start = [var 1.7mm, var 0mm])
+  coincident([hole.center, ORIGIN])
+  radius(hole) == holeRadius
+  horizontal([hole.center, hole.start])
+}
+mountCutter = extrude(region(segments = [mountHoleProfile.hole]), length = footThickness + 0.2mm)
+  |> translate(y = footCenterY, z = holderBaseTop - 0.1mm, global = true)
+hide(mountHoleProfile)
+endKeeper = subtract(keeperWithPad, tools = [mountCutter])

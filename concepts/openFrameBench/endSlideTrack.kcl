@@ -1,0 +1,52 @@
+// End-wall upright with opposing 3.4 mm slots.
+// A 3 mm panel drops into the slot, leaving 0.2 mm per face.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+trackHeight = 79.2mm
+trackWidth = 8mm
+trackDepth = 10.8mm
+slotDepth = 3mm
+slotHeight = 3.4mm
+profile = sketch(on = XY) {
+  bottom = line(start = [var -4mm, var 0mm], end = [var 4mm, var 0mm])
+  right = line(start = [var 4mm, var 0mm], end = [var 4mm, var 10.8mm])
+  top = line(start = [var 4mm, var 10.8mm], end = [var -4mm, var 10.8mm])
+  left = line(start = [var -4mm, var 10.8mm], end = [var -4mm, var 0mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  horizontal(top)
+  vertical(right)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == trackWidth / 2
+  horizontal([bottom.start, ORIGIN])
+  horizontalDistance([bottom.start, bottom.end]) == trackWidth
+  verticalDistance([right.start, right.end]) == trackDepth
+}
+blank = extrude(region(segments = [profile.bottom, profile.right], intersectionIndex = -1, direction = CCW), length = trackHeight)
+hide(profile)
+slotProfile = sketch(on = XY) {
+  bottom = line(start = [var -4.2mm, var 5.8mm], end = [var -1.2mm, var 5.8mm])
+  right = line(start = [var -1.2mm, var 5.8mm], end = [var -1.2mm, var 9.2mm])
+  top = line(start = [var -1.2mm, var 9.2mm], end = [var -4.2mm, var 9.2mm])
+  left = line(start = [var -4.2mm, var 9.2mm], end = [var -4.2mm, var 5.8mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  horizontal(top)
+  vertical(right)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == 4.2mm
+  verticalDistance([ORIGIN, bottom.start]) == 5.8mm
+  horizontalDistance([bottom.start, bottom.end]) == slotDepth
+  verticalDistance([right.start, right.end]) == slotHeight
+}
+firstSlot = extrude(region(segments = [slotProfile.bottom, slotProfile.right], intersectionIndex = -1, direction = CCW), length = trackHeight + 0.2mm)
+  |> translate(z = -0.1mm, global = true)
+hide(slotProfile)
+secondSlot = translate(clone(firstSlot), x = 5.4mm, global = true)
+track = subtract(blank, tools = [firstSlot, secondSlot])

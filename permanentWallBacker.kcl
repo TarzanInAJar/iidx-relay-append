@@ -1,0 +1,73 @@
+// Permanent wall-mount backer layout
+// Use as a drilling pattern for rigid stock, not as a printed structural part.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+plateLength = 230mm
+plateWidth = 104mm
+plateThickness = 12mm
+boxPitch = 208mm
+boxRowPitch = 24mm
+wallPitch = 180mm
+wallRowPitch = 88mm
+holeRadius = 2.5mm
+
+plateProfile = sketch(on = XY) {
+  bottom = line(start = [var -115mm, var -52mm], end = [var 115mm, var -52mm])
+  right = line(start = [var 115mm, var -52mm], end = [var 115mm, var 52mm])
+  top = line(start = [var 115mm, var 52mm], end = [var -115mm, var 52mm])
+  left = line(start = [var -115mm, var 52mm], end = [var -115mm, var -52mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == plateLength / 2
+  verticalDistance([bottom.start, ORIGIN]) == plateWidth / 2
+  horizontalDistance([bottom.start, bottom.end]) == plateLength
+  verticalDistance([right.start, right.end]) == plateWidth
+}
+blank = extrude(
+  region(
+    segments = [
+      plateProfile.bottom,
+      plateProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = plateThickness,
+)
+hide(plateProfile)
+
+holeProfile = sketch(on = XY) {
+  bore = circle(center = [var 0mm, var 0mm], start = [var 2.5mm, var 0mm])
+  coincident([bore.center, ORIGIN])
+  horizontal([bore.center, bore.start])
+  radius(bore) == holeRadius
+}
+cutter = extrude(region(segments = [holeProfile.bore]), length = plateThickness + 2mm)
+wallCutter = clone(cutter)
+hide(holeProfile)
+boxHoles = translate(
+  cutter,
+  x = -boxPitch / 2,
+  y = -boxRowPitch / 2,
+  z = -1mm,
+  global = true,
+)
+  |> patternLinear3d(instances = 2, distance = boxPitch, axis = [1, 0, 0])
+  |> patternLinear3d(instances = 2, distance = boxRowPitch, axis = [0, 1, 0])
+wallHoles = translate(
+  wallCutter,
+  x = -wallPitch / 2,
+  y = -wallRowPitch / 2,
+  z = -1mm,
+  global = true,
+)
+  |> patternLinear3d(instances = 2, distance = wallPitch, axis = [1, 0, 0])
+  |> patternLinear3d(instances = 2, distance = wallRowPitch, axis = [0, 1, 0])
+boxBacker = subtract(blank, tools = boxHoles)
+wallBacker = subtract(boxBacker, tools = wallHoles)

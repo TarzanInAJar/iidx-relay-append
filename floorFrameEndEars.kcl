@@ -1,0 +1,117 @@
+// Open-frame floor with mounting ears on the east and west ends.
+// Derived from the long-side-ear frame; panel seats and internal features are retained.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "concepts/openFrameBench/main.kcl" as sideEarFrame
+
+floorHalfWidth = 38mm
+floorHalfLength = 119.8mm
+floorBottom = -3mm
+floorThickness = 6mm
+originalEarX = 90mm
+endEarWidth = 14mm
+endEarLength = 18mm
+endEarOverlap = 3mm
+endEarY = 20mm
+endHoleFromEnd = 8mm
+mountRadius = 2.5mm
+
+// Remove original ears; trim overlaps the floor edge by 0.1 mm.
+trimProfile = sketch(on = XY) {
+  bottom = line(start = [var -10mm, var 0mm], end = [var 10mm, var 0mm])
+  right = line(start = [var 10mm, var 0mm], end = [var 10mm, var 16.2mm])
+  top = line(start = [var 10mm, var 16.2mm], end = [var -10mm, var 16.2mm])
+  left = line(start = [var -10mm, var 16.2mm], end = [var -10mm, var 0mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == 10mm
+  horizontal([ORIGIN, bottom.start])
+  horizontalDistance([bottom.start, bottom.end]) == 20mm
+  verticalDistance([right.start, right.end]) == 16.2mm
+}
+trimBlank = extrude(region(segments = [trimProfile.bottom, trimProfile.right], intersectionIndex = -1, direction = CCW), length = floorThickness + 0.4mm)
+  |> translate(
+       x = -originalEarX,
+       y = -floorHalfWidth - 15.9mm,
+       z = floorBottom - 0.2mm,
+       global = true,
+     )
+hide(trimProfile)
+trimCutters = patternLinear3d(
+  trimBlank,
+  instances = 2,
+  distance = 2 * originalEarX,
+  axis = X,
+)
+  |> patternLinear3d(instances = 2, distance = 2 * floorHalfWidth + 15.8mm, axis = Y)
+frameWithoutSideEars = subtract(sideEarFrame, tools = trimCutters)
+
+// Four end ears overlap the floor by 3 mm for a single-piece join.
+earProfile = sketch(on = XY) {
+  bottom = line(start = [var -9mm, var -7mm], end = [var 9mm, var -7mm])
+  right = line(start = [var 9mm, var -7mm], end = [var 9mm, var 7mm])
+  top = line(start = [var 9mm, var 7mm], end = [var -9mm, var 7mm])
+  left = line(start = [var -9mm, var 7mm], end = [var -9mm, var -7mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == endEarLength / 2
+  verticalDistance([bottom.start, ORIGIN]) == endEarWidth / 2
+  horizontalDistance([bottom.start, bottom.end]) == endEarLength
+  verticalDistance([right.start, right.end]) == endEarWidth
+}
+earCenterX = floorHalfLength - endEarOverlap + endEarLength / 2
+firstEar = extrude(region(segments = [earProfile.bottom, earProfile.right], intersectionIndex = -1, direction = CCW), length = floorThickness - 0.1mm)
+  |> translate(
+       x = -earCenterX,
+       y = -endEarY,
+       z = floorBottom,
+       global = true,
+     )
+hide(earProfile)
+ears = patternLinear3d(
+  firstEar,
+  instances = 2,
+  distance = 2 * earCenterX,
+  axis = X,
+)
+  |> patternLinear3d(instances = 2, distance = 2 * endEarY, axis = Y)
+firstJoin = union([frameWithoutSideEars, ears[0]])
+secondJoin = union([firstJoin, ears[1]])
+thirdJoin = union([secondJoin, ears[2]])
+frameWithEndEars = union([thirdJoin, ears[3]])
+
+// The four external screw holes pass through the ear thickness.
+mountProfile = sketch(on = XY) {
+  hole = circle(center = [var 0mm, var 0mm], start = [var 2.5mm, var 0mm])
+  coincident([hole.center, ORIGIN])
+  horizontal([hole.center, hole.start])
+  radius(hole) == mountRadius
+}
+firstMountCutter = extrude(region(segments = [mountProfile.hole]), length = floorThickness + 0.4mm)
+  |> translate(
+       x = -floorHalfLength - endHoleFromEnd,
+       y = -endEarY,
+       z = floorBottom - 0.2mm,
+       global = true,
+     )
+hide(mountProfile)
+mountCutters = patternLinear3d(
+  firstMountCutter,
+  instances = 2,
+  distance = 2 * (floorHalfLength + endHoleFromEnd),
+  axis = X,
+)
+  |> patternLinear3d(instances = 2, distance = 2 * endEarY, axis = Y)
+endEarFrame = subtract(frameWithEndEars, tools = mountCutters)

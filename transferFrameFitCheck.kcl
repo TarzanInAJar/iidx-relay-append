@@ -1,0 +1,16 @@
+// Tray/transfer-frame visual fit diagnostic.
+// The mount screw and printed tolerances are not modeled.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "modularSupplyTray.kcl" as trayPart
+import "testPrints/transferFrame/main.kcl" as framePart
+
+trayReference = appearance(trayPart, color = "#728898", opacity = 35)
+frameInPlace = translate(
+  framePart,
+  x = -53.8mm,
+  y = -32.5mm,
+  z = 82mm,
+  global = true,
+)
+frameReference = appearance(frameInPlace, color = "#e4a769")

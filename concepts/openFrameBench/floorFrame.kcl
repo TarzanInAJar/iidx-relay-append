@@ -1,0 +1,528 @@
+// Open-frame build candidate: floor, slide tracks and lid insert pads.
+// Physical panel fit, printed strength and complete harness clearance are unverified.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "sideSlideTrack.kcl" as sideSlideTrack
+import "endSupportBlank.kcl" as endSlideTrack
+
+floorLength = 239.6mm
+floorWidth = 76mm
+floorThickness = 3mm
+floorDepthBelow = 3mm
+lidDatum = 82mm
+cornerX = 103mm
+cornerY = 27mm
+middleY = 28.5mm
+insertRadius = 2.2mm
+insertDepth = 5.2mm
+
+floorProfile = sketch(on = XY) {
+  bottom = line(start = [var -115mm, var -34.9mm], end = [var 115mm, var -34.9mm])
+  right = line(start = [var 115mm, var -34.9mm], end = [var 115mm, var 34.9mm])
+  top = line(start = [var 115mm, var 34.9mm], end = [var -115mm, var 34.9mm])
+  left = line(start = [var -115mm, var 34.9mm], end = [var -115mm, var -34.9mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == floorLength / 2
+  verticalDistance([bottom.start, ORIGIN]) == floorWidth / 2
+  horizontalDistance([bottom.start, bottom.end]) == floorLength
+  verticalDistance([right.start, right.end]) == floorWidth
+}
+floorBlank = extrude(
+  region(
+    segments = [
+      floorProfile.bottom,
+      floorProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = floorThickness + floorDepthBelow,
+)
+  |> translate(z = -floorDepthBelow, global = true)
+hide(floorProfile)
+
+insertProfile = sketch(on = XY) {
+  bore = circle(center = [var 0mm, var 0mm], start = [var 2.2mm, var 0mm])
+  coincident([bore.center, ORIGIN])
+  horizontal([bore.center, bore.start])
+  radius(bore) == insertRadius
+}
+insertBlank = extrude(region(segments = [insertProfile.bore]), length = insertDepth + 0.1mm)
+  |> translate(z = lidDatum - insertDepth, global = true)
+hide(insertProfile)
+cornerInsertBlank = insertBlank
+cornerInsertFirst = translate(
+  cornerInsertBlank,
+  x = -cornerX,
+  y = -cornerY,
+  global = true,
+)
+cornerInserts = patternLinear3d(
+  cornerInsertFirst,
+  instances = 2,
+  distance = 2 * cornerX,
+  axis = [1, 0, 0],
+)
+  |> patternLinear3d(instances = 2, distance = 2 * cornerY, axis = [0, 1, 0])
+frameWithInserts = floorBlank
+
+// Four raised floor bosses receive the separate upper-row rail feet.
+railBossRadius = 4mm
+railBossHeight = 3mm
+railBossFirstX = 21mm
+railBossY = 29.5mm
+railBossPitch = 38mm
+railBossProfile = sketch(on = XY) {
+  outline = circle(center = [var 0mm, var 0mm], start = [var 4mm, var 0mm])
+  coincident([outline.center, ORIGIN])
+  horizontal([outline.center, outline.start])
+  radius(outline) == railBossRadius
+}
+railBoss = extrude(region(segments = [railBossProfile.outline]), length = railBossHeight + 0.1mm)
+  |> translate(
+       x = railBossFirstX,
+       y = railBossY,
+       z = floorThickness - 0.1mm,
+       global = true,
+     )
+hide(railBossProfile)
+railBosses = patternLinear3d(
+  railBoss,
+  instances = 2,
+  distance = railBossPitch,
+  axis = [1, 0, 0],
+)
+  |> patternLinear3d(instances = 2, distance = 2 * railBossY, axis = [0, -1, 0])
+frameWithRailBossOne = union([frameWithInserts, railBosses[0]])
+frameWithRailBossTwo = union([frameWithRailBossOne, railBosses[1]])
+frameWithRailBossThree = union([frameWithRailBossTwo, railBosses[2]])
+frameWithRailBosses = union([frameWithRailBossThree, railBosses[3]])
+
+railBossBoreProfile = sketch(on = XY) {
+  bore = circle(center = [var 0mm, var 0mm], start = [var 2.2mm, var 0mm])
+  coincident([bore.center, ORIGIN])
+  horizontal([bore.center, bore.start])
+  radius(bore) == insertRadius
+}
+railBossBore = extrude(region(segments = [railBossBoreProfile.bore]), length = insertDepth + 0.1mm)
+  |> translate(
+       x = railBossFirstX,
+       y = railBossY,
+       z = floorThickness + railBossHeight - insertDepth,
+       global = true,
+     )
+hide(railBossBoreProfile)
+railBossBores = patternLinear3d(
+  railBossBore,
+  instances = 2,
+  distance = railBossPitch,
+  axis = [1, 0, 0],
+)
+  |> patternLinear3d(instances = 2, distance = 2 * railBossY, axis = [0, -1, 0])
+frameWithRailBores = subtract(frameWithRailBosses, tools = railBossBores)
+
+// Lower retainer insert bores: two 221-420s and three 221-415s.
+retainerMountY = 14.5mm
+tenFirstX = -78mm
+tenPitch = 40mm
+fiveFirstX = 2mm
+fivePitch = 38mm
+retainerBoreProfile = sketch(on = XY) {
+  bore = circle(center = [var 0mm, var 0mm], start = [var 2.2mm, var 0mm])
+  coincident([bore.center, ORIGIN])
+  horizontal([bore.center, bore.start])
+  radius(bore) == insertRadius
+}
+retainerBore = extrude(region(segments = [retainerBoreProfile.bore]), length = insertDepth + 0.1mm)
+  |> translate(z = floorThickness - insertDepth, global = true)
+hide(retainerBoreProfile)
+fiveBoreBlank = clone(retainerBore)
+tenFirstBore = translate(
+  retainerBore,
+  x = tenFirstX,
+  y = -retainerMountY,
+  global = true,
+)
+tenBores = patternLinear3d(
+  tenFirstBore,
+  instances = 2,
+  distance = tenPitch,
+  axis = [1, 0, 0],
+)
+  |> patternLinear3d(instances = 2, distance = 2 * retainerMountY, axis = [0, 1, 0])
+fiveFirstBore = translate(
+  fiveBoreBlank,
+  x = fiveFirstX,
+  y = -retainerMountY,
+  global = true,
+)
+fiveBores = patternLinear3d(
+  fiveFirstBore,
+  instances = 3,
+  distance = fivePitch,
+  axis = [1, 0, 0],
+)
+  |> patternLinear3d(instances = 2, distance = 2 * retainerMountY, axis = [0, 1, 0])
+frameWithTenBores = subtract(frameWithRailBores, tools = tenBores)
+frameWithLowerRetainerBores = subtract(frameWithTenBores, tools = fiveBores)
+
+// The side tracks receive two panels per wall and brace the wall at midspan.
+southTrackBlank = rotate(
+  clone(sideSlideTrack),
+  axis = Z,
+  angle = 180deg,
+  global = true,
+)
+southTrackFirst = translate(
+  southTrackBlank,
+  x = -110mm,
+  y = -29mm,
+  z = 2.5mm,
+  global = true,
+)
+southTracks = patternLinear3d(
+  southTrackFirst,
+  instances = 3,
+  distance = 110mm,
+  axis = [1, 0, 0],
+)
+northTrackFirst = translate(
+  sideSlideTrack,
+  x = -110mm,
+  y = 29mm,
+  z = 2.5mm,
+  global = true,
+)
+northTracks = patternLinear3d(
+  northTrackFirst,
+  instances = 3,
+  distance = 110mm,
+  axis = [1, 0, 0],
+)
+trackJoinOne = union([
+  frameWithLowerRetainerBores,
+  southTracks[0]
+])
+trackJoinTwo = union([trackJoinOne, southTracks[1]])
+trackJoinThree = union([trackJoinTwo, southTracks[2]])
+trackJoinFour = union([trackJoinThree, northTracks[0]])
+trackJoinFive = union([trackJoinFour, northTracks[1]])
+frameWithSideTracks = union([trackJoinFive, northTracks[2]])
+
+// The end tracks capture the solid end and the XAD end panel, without cover screws.
+eastTrackBlank = rotate(
+  clone(endSlideTrack),
+  axis = Z,
+  angle = 90deg,
+  global = true,
+)
+eastTrackFirst = translate(
+  eastTrackBlank,
+  x = -109mm,
+  y = -32mm,
+  z = 2.1mm,
+  global = true,
+)
+eastTracks = patternLinear3d(
+  eastTrackFirst,
+  instances = 2,
+  distance = 64mm,
+  axis = [0, 1, 0],
+)
+westTrackBlank = rotate(
+  endSlideTrack,
+  axis = Z,
+  angle = -90deg,
+  global = true,
+)
+westTrackFirst = translate(
+  westTrackBlank,
+  x = 109mm,
+  y = -32mm,
+  z = 2.1mm,
+  global = true,
+)
+westTracks = patternLinear3d(
+  westTrackFirst,
+  instances = 2,
+  distance = 64mm,
+  axis = [0, 1, 0],
+)
+endJoinOne = union([frameWithSideTracks, eastTracks[0]])
+endJoinTwo = union([endJoinOne, eastTracks[1]])
+endJoinThree = union([endJoinTwo, westTracks[0]])
+frameWithTracks = union([endJoinThree, westTracks[1]])
+
+// Cut the inward-facing end slots after joining the corner supports.
+endSlotProfile = sketch(on = XY) {
+  bottom = line(start = [var 114.8mm, var -30.8mm], end = [var 118.2mm, var -30.8mm])
+  right = line(start = [var 118.2mm, var -30.8mm], end = [var 118.2mm, var 30.8mm])
+  top = line(start = [var 118.2mm, var 30.8mm], end = [var 114.8mm, var 30.8mm])
+  left = line(start = [var 114.8mm, var 30.8mm], end = [var 114.8mm, var -30.8mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  horizontal(top)
+  vertical(right)
+  vertical(left)
+  horizontalDistance([ORIGIN, bottom.start]) == 114.8mm
+  verticalDistance([bottom.start, ORIGIN]) == 30.8mm
+  horizontalDistance([bottom.start, bottom.end]) == 3.4mm
+  verticalDistance([right.start, right.end]) == 61.6mm
+}
+westEndSlot = extrude(
+  region(
+    segments = [
+      endSlotProfile.bottom,
+      endSlotProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = 79.1mm,
+)
+  |> translate(z = 3.1mm, global = true)
+hide(endSlotProfile)
+eastEndSlot = rotate(
+  clone(westEndSlot),
+  axis = Z,
+  angle = 180deg,
+  global = true,
+)
+frameWithWestSlot = subtract(frameWithTracks, tools = [westEndSlot])
+frameWithEndSlots = subtract(frameWithWestSlot, tools = [eastEndSlot])
+
+// Short local pads tie the original six lid screw seats into the wall tracks.
+lidPadWidth = 14mm
+lidPadDepth = 9.8mm
+lidPadHeight = 7mm
+lidPadProfile = sketch(on = XY) {
+  bottom = line(start = [var -7mm, var -4.9mm], end = [var 7mm, var -4.9mm])
+  right = line(start = [var 7mm, var -4.9mm], end = [var 7mm, var 4.9mm])
+  top = line(start = [var 7mm, var 4.9mm], end = [var -7mm, var 4.9mm])
+  left = line(start = [var -7mm, var 4.9mm], end = [var -7mm, var -4.9mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  horizontal(top)
+  vertical(right)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == lidPadWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == lidPadDepth / 2
+  horizontalDistance([bottom.start, bottom.end]) == lidPadWidth
+  verticalDistance([right.start, right.end]) == lidPadDepth
+}
+lidPad = extrude(
+  region(
+    segments = [
+      lidPadProfile.bottom,
+      lidPadProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = lidPadHeight,
+)
+  |> translate(
+       x = -cornerX,
+       y = -28.3mm,
+       z = lidDatum - lidPadHeight,
+       global = true,
+     )
+hide(lidPadProfile)
+lidPads = patternLinear3d(
+  lidPad,
+  instances = 3,
+  distance = cornerX,
+  axis = [1, 0, 0],
+)
+  |> patternLinear3d(instances = 2, distance = 56.6mm, axis = [0, 1, 0])
+frameWithPadOne = union([frameWithEndSlots, lidPads[0]])
+frameWithPadTwo = union([frameWithPadOne, lidPads[1]])
+frameWithPadThree = union([frameWithPadTwo, lidPads[2]])
+frameWithPadFour = union([frameWithPadThree, lidPads[3]])
+frameWithPadFive = union([frameWithPadFour, lidPads[4]])
+frameWithLidPads = union([frameWithPadFive, lidPads[5]])
+
+// Lid insert bores remain aligned with the six existing lid holes.
+midLidBoreProfile = sketch(on = XY) {
+  bore = circle(center = [var 0mm, var 0mm], start = [var 2.2mm, var 0mm])
+  coincident([bore.center, ORIGIN])
+  horizontal([bore.center, bore.start])
+  radius(bore) == insertRadius
+}
+midLidBore = extrude(region(segments = [midLidBoreProfile.bore]), length = insertDepth + 0.4mm)
+  |> translate(y = -middleY, z = lidDatum - insertDepth - 0.1mm, global = true)
+hide(midLidBoreProfile)
+midLidBores = patternLinear3d(
+  midLidBore,
+  instances = 2,
+  distance = 2 * middleY,
+  axis = [0, 1, 0],
+)
+frameWithMiddleBores = subtract(frameWithLidPads, tools = midLidBores)
+frameWithCoverBores = subtract(frameWithMiddleBores, tools = cornerInserts)
+
+// Four through-eyes for narrow harness ties, separate from the insert seats.
+midPostEyeProfile = sketch(on = YZ) {
+  eye = circle(center = [var 0mm, var 0mm], start = [var 1.9mm, var 0mm])
+  coincident([eye.center, ORIGIN])
+  horizontal([eye.center, eye.start])
+  radius(eye) == 1.9mm
+}
+firstMidPostEye = extrude(region(segments = [midPostEyeProfile.eye]), length = 12mm)
+  |> translate(
+       x = -6mm,
+       y = -30.5mm,
+       z = 33mm,
+       global = true,
+     )
+hide(midPostEyeProfile)
+midPostEyes = patternLinear3d(
+  firstMidPostEye,
+  instances = 2,
+  distance = 61mm,
+  axis = [0, 1, 0],
+)
+  |> patternLinear3d(instances = 2, distance = 23mm, axis = [0, 0, 1])
+frameWithPostEyes = subtract(frameWithCoverBores, tools = midPostEyes)
+
+// Inboard tabs keep both ends of the tie holes inside the wall panels.
+eastTieLugStartX = -109mm
+eastTieLugWidth = 7mm
+eastTieEyeRadius = 1.8mm
+eastTieEyeY = 24.8mm
+eastTieEyeFirstZ = 37mm
+eastTieEyePitch = 21mm
+eastTieLugProfile = sketch(on = YZ) {
+  bottom = line(start = [var 27.4mm, var 26mm], end = [var 28mm, var 26mm])
+  outer = line(start = [var 28mm, var 26mm], end = [var 28mm, var 64mm])
+  top = line(start = [var 28mm, var 64mm], end = [var 22mm, var 64mm])
+  inner = line(start = [var 22mm, var 64mm], end = [var 22mm, var 31.4mm])
+  ramp = line(start = [var 22mm, var 31.4mm], end = [var 27.4mm, var 26mm])
+  coincident([bottom.end, outer.start])
+  coincident([outer.end, top.start])
+  coincident([top.end, inner.start])
+  coincident([inner.end, ramp.start])
+  coincident([ramp.end, bottom.start])
+  horizontal(bottom)
+  vertical(outer)
+  horizontal(top)
+  vertical(inner)
+  horizontalDistance([ORIGIN, bottom.start]) == 27.4mm
+  verticalDistance([ORIGIN, bottom.start]) == 26mm
+  horizontalDistance([bottom.start, bottom.end]) == 0.6mm
+  verticalDistance([outer.start, outer.end]) == 38mm
+  horizontalDistance([top.end, top.start]) == 6mm
+  verticalDistance([inner.end, inner.start]) == 32.6mm
+}
+eastNorthLug = extrude(
+  region(
+    segments = [
+      eastTieLugProfile.bottom,
+      eastTieLugProfile.outer
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = eastTieLugWidth,
+)
+  |> translate(x = eastTieLugStartX, global = true)
+hide(eastTieLugProfile)
+eastSouthLug = mirror3d([eastNorthLug], across = XZ)
+westLugs = mirror3d([eastNorthLug, eastSouthLug[0]], across = YZ)
+frameWithEastNorthLug = union([frameWithPostEyes, eastNorthLug])
+frameWithEastLugs = union([frameWithEastNorthLug, eastSouthLug[0]])
+frameWithWestNorthLug = union([frameWithEastLugs, westLugs[0]])
+frameWithCornerLugs = union([frameWithWestNorthLug, westLugs[1]])
+
+eastTieEyeProfile = sketch(on = YZ) {
+  eye = circle(center = [var 24.8mm, var 37mm], start = [var 26.6mm, var 37mm])
+  horizontalDistance([ORIGIN, eye.center]) == eastTieEyeY
+  verticalDistance([ORIGIN, eye.center]) == eastTieEyeFirstZ
+  horizontal([eye.center, eye.start])
+  radius(eye) == eastTieEyeRadius
+}
+eastTieEyeFirst = extrude(region(segments = [eastTieEyeProfile.eye]), length = eastTieLugWidth + 1mm)
+  |> translate(x = eastTieLugStartX - 0.5mm, global = true)
+hide(eastTieEyeProfile)
+eastNorthTieEyes = patternLinear3d(
+  eastTieEyeFirst,
+  instances = 2,
+  distance = eastTieEyePitch,
+  axis = [0, 0, 1],
+)
+eastSouthTieEyes = mirror3d(eastNorthTieEyes, across = XZ)
+westNorthTieEyes = mirror3d(eastNorthTieEyes, across = YZ)
+westSouthTieEyes = mirror3d(eastSouthTieEyes, across = YZ)
+frameWithEastNorthEyes = subtract(frameWithCornerLugs, tools = eastNorthTieEyes)
+frameWithEastEyes = subtract(frameWithEastNorthEyes, tools = eastSouthTieEyes)
+frameWithWestNorthEyes = subtract(frameWithEastEyes, tools = westNorthTieEyes)
+frameWithTieEyes = subtract(frameWithWestNorthEyes, tools = westSouthTieEyes)
+
+// Integral external mounting ears.
+earProfile = sketch(on = XY) {
+  bottom = line(start = [var -9mm, var 35mm], end = [var 9mm, var 35mm])
+  right = line(start = [var 9mm, var 35mm], end = [var 9mm, var 53mm])
+  top = line(start = [var 9mm, var 53mm], end = [var -9mm, var 53mm])
+  left = line(start = [var -9mm, var 53mm], end = [var -9mm, var 35mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  horizontal(top)
+  vertical(left)
+  vertical(right)
+  horizontalDistance([bottom.start, ORIGIN]) == 9mm
+  verticalDistance([ORIGIN, bottom.start]) == floorWidth / 2 - 3mm
+  horizontalDistance([bottom.start, bottom.end]) == 18mm
+  verticalDistance([right.start, right.end]) == 18mm
+}
+ear = extrude(region(segments = [earProfile.bottom, earProfile.right], intersectionIndex = -1, direction = CCW), length = floorThickness + floorDepthBelow)
+  |> translate(x = -90mm, z = -floorDepthBelow, global = true)
+hide(earProfile)
+northEars = patternLinear3d(
+  ear,
+  instances = 2,
+  distance = 180mm,
+  axis = X,
+)
+southEars = mirror3d(northEars, across = XZ)
+frameEarOne = union([frameWithTieEyes, northEars[0]])
+frameEarTwo = union([frameEarOne, northEars[1]])
+frameEarThree = union([frameEarTwo, southEars[0]])
+frameWithEars = union([frameEarThree, southEars[1]])
+mountProfile = sketch(on = XY) {
+  bore = circle(center = [var 0mm, var 0mm], start = [var 2.5mm, var 0mm])
+  coincident([bore.center, ORIGIN])
+  horizontal([bore.center, bore.start])
+  radius(bore) == 2.5mm
+}
+mountCutter = extrude(region(segments = [mountProfile.bore]), length = 6.4mm)
+  |> translate(
+       x = -90mm,
+       y = -46mm,
+       z = -3.2mm,
+       global = true,
+     )
+hide(mountProfile)
+mountCutters = patternLinear3d(
+  mountCutter,
+  instances = 2,
+  distance = 180mm,
+  axis = X,
+)
+  |> patternLinear3d(instances = 2, distance = 92mm, axis = Y)
+openBenchFrame = subtract(frameWithEars, tools = mountCutters)

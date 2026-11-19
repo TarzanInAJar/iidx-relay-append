@@ -1,0 +1,46 @@
+// Trial 221-420 keepers at the open-frame 40 mm pitch.
+// Connector boxes omit levers, wire entries and actual contact surfaces.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "wagoTenRetainer.kcl" as retainerPart
+import "wagoTenEnvelope.kcl" as bodyPart
+import "testPrints/tenKeeper/main.kcl" as keeperPart
+
+retainerPitch = 40mm
+firstRetainer = translate(retainerPart, x = -retainerPitch / 2, global = true)
+  |> appearance(color = "#6c9578")
+retainers = patternLinear3d(
+  firstRetainer,
+  instances = 2,
+  distance = retainerPitch,
+  axis = [1, 0, 0],
+)
+firstBody = scale(
+  bodyPart,
+  x = 29.6 / 29.8,
+  y = 18.1 / 18.3,
+  z = 15.6 / 15.8,
+  global = true,
+)
+  |> rotate(axis = X, angle = -90deg, global = true)
+  |> translate(
+       x = -retainerPitch / 2,
+       y = -7.8mm,
+       z = 10.65mm,
+       global = true,
+     )
+  |> appearance(color = "#e1bb62", opacity = 65)
+bodies = patternLinear3d(
+  firstBody,
+  instances = 2,
+  distance = retainerPitch,
+  axis = [1, 0, 0],
+)
+firstKeeper = translate(keeperPart, x = -retainerPitch / 2, global = true)
+  |> appearance(color = "#bd8ce1")
+keepers = patternLinear3d(
+  firstKeeper,
+  instances = 2,
+  distance = retainerPitch,
+  axis = [1, 0, 0],
+)

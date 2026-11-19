@@ -1,0 +1,368 @@
+// Panel transfer review for the three supply configurations.
+// Static positions only; temporary support concept is untested and wires are not shown.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "modularSupplyTray.kcl" as trayPart
+import "supplyPanelBlank.kcl" as blankPart
+import "vlSixPanelCutter.kcl" as sixPortTool
+import "vlTwoPanelCutter.kcl" as twoPortTool
+import "westPanelTall.kcl" as endPanelPart
+import "centerSupportedCarrier.kcl" as lowerCarrierPart
+import "upperCarrierFourPost.kcl" as upperCarrierPart
+import "carrierSpacer.kcl" as spacerPart
+import "wagoFiveRetainer.kcl" as fiveRetainerPart
+import "wagoTenRetainer.kcl" as tenRetainerPart
+import "wagoFiveEnvelope.kcl" as fiveBodyPart
+import "wagoTenEnvelope.kcl" as tenBodyPart
+import "vlSixRearEnvelope.kcl" as sixRearPart
+import "vlTwoRearEnvelope.kcl" as twoRearPart
+import "testPrints/transferFrame/main.kcl" as transferFramePart
+import "testPrints/transferGuide/main.kcl" as transferGuidePart
+import "testPrints/transferPin/main.kcl" as panelStopPart
+import "testPrints/tenKeeper/main.kcl" as tenKeeperPart
+
+// Layout: "south", "north", or "split". Raised panel travel is not a wire length.
+supplyLayout = "south"
+// Set to 0 with stopsInPlace = false to view seated panels.
+panelRaise = 86.5mm
+stopsInPlace = true
+showNorthSupport = supplyLayout != "south"
+// The keepers are provisional; contact with real connector features is unverified.
+// 0 seats the carrier; 15 mm illustrates lowering the carrier past a seated panel.
+carrierLift = 0mm
+// Using the measured 43/64 inch from the inner face is a provisional assumption.
+rearProjection = 17.065625mm
+
+tray = appearance(trayPart, color = "#4b5b68", opacity = 30)
+// The frame uses the existing corner lid insert; mount screw not represented.
+transferFrame = translate(
+  transferFramePart,
+  x = -53.8mm,
+  y = -32.5mm,
+  z = 82mm,
+  global = true,
+)
+  |> appearance(color = "#5274a6")
+leftTransferGuide = translate(
+  clone(transferGuidePart),
+  x = -93.3mm,
+  y = -32.5mm,
+  z = 87mm,
+  global = true,
+)
+  |> appearance(color = "#d2aa61")
+rightTransferGuide = rotate(
+  transferGuidePart,
+  axis = Z,
+  angle = 180deg,
+  global = true,
+)
+  |> translate(
+       x = -14.3mm,
+       y = -32.5mm,
+       z = 87mm,
+       global = true,
+     )
+  |> appearance(color = "#d2aa61")
+northSupport = if showNorthSupport {
+  [
+    scale(clone(transferFrame), y = -1, global = true),
+    scale(clone(leftTransferGuide), y = -1, global = true),
+    scale(clone(rightTransferGuide), y = -1, global = true)
+  ]
+} else {
+  []
+}
+southStopPins = if stopsInPlace & supplyLayout != "north" {
+  firstStop = rotate(
+    clone(panelStopPart),
+    axis = X,
+    angle = -90deg,
+    global = true,
+  )
+    |> translate(
+         x = -95.3mm,
+         y = -39.5mm,
+         z = 93mm,
+         global = true,
+       )
+    |> appearance(color = "#e9c468")
+  patternLinear3d(
+    firstStop,
+    instances = 2,
+    distance = 83mm,
+    axis = [1, 0, 0],
+  )
+} else {
+  []
+}
+northStopPins = if stopsInPlace & supplyLayout != "south" {
+  firstStop = rotate(
+    panelStopPart,
+    axis = X,
+    angle = 90deg,
+    global = true,
+  )
+    |> translate(
+         x = -95.3mm,
+         y = 39.5mm,
+         z = 93mm,
+         global = true,
+       )
+    |> appearance(color = "#e9c468")
+  patternLinear3d(
+    firstStop,
+    instances = 2,
+    distance = 83mm,
+    axis = [1, 0, 0],
+  )
+} else {
+  []
+}
+// Cut each required panel from the common blank in this review; production parts are unchanged.
+northBlank = clone(blankPart)
+twoCut = scale(twoPortTool, z = 1.02, global = true)
+  |> translate(
+       x = 20mm,
+       y = 6.5mm,
+       z = -0.03mm,
+       global = true,
+     )
+sixCut = scale(sixPortTool, z = 1.02, global = true)
+  |> translate(
+       x = -20mm,
+       y = 6.5mm,
+       z = -0.03mm,
+       global = true,
+     )
+southPanelSource = if supplyLayout == "south" {
+  subtract(blankPart, tools = [twoCut, sixCut])
+} else if supplyLayout == "split" {
+  subtract(blankPart, tools = [sixCut])
+} else {
+  blankPart
+}
+northPanelSource = if supplyLayout == "north" {
+  subtract(northBlank, tools = [twoCut, sixCut])
+} else if supplyLayout == "split" {
+  subtract(northBlank, tools = [twoCut])
+} else {
+  northBlank
+}
+southPanelRaise = if supplyLayout == "north" {
+  0mm
+} else {
+  panelRaise
+}
+northPanelRaise = if supplyLayout == "south" {
+  0mm
+} else {
+  panelRaise
+}
+northPanel = rotate(
+  northPanelSource,
+  axis = X,
+  angle = 90deg,
+  global = true,
+)
+  |> rotate(axis = Z, angle = 180deg, global = true)
+  |> translate(
+       x = -53.8mm,
+       y = 31mm,
+       z = 45mm + northPanelRaise,
+       global = true,
+     )
+  |> appearance(color = "#aab2b2")
+endPanel = translate(
+  endPanelPart,
+  x = 112mm,
+  z = 36mm,
+  global = true,
+)
+  |> appearance(color = "#809097")
+// Removable stop pins support the panel only at the raised static position.
+supplyPanel = rotate(
+  southPanelSource,
+  axis = X,
+  angle = 90deg,
+  global = true,
+)
+  |> translate(
+       x = -53.8mm,
+       y = -31mm,
+       z = 45mm + southPanelRaise,
+       global = true,
+     )
+  |> appearance(color = "#d79571")
+sixRear = if supplyLayout == "north" {
+  scale(sixRearPart, z = rearProjection / 18.7mm, global = true)
+    |> rotate(axis = X, angle = 90deg, global = true)
+    |> translate(
+         x = -33.8mm,
+         y = 31mm,
+         z = 51.5mm + northPanelRaise,
+         global = true,
+       )
+    |> appearance(color = "#e06861")
+} else {
+  scale(sixRearPart, z = rearProjection / 18.7mm, global = true)
+    |> rotate(axis = X, angle = -90deg, global = true)
+    |> translate(
+         x = -73.8mm,
+         y = -31mm,
+         z = 51.5mm + southPanelRaise,
+         global = true,
+       )
+    |> appearance(color = "#e06861")
+}
+twoRear = if supplyLayout == "south" {
+  scale(twoRearPart, z = rearProjection / 18.7mm, global = true)
+    |> rotate(axis = X, angle = -90deg, global = true)
+    |> translate(
+         x = -33.8mm,
+         y = -31mm,
+         z = 51.5mm + southPanelRaise,
+         global = true,
+       )
+    |> appearance(color = "#9f7bbb")
+} else {
+  scale(twoRearPart, z = rearProjection / 18.7mm, global = true)
+    |> rotate(axis = X, angle = 90deg, global = true)
+    |> translate(
+         x = -73.8mm,
+         y = 31mm,
+         z = 51.5mm + northPanelRaise,
+         global = true,
+       )
+    |> appearance(color = "#9f7bbb")
+}
+
+upperFiveBlank = clone(fiveRetainerPart)
+upperFiveBodyBlank = clone(fiveBodyPart)
+lowerCarrier = translate(lowerCarrierPart, z = 8mm + carrierLift, global = true)
+  |> appearance(color = "#aebfb1")
+upperCarrier = translate(upperCarrierPart, z = 29.5mm + carrierLift, global = true)
+  |> appearance(color = "#aebfb1")
+firstSpacer = translate(
+  spacerPart,
+  x = -84mm,
+  y = -13mm,
+  z = 10mm + carrierLift,
+  global = true,
+)
+  |> appearance(color = "#c6b58e")
+spacersX = patternLinear3d(
+  firstSpacer,
+  instances = 2,
+  distance = 168mm,
+  axis = [1, 0, 0],
+)
+spacers = patternLinear3d(
+  spacersX,
+  instances = 2,
+  distance = 26mm,
+  axis = [0, 1, 0],
+)
+lowerFive = translate(
+  fiveRetainerPart,
+  x = -54mm,
+  z = 10mm + carrierLift,
+  global = true,
+)
+  |> appearance(color = "#6c9578")
+lowerFiveRetainers = patternLinear3d(
+  lowerFive,
+  instances = 4,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+upperFive = translate(
+  upperFiveBlank,
+  x = -54mm,
+  z = 31.5mm + carrierLift,
+  global = true,
+)
+  |> appearance(color = "#6c9578")
+upperFiveRetainers = patternLinear3d(
+  upperFive,
+  instances = 2,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+upperTen = translate(
+  tenRetainerPart,
+  x = 18mm,
+  z = 31.5mm + carrierLift,
+  global = true,
+)
+  |> appearance(color = "#6c9578")
+upperTenRetainers = patternLinear3d(
+  upperTen,
+  instances = 2,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+firstTenKeeper = translate(
+  tenKeeperPart,
+  x = 18mm,
+  z = 31.5mm + carrierLift,
+  global = true,
+)
+  |> appearance(color = "#b18cda")
+tenKeepers = patternLinear3d(
+  firstTenKeeper,
+  instances = 2,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+lowerFiveBody = scale(
+  fiveBodyPart,
+  x = 29.6 / 30,
+  y = 18.1 / 18.8,
+  z = 8.05 / 8.4,
+  global = true,
+)
+  |> translate(x = -54mm, z = 11.6mm + carrierLift, global = true)
+  |> appearance(color = "#e6a67a")
+lowerBodies = patternLinear3d(
+  lowerFiveBody,
+  instances = 4,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+upperFiveBody = scale(
+  upperFiveBodyBlank,
+  x = 29.6 / 30,
+  y = 18.1 / 18.8,
+  z = 8.05 / 8.4,
+  global = true,
+)
+  |> translate(x = -54mm, z = 33.1mm + carrierLift, global = true)
+  |> appearance(color = "#e6a67a")
+upperBodies = patternLinear3d(
+  upperFiveBody,
+  instances = 2,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+upperTenBody = scale(
+  tenBodyPart,
+  x = 29.6 / 29.8,
+  y = 18.1 / 18.3,
+  z = 15.6 / 15.8,
+  global = true,
+)
+  |> rotate(axis = X, angle = -90deg, global = true)
+  |> translate(
+       x = 18mm,
+       y = -7.8mm,
+       z = 42.15mm + carrierLift,
+       global = true,
+     )
+  |> appearance(color = "#e1bb62")
+tenBodies = patternLinear3d(
+  upperTenBody,
+  instances = 2,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)

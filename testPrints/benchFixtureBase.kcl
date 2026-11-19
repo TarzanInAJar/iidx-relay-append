@@ -1,0 +1,225 @@
+// Open bench-staging base for the modular LED enclosure.
+// Nominal positions duplicate the carrier and three removable panels.
+// Fixture only: not an enclosure part and not proof of harness-transfer clearance.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+baseLength = 240mm
+baseWidth = 150mm
+baseThickness = 3mm
+carrierMountX = 78mm
+carrierPadRadius = 5mm
+carrierPadHeight = 5mm
+insertRadius = 2.2mm
+insertDepth = 5.2mm
+panelCenterX = -53.8mm
+panelLength = 84mm
+panelThickness = 3.2mm
+panelSeatHeight = 5mm
+guidePegWidth = 4mm
+guidePegDepth = 6mm
+guidePegHeight = 4mm
+lidRackLength = 234mm
+lidRackWidth = 14mm
+lidRackHeight = 12mm
+lidSlotLength = 230.4mm
+lidSlotWidth = 3.4mm
+lidRackCenterY = 64.5mm
+joinOverlap = 0.1mm
+
+baseProfile = sketch(on = XY) {
+  bottom = line(start = [var -120mm, var -75mm], end = [var 120mm, var -75mm])
+  right = line(start = [var 120mm, var -75mm], end = [var 120mm, var 75mm])
+  top = line(start = [var 120mm, var 75mm], end = [var -120mm, var 75mm])
+  left = line(start = [var -120mm, var 75mm], end = [var -120mm, var -75mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == baseLength / 2
+  verticalDistance([bottom.start, ORIGIN]) == baseWidth / 2
+  horizontalDistance([bottom.start, bottom.end]) == baseLength
+  verticalDistance([right.start, right.end]) == baseWidth
+}
+base = extrude(region(segments = [baseProfile.bottom, baseProfile.right], intersectionIndex = -1, direction = CCW), length = baseThickness)
+hide(baseProfile)
+
+padProfile = sketch(on = XY) {
+  padCircle = circle(center = [var 0mm, var 0mm], start = [var 5mm, var 0mm])
+  coincident([padCircle.center, ORIGIN])
+  radius(padCircle) == carrierPadRadius
+  horizontal([padCircle.center, padCircle.start])
+}
+firstPad = extrude(region(segments = [padProfile.padCircle]), length = carrierPadHeight + joinOverlap)
+  |> translate(x = -carrierMountX, z = baseThickness - joinOverlap, global = true)
+hide(padProfile)
+pads = patternLinear3d(
+  firstPad,
+  instances = 2,
+  distance = 2 * carrierMountX,
+  axis = [1, 0, 0],
+)
+baseWithOnePad = union([base, pads[0]])
+baseWithPads = union([baseWithOnePad, pads[1]])
+
+boreProfile = sketch(on = XY) {
+  boreCircle = circle(center = [var 0mm, var 0mm], start = [var 2.2mm, var 0mm])
+  coincident([boreCircle.center, ORIGIN])
+  radius(boreCircle) == insertRadius
+  horizontal([boreCircle.center, boreCircle.start])
+}
+firstBore = extrude(region(segments = [boreProfile.boreCircle]), length = insertDepth + 0.2mm)
+  |> translate(x = -carrierMountX, z = baseThickness + carrierPadHeight - insertDepth, global = true)
+hide(boreProfile)
+bores = patternLinear3d(
+  firstBore,
+  instances = 2,
+  distance = 2 * carrierMountX,
+  axis = [1, 0, 0],
+)
+baseWithInsertBores = subtract(baseWithPads, tools = bores)
+
+// Bottom edges of either supply-panel variant sit at the tray's nominal z = 8 mm.
+seatProfile = sketch(on = XY) {
+  bottom = line(start = [var -42mm, var -1.6mm], end = [var 42mm, var -1.6mm])
+  right = line(start = [var 42mm, var -1.6mm], end = [var 42mm, var 1.6mm])
+  top = line(start = [var 42mm, var 1.6mm], end = [var -42mm, var 1.6mm])
+  left = line(start = [var -42mm, var 1.6mm], end = [var -42mm, var -1.6mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == panelLength / 2
+  verticalDistance([bottom.start, ORIGIN]) == panelThickness / 2
+  horizontalDistance([bottom.start, bottom.end]) == panelLength
+  verticalDistance([right.start, right.end]) == panelThickness
+}
+firstSeat = extrude(region(segments = [seatProfile.bottom, seatProfile.right], intersectionIndex = -1, direction = CCW), length = panelSeatHeight + joinOverlap)
+  |> translate(
+       x = panelCenterX,
+       y = -32.5mm,
+       z = baseThickness - joinOverlap,
+       global = true,
+     )
+hide(seatProfile)
+seats = patternLinear3d(
+  firstSeat,
+  instances = 2,
+  distance = 65mm,
+  axis = [0, 1, 0],
+)
+baseWithFirstSeat = union([baseWithInsertBores, seats[0]])
+baseWithSeats = union([baseWithFirstSeat, seats[1]])
+
+// Six rectangular locating pegs: four for the supply guides, two for the end panel.
+pegProfile = sketch(on = XY) {
+  bottom = line(start = [var -2mm, var -3mm], end = [var 2mm, var -3mm])
+  right = line(start = [var 2mm, var -3mm], end = [var 2mm, var 3mm])
+  top = line(start = [var 2mm, var 3mm], end = [var -2mm, var 3mm])
+  left = line(start = [var -2mm, var 3mm], end = [var -2mm, var -3mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == guidePegWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == guidePegDepth / 2
+  horizontalDistance([bottom.start, bottom.end]) == guidePegWidth
+  verticalDistance([right.start, right.end]) == guidePegDepth
+}
+pegBlank = extrude(region(segments = [pegProfile.bottom, pegProfile.right], intersectionIndex = -1, direction = CCW), length = guidePegHeight + joinOverlap)
+  |> translate(z = baseThickness - joinOverlap, global = true)
+hide(pegProfile)
+supplyPegFirst = translate(
+  clone(pegBlank),
+  x = -100.8mm,
+  y = -32.5mm,
+  global = true,
+)
+supplyPegsAlongX = patternLinear3d(
+  supplyPegFirst,
+  instances = 2,
+  distance = 94mm,
+  axis = [1, 0, 0],
+)
+supplyPegs = patternLinear3d(
+  supplyPegsAlongX,
+  instances = 2,
+  distance = 65mm,
+  axis = [0, 1, 0],
+)
+endPegFirst = rotate(
+  pegBlank,
+  axis = Z,
+  angle = 90deg,
+  global = true,
+)
+  |> translate(x = 113.5mm, y = -30.8mm, global = true)
+endPegs = patternLinear3d(
+  endPegFirst,
+  instances = 2,
+  distance = 61.6mm,
+  axis = [0, 1, 0],
+)
+baseWithPegOne = union([baseWithSeats, supplyPegs[0]])
+baseWithPegTwo = union([baseWithPegOne, supplyPegs[1]])
+baseWithPegThree = union([baseWithPegTwo, supplyPegs[2]])
+baseWithSupplyPegs = union([baseWithPegThree, supplyPegs[3]])
+baseWithEndPeg = union([baseWithSupplyPegs, endPegs[0]])
+baseWithPegs = union([baseWithEndPeg, endPegs[1]])
+
+// The lid parks upright beside the carrier, not at the closed position.
+rackProfile = sketch(on = XY) {
+  bottom = line(start = [var -117mm, var -7mm], end = [var 117mm, var -7mm])
+  right = line(start = [var 117mm, var -7mm], end = [var 117mm, var 7mm])
+  top = line(start = [var 117mm, var 7mm], end = [var -117mm, var 7mm])
+  left = line(start = [var -117mm, var 7mm], end = [var -117mm, var -7mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == lidRackLength / 2
+  verticalDistance([bottom.start, ORIGIN]) == lidRackWidth / 2
+  horizontalDistance([bottom.start, bottom.end]) == lidRackLength
+  verticalDistance([right.start, right.end]) == lidRackWidth
+}
+rackBlank = extrude(region(segments = [rackProfile.bottom, rackProfile.right], intersectionIndex = -1, direction = CCW), length = lidRackHeight + joinOverlap)
+  |> translate(y = lidRackCenterY, z = baseThickness - joinOverlap, global = true)
+hide(rackProfile)
+slotProfile = sketch(on = XY) {
+  bottom = line(start = [var -115.2mm, var -1.7mm], end = [var 115.2mm, var -1.7mm])
+  right = line(start = [var 115.2mm, var -1.7mm], end = [var 115.2mm, var 1.7mm])
+  top = line(start = [var 115.2mm, var 1.7mm], end = [var -115.2mm, var 1.7mm])
+  left = line(start = [var -115.2mm, var 1.7mm], end = [var -115.2mm, var -1.7mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == lidSlotLength / 2
+  verticalDistance([bottom.start, ORIGIN]) == lidSlotWidth / 2
+  horizontalDistance([bottom.start, bottom.end]) == lidSlotLength
+  verticalDistance([right.start, right.end]) == lidSlotWidth
+}
+rackSlot = extrude(region(segments = [slotProfile.bottom, slotProfile.right], intersectionIndex = -1, direction = CCW), length = lidRackHeight + 0.2mm)
+  |> translate(y = lidRackCenterY, z = baseThickness, global = true)
+hide(slotProfile)
+rack = subtract(rackBlank, tools = [rackSlot])
+export benchFixtureBase = union([baseWithPegs, rack])

@@ -1,0 +1,8 @@
+// Open-frame assembly covers, separate from bench-only geometry.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+import "sideCover.kcl" as sidePart
+import "endCover.kcl" as eastPart
+import "westCover.kcl" as westPart
+export sideSkin = sidePart
+export eastSkin = eastPart
+export westSkin = westPart

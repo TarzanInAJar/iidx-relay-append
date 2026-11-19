@@ -1,0 +1,89 @@
+// Open-frame supply-panel guide concept.
+// Two guides per panel; fit, rigidity and final retention are untested.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+guideWidth = 14mm
+footInboard = 9.5mm
+footOutboard = 4.8mm
+footThickness = 5.2mm
+railThickness = 1.6mm
+railLength = 73.9mm
+railStartZ = 4.9mm
+firstRailY = -1mm
+railPitch = 5mm
+mountPitch = 8mm
+mountY = -6mm
+mountRadius = 1.7mm
+
+footProfile = sketch(on = XY) {
+  bottom = line(start = [var -7mm, var -9.5mm], end = [var 7mm, var -9.5mm])
+  right = line(start = [var 7mm, var -9.5mm], end = [var 7mm, var 4.8mm])
+  top = line(start = [var 7mm, var 4.8mm], end = [var -7mm, var 4.8mm])
+  left = line(start = [var -7mm, var 4.8mm], end = [var -7mm, var -9.5mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == guideWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == footInboard
+  horizontalDistance([bottom.start, bottom.end]) == guideWidth
+  verticalDistance([right.start, right.end]) == footInboard + footOutboard
+}
+foot = extrude(region(segments = [footProfile.bottom, footProfile.right], intersectionIndex = -1, direction = CCW), length = footThickness)
+hide(footProfile)
+
+railProfile = sketch(on = XY) {
+  bottom = line(start = [var -7mm, var -0.8mm], end = [var 7mm, var -0.8mm])
+  right = line(start = [var 7mm, var -0.8mm], end = [var 7mm, var 0.8mm])
+  top = line(start = [var 7mm, var 0.8mm], end = [var -7mm, var 0.8mm])
+  left = line(start = [var -7mm, var 0.8mm], end = [var -7mm, var -0.8mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == guideWidth / 2
+  verticalDistance([bottom.start, ORIGIN]) == railThickness / 2
+  horizontalDistance([bottom.start, bottom.end]) == guideWidth
+  verticalDistance([right.start, right.end]) == railThickness
+}
+firstRail = extrude(region(segments = [railProfile.bottom, railProfile.right], intersectionIndex = -1, direction = CCW), length = railLength)
+  |> translate(y = firstRailY, z = railStartZ, global = true)
+hide(railProfile)
+rails = patternLinear3d(
+  firstRail,
+  instances = 2,
+  distance = railPitch,
+  axis = [0, 1, 0],
+)
+footWithInsideRail = union([foot, rails[0]])
+guideBlank = union([footWithInsideRail, rails[1]])
+
+mountProfile = sketch(on = XY) {
+  hole = circle(center = [var 0mm, var 0mm], start = [var 1.7mm, var 0mm])
+  coincident([hole.center, ORIGIN])
+  horizontal([hole.center, hole.start])
+  radius(hole) == mountRadius
+}
+firstMountTool = extrude(region(segments = [mountProfile.hole]), length = footThickness + 0.2mm)
+  |> translate(
+       x = -mountPitch / 2,
+       y = mountY,
+       z = -0.1mm,
+       global = true,
+     )
+hide(mountProfile)
+mountTools = patternLinear3d(
+  firstMountTool,
+  instances = 2,
+  distance = mountPitch,
+  axis = [1, 0, 0],
+)
+sidePanelGuide = subtract(guideBlank, tools = mountTools)

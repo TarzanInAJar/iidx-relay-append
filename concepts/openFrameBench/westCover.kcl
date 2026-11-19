@@ -1,0 +1,30 @@
+// West end cover for the open frame.
+// The open-top cutout leaves all three connector ports and panel screws accessible.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "endCover.kcl" as endCover
+openingWidth = 50.4mm
+openingBottom = 8.2mm
+openingHeight = 78mm
+opening = sketch(on = YZ) {
+  bottom = line(start = [var -25.2mm, var 8.2mm], end = [var 25.2mm, var 8.2mm])
+  right = line(start = [var 25.2mm, var 8.2mm], end = [var 25.2mm, var 86.2mm])
+  top = line(start = [var 25.2mm, var 86.2mm], end = [var -25.2mm, var 86.2mm])
+  left = line(start = [var -25.2mm, var 86.2mm], end = [var -25.2mm, var 8.2mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  horizontal(top)
+  vertical(right)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == openingWidth / 2
+  verticalDistance([ORIGIN, bottom.start]) == openingBottom
+  horizontalDistance([bottom.start, bottom.end]) == openingWidth
+  verticalDistance([right.start, right.end]) == openingHeight
+}
+tool = extrude(region(segments = [opening.bottom, opening.right], intersectionIndex = -1, direction = CCW), length = 3mm)
+  |> translate(x = -0.5mm, global = true)
+hide(opening)
+westCover = subtract(clone(endCover), tools = [tool])

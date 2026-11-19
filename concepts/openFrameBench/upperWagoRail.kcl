@@ -1,0 +1,159 @@
+// Earlier unreferenced upper WAGO rail study; not the imported concept part.
+// Current review uses concepts/upperWagoRail/main.kcl; neither is print-ready.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+railLength = 88mm
+railWidth = 8mm
+railThickness = 7mm
+legHeight = 27mm
+legWidth = 4mm
+legOffset = 19mm
+footWidth = 8mm
+footDepth = 14.8mm
+footThickness = 3mm
+footStartY = 1mm
+footHoleY = 10mm
+retainerPitch = 38mm
+insertRadius = 2.2mm
+insertDepth = 5.2mm
+footHoleRadius = 1.7mm
+
+railProfile = sketch(on = XZ) {
+  leftUnder = line(start = [var -44mm, var 27mm], end = [var -21mm, var 27mm])
+  leftLegOuter = line(start = [var -21mm, var 27mm], end = [var -21mm, var 0mm])
+  leftLegBottom = line(start = [var -21mm, var 0mm], end = [var -17mm, var 0mm])
+  leftLegInner = line(start = [var -17mm, var 0mm], end = [var -17mm, var 27mm])
+  middleUnder = line(start = [var -17mm, var 27mm], end = [var 17mm, var 27mm])
+  rightLegInner = line(start = [var 17mm, var 27mm], end = [var 17mm, var 0mm])
+  rightLegBottom = line(start = [var 17mm, var 0mm], end = [var 21mm, var 0mm])
+  rightLegOuter = line(start = [var 21mm, var 0mm], end = [var 21mm, var 27mm])
+  rightUnder = line(start = [var 21mm, var 27mm], end = [var 44mm, var 27mm])
+  rightEnd = line(start = [var 44mm, var 27mm], end = [var 44mm, var 34mm])
+  top = line(start = [var 44mm, var 34mm], end = [var -44mm, var 34mm])
+  leftEnd = line(start = [var -44mm, var 34mm], end = [var -44mm, var 27mm])
+  coincident([leftUnder.end, leftLegOuter.start])
+  coincident([leftLegOuter.end, leftLegBottom.start])
+  coincident([leftLegBottom.end, leftLegInner.start])
+  coincident([leftLegInner.end, middleUnder.start])
+  coincident([middleUnder.end, rightLegInner.start])
+  coincident([
+    rightLegInner.end,
+    rightLegBottom.start
+  ])
+  coincident([
+    rightLegBottom.end,
+    rightLegOuter.start
+  ])
+  coincident([rightLegOuter.end, rightUnder.start])
+  coincident([rightUnder.end, rightEnd.start])
+  coincident([rightEnd.end, top.start])
+  coincident([top.end, leftEnd.start])
+  coincident([leftEnd.end, leftUnder.start])
+  horizontal(leftUnder)
+  vertical(leftLegOuter)
+  horizontal(leftLegBottom)
+  vertical(leftLegInner)
+  horizontal(middleUnder)
+  vertical(rightLegInner)
+  horizontal(rightLegBottom)
+  vertical(rightLegOuter)
+  horizontal(rightUnder)
+  vertical(rightEnd)
+  horizontal(top)
+  vertical(leftEnd)
+  horizontalDistance([leftUnder.start, ORIGIN]) == railLength / 2
+  verticalDistance([ORIGIN, leftUnder.start]) == legHeight
+  horizontalDistance([leftUnder.start, leftUnder.end]) == railLength / 2 - legOffset - (legWidth / 2)
+  horizontalDistance([leftLegBottom.start, leftLegBottom.end]) == legWidth
+  horizontalDistance([middleUnder.start, middleUnder.end]) == 2 * legOffset - legWidth
+  equalLength([leftLegBottom, rightLegBottom])
+  equalLength([leftUnder, rightUnder])
+  verticalDistance([leftLegOuter.end, leftLegOuter.start]) == legHeight
+  equalLength([leftLegOuter, leftLegInner])
+  equalLength([leftLegOuter, rightLegInner])
+  equalLength([leftLegOuter, rightLegOuter])
+  verticalDistance([rightEnd.start, rightEnd.end]) == railThickness
+}
+railBlank = extrude(
+  region(
+    segments = [
+      railProfile.leftUnder,
+      railProfile.leftLegOuter
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = railWidth,
+)
+  |> translate(y = railWidth / 2, global = true)
+hide(railProfile)
+
+// Raised tabs sit on the matching floor bosses; each stays joined to its leg.
+footProfile = sketch(on = XY) {
+  bottom = line(start = [var -4mm, var 1mm], end = [var 4mm, var 1mm])
+  right = line(start = [var 4mm, var 1mm], end = [var 4mm, var 15.8mm])
+  top = line(start = [var 4mm, var 15.8mm], end = [var -4mm, var 15.8mm])
+  left = line(start = [var -4mm, var 15.8mm], end = [var -4mm, var 1mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == footWidth / 2
+  verticalDistance([ORIGIN, bottom.start]) == footStartY
+  horizontalDistance([bottom.start, bottom.end]) == footWidth
+  verticalDistance([right.start, right.end]) == footDepth
+}
+footBlank = extrude(region(segments = [footProfile.bottom, footProfile.right], intersectionIndex = -1, direction = CCW), length = footThickness)
+  |> translate(x = -legOffset, z = 3mm, global = true)
+hide(footProfile)
+feet = patternLinear3d(
+  footBlank,
+  instances = 2,
+  distance = 2 * legOffset,
+  axis = [1, 0, 0],
+)
+railWithFirstFoot = union([railBlank, feet[0]])
+railWithFeet = union([railWithFirstFoot, feet[1]])
+
+insertProfile = sketch(on = XY) {
+  bore = circle(center = [var 0mm, var 0mm], start = [var 2.2mm, var 0mm])
+  coincident([bore.center, ORIGIN])
+  horizontal([bore.center, bore.start])
+  radius(bore) == insertRadius
+}
+insertTool = extrude(region(segments = [insertProfile.bore]), length = insertDepth + 0.1mm)
+  |> translate(x = -retainerPitch, z = legHeight + railThickness - insertDepth, global = true)
+hide(insertProfile)
+insertTools = patternLinear3d(
+  insertTool,
+  instances = 3,
+  distance = retainerPitch,
+  axis = [1, 0, 0],
+)
+railWithInsertBores = subtract(railWithFeet, tools = insertTools)
+
+footHoleProfile = sketch(on = XY) {
+  hole = circle(center = [var 0mm, var 0mm], start = [var 1.7mm, var 0mm])
+  coincident([hole.center, ORIGIN])
+  horizontal([hole.center, hole.start])
+  radius(hole) == footHoleRadius
+}
+footHoleTool = extrude(region(segments = [footHoleProfile.hole]), length = footThickness + 0.2mm)
+  |> translate(
+       x = -legOffset,
+       y = footHoleY,
+       z = 2.9mm,
+       global = true,
+     )
+hide(footHoleProfile)
+footHoleTools = patternLinear3d(
+  footHoleTool,
+  instances = 2,
+  distance = 2 * legOffset,
+  axis = [1, 0, 0],
+)
+export upperWagoRail = subtract(railWithInsertBores, tools = footHoleTools)

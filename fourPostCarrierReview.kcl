@@ -1,0 +1,134 @@
+// Four-post carrier review
+// Four-spacer stack with center support, existing retainers and simplified connector bodies.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+import "centerSupportedCarrier.kcl" as lowerPart
+import "upperCarrierFourPost.kcl" as upperPart
+import "carrierSpacer.kcl" as spacerPart
+import "wagoFiveRetainer.kcl" as fiveRetainerPart
+import "wagoTenRetainer.kcl" as tenRetainerPart
+import "wagoFiveEnvelope.kcl" as fiveReference
+import "wagoTenEnvelope.kcl" as tenReference
+
+lowerZ = 8mm
+upperZ = 29.5mm
+spacerZ = 10mm
+upperFiveRetainerBlank = clone(fiveRetainerPart)
+upperFiveReferenceBlank = clone(fiveReference)
+
+lowerCarrier = translate(lowerPart, z = lowerZ, global = true)
+  |> appearance(color = "#aebfb1")
+upperCarrier = translate(upperPart, z = upperZ, global = true)
+  |> appearance(color = "#aebfb1")
+firstSpacer = translate(
+  spacerPart,
+  x = -84mm,
+  y = -13mm,
+  z = spacerZ,
+  global = true,
+)
+  |> appearance(color = "#c6b58e")
+spacersAlongX = patternLinear3d(
+  firstSpacer,
+  instances = 2,
+  distance = 168mm,
+  axis = [1, 0, 0],
+)
+spacers = patternLinear3d(
+  spacersAlongX,
+  instances = 2,
+  distance = 26mm,
+  axis = [0, 1, 0],
+)
+
+lowerFiveSeed = translate(
+  fiveRetainerPart,
+  x = -54mm,
+  z = 10mm,
+  global = true,
+)
+  |> appearance(color = "#6c9578")
+lowerFiveRetainers = patternLinear3d(
+  lowerFiveSeed,
+  instances = 4,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+upperFiveSeed = translate(
+  upperFiveRetainerBlank,
+  x = -54mm,
+  z = 31.5mm,
+  global = true,
+)
+  |> appearance(color = "#6c9578")
+upperFiveRetainers = patternLinear3d(
+  upperFiveSeed,
+  instances = 2,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+upperTenSeed = translate(
+  tenRetainerPart,
+  x = 18mm,
+  z = 31.5mm,
+  global = true,
+)
+  |> appearance(color = "#6c9578")
+upperTenRetainers = patternLinear3d(
+  upperTenSeed,
+  instances = 2,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+
+lowerFiveBodySeed = scale(
+  fiveReference,
+  x = 29.6 / 30,
+  y = 18.1 / 18.8,
+  z = 8.05 / 8.4,
+  global = true,
+)
+  |> translate(x = -54mm, z = 11.6mm, global = true)
+  |> appearance(color = "#e6a67a")
+lowerFiveBodies = patternLinear3d(
+  lowerFiveBodySeed,
+  instances = 4,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+upperFiveBodySeed = scale(
+  upperFiveReferenceBlank,
+  x = 29.6 / 30,
+  y = 18.1 / 18.8,
+  z = 8.05 / 8.4,
+  global = true,
+)
+  |> translate(x = -54mm, z = 33.1mm, global = true)
+  |> appearance(color = "#e6a67a")
+upperFiveBodies = patternLinear3d(
+  upperFiveBodySeed,
+  instances = 2,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)
+upperTenBodySeed = scale(
+  tenReference,
+  x = 29.6 / 29.8,
+  y = 18.1 / 18.3,
+  z = 15.6 / 15.8,
+  global = true,
+)
+  |> rotate(axis = X, angle = -90deg, global = true)
+  |> translate(
+       x = 18mm,
+       y = -7.8mm,
+       z = 42.15mm,
+       global = true,
+     )
+  |> appearance(color = "#e1bb62")
+upperTenBodies = patternLinear3d(
+  upperTenBodySeed,
+  instances = 2,
+  distance = 36mm,
+  axis = [1, 0, 0],
+)

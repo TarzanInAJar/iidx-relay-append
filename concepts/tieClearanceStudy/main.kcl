@@ -1,0 +1,101 @@
+// West tie clearance reference, not a printable part.
+// Illustrative strap and head; routing and tightening are not proven.
+@settings(defaultLengthUnit = mm, kclVersion = 3.0)
+
+strapWidth = 2.5mm
+strapThickness = 0.8mm
+loopOuterWidth = 13.5mm
+loopOuterHeight = 13.4mm
+loopLeft = -9.5mm
+loopBottom = -0.4mm
+
+loopOuterProfile = sketch(on = YZ) {
+  bottom = line(start = [var -9.5mm, var -0.4mm], end = [var 4mm, var -0.4mm])
+  right = line(start = [var 4mm, var -0.4mm], end = [var 4mm, var 13mm])
+  top = line(start = [var 4mm, var 13mm], end = [var -9.5mm, var 13mm])
+  left = line(start = [var -9.5mm, var 13mm], end = [var -9.5mm, var -0.4mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == -loopLeft
+  verticalDistance([bottom.start, ORIGIN]) == -loopBottom
+  horizontalDistance([bottom.start, bottom.end]) == loopOuterWidth
+  verticalDistance([right.start, right.end]) == loopOuterHeight
+}
+loopBlank = extrude(
+  region(
+    segments = [
+      loopOuterProfile.bottom,
+      loopOuterProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = strapWidth,
+  symmetric = true,
+)
+hide(loopOuterProfile)
+loopInnerProfile = sketch(on = YZ) {
+  bottom = line(start = [var -8.7mm, var 0.4mm], end = [var 3.2mm, var 0.4mm])
+  right = line(start = [var 3.2mm, var 0.4mm], end = [var 3.2mm, var 12.2mm])
+  top = line(start = [var 3.2mm, var 12.2mm], end = [var -8.7mm, var 12.2mm])
+  left = line(start = [var -8.7mm, var 12.2mm], end = [var -8.7mm, var 0.4mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == -loopLeft - strapThickness
+  verticalDistance([ORIGIN, bottom.start]) == loopBottom + strapThickness
+  horizontalDistance([bottom.start, bottom.end]) == loopOuterWidth - (2 * strapThickness)
+  verticalDistance([right.start, right.end]) == loopOuterHeight - (2 * strapThickness)
+}
+loopCutter = extrude(
+  region(
+    segments = [
+      loopInnerProfile.bottom,
+      loopInnerProfile.right
+    ],
+    intersectionIndex = -1,
+    direction = CCW,
+  ),
+  length = strapWidth + 2mm,
+  symmetric = true,
+)
+hide(loopInnerProfile)
+strapReference = subtract(loopBlank, tools = [loopCutter])
+  |> appearance(color = "#f5d24c")
+
+// Illustrative tie head size and position only, not a selected commercial tie.
+headProfile = sketch(on = XY) {
+  bottom = line(start = [var -3.25mm, var -9.5mm], end = [var 1.25mm, var -9.5mm])
+  right = line(start = [var 1.25mm, var -9.5mm], end = [var 1.25mm, var -5.5mm])
+  top = line(start = [var 1.25mm, var -5.5mm], end = [var -3.25mm, var -5.5mm])
+  left = line(start = [var -3.25mm, var -5.5mm], end = [var -3.25mm, var -9.5mm])
+  coincident([bottom.end, right.start])
+  coincident([right.end, top.start])
+  coincident([top.end, left.start])
+  coincident([left.end, bottom.start])
+  horizontal(bottom)
+  vertical(right)
+  horizontal(top)
+  vertical(left)
+  horizontalDistance([bottom.start, ORIGIN]) == 3.25mm
+  verticalDistance([bottom.start, ORIGIN]) == -loopLeft
+  horizontalDistance([bottom.start, bottom.end]) == 4.5mm
+  verticalDistance([right.start, right.end]) == 4mm
+}
+headReference = extrude(region(segments = [headProfile.bottom, headProfile.right], intersectionIndex = -1, direction = CCW), length = 3.5mm)
+  |> translate(z = loopBottom + loopOuterHeight, global = true)
+  |> appearance(color = "#f5d24c")
+hide(headProfile)
+
+allTieStudy = [strapReference, headReference]
